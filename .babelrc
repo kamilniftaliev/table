@@ -1,0 +1,30 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": false
+      }
+    ],
+    "@babel/preset-react",
+    [
+      "@babel/preset-typescript",
+      {
+        "isTSX": true,
+        "allExtensions": true
+      }
+    ]
+  ],
+  "env": {
+    "test": {
+      "plugins": ["require-context-hook"]
+    }
+  },
+  "plugins": [
+    "@babel/plugin-proposal-optional-chaining",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-runtime",
+    "babel-plugin-styled-components",
+    "syntax-dynamic-import"
+  ]
+}

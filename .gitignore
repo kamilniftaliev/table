@@ -1,0 +1,4 @@
+node_modules
+public
+jest-test-results.json
+webpack-stats.json
