@@ -1,2 +1,2 @@
 # table
-table.az
+table.az a
