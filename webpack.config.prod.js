@@ -11,10 +11,19 @@ module.exports = {
 
   devtool: 'source-map',
 
+  devServer: {
+    port: 4444,
+    hot: true,
+    noInfo: true,
+    // open: true,
+    historyApiFallback: true,
+    overlay: true,
+  },
+
   output: {
     path: `${__dirname}/public`,
-    filename: '[name].[contenthash].js',
-    chunkFilename: '[name].[contenthash].js',
+    filename: '[name].[hash].js',
+    chunkFilename: '[name].[hash].js',
     publicPath: '/',
   },
 

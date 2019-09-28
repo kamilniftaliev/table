@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack-dev-server",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
-    "build": "webpack --config webpack.config.prod.js"
+    "build": "webpack --config webpack.config.prod.js",
+    "start-prod": "webpack-dev-server --config webpack.config.prod.js"
   },
   "keywords": [],
   "author": "",
