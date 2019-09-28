@@ -24,7 +24,7 @@ module.exports = {
     path: `${__dirname}/public`,
     filename: '[name].[hash].js',
     chunkFilename: '[name].[hash].js',
-    publicPath: '/',
+    publicPath: 'table/',
   },
 
   optimization: {
