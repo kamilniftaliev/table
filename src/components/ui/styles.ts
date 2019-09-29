@@ -6,15 +6,13 @@ export const global = createGlobalStyle`
   body,
   input,
   button {
-    font-family: Roboto, Arial, sans-serif;
-    font-weight: 300;
+    font: 300 16px Roboto, Arial, sans-serif;
     box-sizing: border-box;
   }
   
   body {
     margin: 0;
     background-color: #f7f7f7;
-    font-size: 14px;
   }
 
   ul {

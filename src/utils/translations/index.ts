@@ -14,7 +14,7 @@ export default (key, ...args): string => {
 
   const translation = langs[lang][key];
 
-  if (!translation) return 'No translation';
+  if (!translation) return `No translation for "${key}"`;
 
   if (typeof translation === 'string') return translation;
 

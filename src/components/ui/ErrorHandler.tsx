@@ -61,8 +61,4 @@ class ErrorHandler extends Component<React.ReactElement> {
   }
 }
 
-const MemoErrorHandler = React.memo(ErrorHandler);
-
-export { MemoErrorHandler as ErrorHandler };
-
-export default MemoErrorHandler;
+export default React.memo(ErrorHandler);

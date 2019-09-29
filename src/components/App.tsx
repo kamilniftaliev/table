@@ -1,45 +1,45 @@
 import React, { FC, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import ApolloClient from 'apollo-boost';
-import { ApolloProvider } from '@apollo/react-hooks';
-import styled from 'styled-components';
 
-import { GRAPH_URL } from '../constants';
+import styled from 'styled-components';
+import { hot } from 'react-hot-loader/root';
 
 import { CSS, ErrorHandler } from './ui';
 
-const Auth = lazy(() => import(/* webpackChunkName: "post" */ './Auth/Auth'));
+import { GraphQL } from './GraphQL';
 
-const client = new ApolloClient({
-  uri: GRAPH_URL,
-});
+const Auth = lazy(() => import(/* webpackChunkName: "post" */ './Auth/Auth'));
+const Tables = lazy(() =>
+  import(/* webpackChunkName: "tables" */ './Tables/Tables'),
+);
 
 export const Container = styled.main`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 15px;
-  min-height: calc(100vh - 170px);
+  min-height: 100vh;
 `;
+
+const isAuth = !!localStorage.getItem('token');
 
 const App: FC = (): JSX.Element => {
   return (
-    <ApolloProvider client={client}>
+    <GraphQL>
       <Router>
         <Suspense fallback={<div>YÜKLƏNİR...</div>}>
           <ErrorHandler>
             <Container>
               <Switch>
-                <Route path="/" exact component={Auth} />
+                <Route path="/" exact component={isAuth ? Tables : Auth} />
               </Switch>
             </Container>
           </ErrorHandler>
         </Suspense>
       </Router>
       <CSS.global />
-    </ApolloProvider>
+    </GraphQL>
   );
 };
 
-const MemoApp = React.memo(App);
-
-export { MemoApp as App };
-
-export default MemoApp;
+export default React.memo(hot(App));
