@@ -3,7 +3,6 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   display: flex;
-  box-sizing: border-box;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -27,7 +26,6 @@ const Text = styled.p`
 const Link = styled.a`
   color: blue;
   border-bottom: 1px solid blue;
-  text-decoration: none;
 `;
 
 interface InitState {
@@ -38,6 +36,8 @@ class ErrorHandler extends Component<React.ReactElement> {
   state: InitState = {};
 
   componentDidCatch(error, errorInfo): void {
+    // console.log('error :', error);
+    // console.log('errorInfo :', errorInfo);
     this.setState({ hasError: true });
   }
 

@@ -3,6 +3,7 @@ import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 
 import { GRAPH_URL } from '../constants';
+import { Auth } from '../utils';
 
 const client = new ApolloClient({
   uri: GRAPH_URL,
@@ -13,6 +14,13 @@ const client = new ApolloClient({
         authorization: token ? `Bearer ${token}` : '',
       },
     });
+  },
+  onError: ({ graphQLErrors }) => {
+    if (graphQLErrors?.[0].message === 'access_denied') {
+      return Auth.logout();
+    }
+
+    console.log('graphQLErrors :', graphQLErrors);
   },
 });
 

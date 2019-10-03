@@ -3,5 +3,20 @@ export default {
   username: 'Имя пользователя',
   password: 'Пароль',
   signIn: 'Войти',
-  error_password: 'Неправильное имя пользователя или пароль',
+  errorPassword: 'Неправильное имя пользователя или пароль',
+  logout: 'Выход',
+
+  tables: 'Таблицы',
+  teachers: 'Учителя',
+
+  tableName: 'Название таблицы',
+  lastEdited: 'Последняя правка',
+  created: 'Создано',
+  addNewTable: 'Создать новую таблицу',
+  pleaseConfirmDelete: tableTitle => `Вы уверены что хотите удалить таблицу "${tableTitle}"?`,
+  no: 'Нет',
+  yes: 'Да',
+  create: 'Создать',
+  exampleTablePlaceholder: 'Пример: "Расписание уроков"',
+  newTableTitle: 'Название новой таблицы',
 };

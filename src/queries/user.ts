@@ -8,4 +8,19 @@ export const LOGIN = gql`
   }
 `;
 
+export const GET = gql`
+  {
+    user {
+      name,
+      tables {
+        id,
+        slug,
+        created,
+        lastEdited,
+        title,
+      },
+    }
+  }
+`;
+
 export default LOGIN;

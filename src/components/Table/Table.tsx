@@ -2,18 +2,14 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-import { Domain, Button, Messages, Input as DefaultInput } from '../ui';
+import { Button, Messages, Input as DefaultInput } from '../ui';
 
 import { translation } from '../../utils';
 
 import { LOGIN } from '../../queries/user';
 import { useMutation } from 'react-apollo';
 
-const CenteredDomain = styled(Domain)`
-  display: block;
-  font-size: 48px;
-  margin-top: 100px;
-`;
+const Container = styled.div``;
 
 const Form = styled.form`
   display: flex;
@@ -36,12 +32,21 @@ const Input = styled(DefaultInput)`
 const Title = styled.h2`
   font-weight: 400;
   font-size: 28px;
+  width: 650px;
   text-align: center;
   cursor: default;
   color: rgba(0, 0, 0, 0.8);
   text-shadow: 1px 1px white;
 
   margin-bottom: 40px;
+`;
+
+const Domain = styled(Link)`
+  display: block;
+  color: #0e5fca;
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
 `;
 
 function setToken({ login: { token } }) {
@@ -71,8 +76,8 @@ function Auth() {
   }
 
   return (
-    <>
-      <CenteredDomain />
+    <Container>
+      <Domain to="/">TABLE.AZ</Domain>
       <Title>{translation('loginTitle')}</Title>
       <Form onSubmit={signIn}>
         {error?.graphQLErrors && <Messages.ErrorText>{translation(error.graphQLErrors[0].message)}</Messages.ErrorText>}
@@ -86,9 +91,9 @@ function Auth() {
           onChange={e => setPassword(e.target.value)}
           placeholder={translation('password')}
         />
-        <Button.default type="submit">{translation('signIn')}</Button.default>
+        <Button type="submit">{translation('signIn')}</Button>
       </Form>
-    </>
+    </Container>
   );
 }
 

@@ -1,5 +1,6 @@
 import * as Cookies from './cookies';
 import dateOptions from './dateOptions';
-import translate from './translations';
+import translation from './translations';
+import * as Auth from './auth';
 
-export { Cookies, dateOptions, translate };
+export { Cookies, dateOptions, translation, Auth };
