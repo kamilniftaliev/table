@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { useMutation } from 'react-apollo';
 
 import { Domain, Button, Messages, Input as DefaultInput } from '../ui';
 
 import { translation } from '../../utils';
 
-import { LOGIN } from '../../queries/user';
-import { useMutation } from 'react-apollo';
+import graph from '../../graph';
 
 const CenteredDomain = styled(Domain)`
   display: block;
@@ -44,46 +43,49 @@ const Title = styled.h2`
   margin-bottom: 40px;
 `;
 
-function setToken({ login: { token } }) {
+function setToken({ signIn: { token } }): void {
   localStorage.setItem('token', token);
-  location.reload();
+  window.location.href = '/'
 }
 
-function Auth() {
+function Auth(): React.ReactFragment {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const [login, { loading, error }] = useMutation(LOGIN, {
+  const [signInRequest, { loading, error }] = useMutation(graph.SignIn, {
     onCompleted: setToken,
   });
 
-  function signIn(e: React.FormEvent) {
+  function signIn(e: React.FormEvent): void {
     e.preventDefault();
 
     if (loading || !username || !password) return;
 
-    login({
+    signInRequest({
       variables: {
         username,
         password,
       },
+      // refetchQueries: [{
+      //   query: graph.GetUser
+      // }]
     });
   }
 
   return (
     <>
       <CenteredDomain />
-      <Title>{translation('loginTitle')}</Title>
+      <Title>{translation('signInTitle')}</Title>
       <Form onSubmit={signIn}>
         {error?.graphQLErrors && <Messages.ErrorText>{translation(error.graphQLErrors[0].message)}</Messages.ErrorText>}
         <Input
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={(e): void => setUsername(e.target?.value)}
           placeholder={translation('username')}
         />
         <Input
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e): void => setPassword(e.target?.value)}
           placeholder={translation('password')}
         />
         <Button.default type="submit">{translation('signIn')}</Button.default>

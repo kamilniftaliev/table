@@ -6,3 +6,5 @@ export const ErrorText = styled.p`
   color: #fff;
   border-radius: 3px;
 `;
+
+export default ErrorText;

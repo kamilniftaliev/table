@@ -7,7 +7,7 @@ import { Auth } from '../utils';
 
 const client = new ApolloClient({
   uri: GRAPH_URL,
-  request: operation => {
+  request: (operation): void => {
     const token = localStorage.getItem('token');
     operation.setContext({
       headers: {
@@ -15,7 +15,7 @@ const client = new ApolloClient({
       },
     });
   },
-  onError: ({ graphQLErrors }) => {
+  onError: ({ graphQLErrors }): void => {
     if (graphQLErrors?.[0].message === 'access_denied') {
       return Auth.logout();
     }
@@ -25,7 +25,7 @@ const client = new ApolloClient({
 });
 
 interface Props {
-  children: React.ReactChildren;
+  children: React.ReactElement;
 }
 
 const Component: FC = ({ children }: Props): React.ReactElement => {

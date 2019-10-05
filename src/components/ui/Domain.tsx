@@ -10,7 +10,7 @@ const Domain = styled(Link)`
   text-align: center;
 `;
 
-function Component(props) {
+function Component(props): React.ReactElement {
   return (
     <Domain {...props} to="/">
       TABLE.AZ

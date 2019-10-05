@@ -6,6 +6,10 @@ module.exports = {
 
   entry: './src/index.tsx',
 
+  output: {
+    publicPath: '/',
+  },
+
   devtool: 'source-map',
 
   resolve: {
@@ -36,6 +40,11 @@ module.exports = {
         test: /\.tsx?$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
+      },
+      {
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        loader: 'graphql-tag/loader',
       },
       {
         test: /\.(svg|jpe?g|png|gif|webp)$/,

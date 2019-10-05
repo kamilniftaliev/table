@@ -6,7 +6,7 @@ import { useQuery } from 'react-apollo';
 import { Domain } from '../ui';
 
 import { translation, Auth } from '../../utils';
-import { USER } from '../../queries';
+import graph from '../../graph';
 
 const Container = styled.header`
   display: flex;
@@ -68,8 +68,8 @@ const MenuItem = styled(NavLink)`
   }
 `;
 
-function Header() {
-  const { data, loading } = useQuery(USER.GET);
+function Header(): React.ReactElement {
+  const { data, loading } = useQuery(graph.GetUser);
 
   if (loading) return null;
 
@@ -80,10 +80,9 @@ function Header() {
         <MenuItem to="/" exact>
           {translation('tables')}
         </MenuItem>
-        <MenuItem to="/teachers">{translation('teachers')}</MenuItem>
       </Menu>
       <UserInfo>
-        <Username>{data.user?.name}</Username>
+        <Username>{data?.user?.name}</Username>
         <Logout onClick={Auth.logout}>{translation('logout')}</Logout>
       </UserInfo>
     </Container>

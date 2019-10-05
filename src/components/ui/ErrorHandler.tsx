@@ -32,10 +32,14 @@ interface InitState {
   hasError?: boolean;
 }
 
-class ErrorHandler extends Component<React.ReactElement> {
+interface Props {
+  children: React.ReactElement;
+}
+
+class ErrorHandler extends Component<Props> {
   state: InitState = {};
 
-  componentDidCatch(error, errorInfo): void {
+  componentDidCatch(): void {
     // console.log('error :', error);
     // console.log('errorInfo :', errorInfo);
     this.setState({ hasError: true });

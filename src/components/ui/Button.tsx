@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const getButtonColor = ({ color }) => {
+const getButtonColor = ({ color }): string => {
   switch (color) {
     case 'green':
       return '#30be4f';
@@ -29,22 +29,12 @@ function Component(props: React.ButtonHTMLAttributes<{}>): React.ReactElement {
   return <Element {...props} />;
 }
 
-// const IconButton = styled.button`
-//   display: inline-block;
-//   border-radius: 3px;
-//   padding: 5px;
-//   border: none;
-//   background-color: rgba(0, 0, 0, 0.1);
-//   cursor: pointer;
-//   // box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-// `;
-
 export const Icon = styled.img.attrs(() => ({
   alt: 'Icon',
 }))`
-  width: 24px;
+  width: 22px;
   margin-left: 10px;
-  opacity: 0.6;
+  opacity: 0.5;
 `;
 
 const Button = React.memo(Component);

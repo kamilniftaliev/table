@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../ui';
+import Button from "./Button";
 
 import CloseIcon from '../../images/icons/close.svg';
-import { translation } from '../../utils';
+import { translation, dom } from '../../utils';
 
 const Overlay = styled.div`
   display: flex;
@@ -34,7 +34,7 @@ const ButtonsContainer = styled.div`
   margin-bottom: 10px;
 `;
 
-const buttons = {
+const theme = {
   white: {
     color: '#555',
     backgroundColor: '#fff',
@@ -52,11 +52,11 @@ const buttons = {
   },
 };
 
-const ModalButton = styled(({ color, ...rest }) => <Button.default {...rest} />)`
-  color: ${({ color = 'red' }) => buttons[color].color};
-  background-color: ${({ color = 'red' }) => buttons[color].backgroundColor};
+const ModalButton = styled(props => <Button {...dom.getTagProps(props)} />)`
+  color: ${({ color = 'red' }): string => theme[color].color};
+  background-color: ${({ color = 'red' }): string => theme[color].backgroundColor};
   margin-left: 15px;
-  border: 1px solid ${({ color = 'red' }) => buttons[color].borderColor};
+  border: 1px solid ${({ color = 'red' }): string => theme[color].borderColor};
 
   font-weight: 500;
   min-width: 100px;
@@ -88,12 +88,12 @@ interface ButtonProps {
   color?: string;
   type?: string;
   text: string;
-  onClick: () => {};
+  onClick: (e: Event) => {};
 }
 
 interface ModalProps {
   children?: JSX.Element[] | JSX.Element;
-  onClose: () => {};
+  onClose: () => void
   buttons?: ButtonProps[];
 }
 
@@ -106,8 +106,8 @@ export default function Modal({
   children,
   onClose,
   buttons,
-}: ModalProps) {
-  function onOverlayClick(e) {
+}: ModalProps): React.ReactElement {
+  function onOverlayClick(e): void {
     if (e.target === e.currentTarget) onClose();
   }
 
@@ -118,11 +118,9 @@ export default function Modal({
         {children}
         {buttons?.length && (
           <ButtonsContainer>
-            {buttons.map(({ onClick, text, color, ...props }, index) => (
+            {buttons.map(({ text, ...props }) => (
               <ModalButton
-                key={`${index}`}
-                color={color}
-                onClick={onClick}
+                key={text}
                 {...props}
               >
                 {text}
@@ -135,7 +133,7 @@ export default function Modal({
   );
 }
 
-export function Confirm({ text, onClose, onConfirm }: ConfirmProps) {
+export function Confirm({ text, onClose, onConfirm }: ConfirmProps): React.ReactElement {
   return (
     <Modal
       onClose={onClose}

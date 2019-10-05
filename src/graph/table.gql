@@ -1,0 +1,31 @@
+mutation CreateTable($title: String!, $slug: String!) {
+  createTable(title: $title, slug: $slug) {
+    id
+    slug
+    title
+    created
+    lastModified
+  }
+}
+
+mutation UpdateTable($title: String!, $slug: String!, $id: ID!) {
+  updateTable(title: $title, slug: $slug, id: $id) {
+    id
+    slug
+    title
+    created
+    lastModified
+  }
+}
+
+mutation DeleteTable($id: ID!) {
+  deleteTable(id: $id) {
+    id
+  }
+}
+
+mutation DuplicateTable($id: ID!) {
+  duplicateTable(id: $id) {
+    id
+  }
+}

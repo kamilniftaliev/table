@@ -8,12 +8,14 @@ module.exports = {
   ],
   plugins: ['@typescript-eslint', 'react-hooks', 'prettier'],
   parserOptions: {
-    ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
+    ecmaVersion: 2019, // Allows for the parsing of modern ECMAScript features
     sourceType: 'module', // Allows for the use of imports
     ecmaFeatures: {
       jsx: true, // Allows for the parsing of JSX
     },
-    // project: 'tsconfig.json',
+    babelOptions: {
+      configFile: "./.babelrc",
+    },
   },
   env: {
     browser: true,
@@ -22,7 +24,7 @@ module.exports = {
   rules: {
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
-    'prettier/prettier': 'error',
+    'prettier/prettier': 'off',
     'react/jsx-filename-extension': [
       2,
       { extensions: ['.js', '.jsx', '.ts', '.tsx'] },

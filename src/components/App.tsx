@@ -32,11 +32,11 @@ const App: FC = (): JSX.Element => {
       <Router>
         <ErrorHandler>
           <Container>
-            <Suspense fallback={<Preloader />}>
+            <Suspense fallback={<Preloader isCentered />}>
               {isAuth && <Header />}
               <Switch>
                 <Route path="/" exact component={isAuth ? Tables : Auth} />
-                <Route path="/table/:slug" component={Table} />
+                <Route path="/cedvel/:slug" component={Table} />
               </Switch>
             </Suspense>
           </Container>

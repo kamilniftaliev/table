@@ -1,5 +1,5 @@
 export default {
-  loginTitle: 'Расписания уроков никогда еще так легко не создавались !',
+  signInTitle: 'Расписания никогда еще так легко не создавались !',
   username: 'Имя пользователя',
   password: 'Пароль',
   signIn: 'Войти',
@@ -10,13 +10,16 @@ export default {
   teachers: 'Учителя',
 
   tableName: 'Название таблицы',
-  lastEdited: 'Последняя правка',
+  lastModified: 'Последняя правка',
   created: 'Создано',
   addNewTable: 'Создать новую таблицу',
-  pleaseConfirmDelete: tableTitle => `Вы уверены что хотите удалить таблицу "${tableTitle}"?`,
+  pleaseConfirmDelete: (tableTitle): string =>
+    `Вы уверены что хотите удалить таблицу "${tableTitle}"?`,
   no: 'Нет',
   yes: 'Да',
   create: 'Создать',
+  edit: 'Изменить',
   exampleTablePlaceholder: 'Пример: "Расписание уроков"',
   newTableTitle: 'Название новой таблицы',
+  editTableTitle: 'Новое название таблицы',
 };

@@ -1,6 +1,4 @@
-import {
-  createGlobalStyle,
-} from 'styled-components';
+import { createGlobalStyle } from 'styled-components';
 
 export const global = createGlobalStyle`
   a,
@@ -54,3 +52,5 @@ export const global = createGlobalStyle`
     text-decoration: none;
   }
 `;
+
+export default global;

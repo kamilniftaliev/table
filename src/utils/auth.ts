@@ -1,4 +1,6 @@
-export function logout() {
+export function logout(): void {
   localStorage.removeItem('token');
-  location.href = "/";
+  window.location.href = '/';
 }
+
+export default logout;

@@ -3,13 +3,15 @@ import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
 import { Link } from 'react-router-dom'
 
-import { Preloader, Button, Modal, Input } from '../ui';
+import TitleModal, { TableProps } from './TitleModal';
+import { Preloader, Button, Modal } from '../ui';
 
 import { translation } from '../../utils';
-import { USER, TABLE } from '../../queries';
+import graph from '../../graph';
 
 import TrashCan from '../../images/icons/trash.svg'
 import DuplicateIcon from '../../images/icons/duplicate.svg'
+import EditIcon from '../../images/icons/edit.svg'
 
 const Container = styled.main`
   display: flex;
@@ -46,14 +48,22 @@ const TableRow = styled.tr`
   }
 `
 
-const TableCell = styled.td`
+interface CellProps {
+  alignLeft?: boolean;
+}
+
+const TableCell = styled.td<CellProps>`
   border-bottom: 1px solid #f2f2f2;
 
   &:first-of-type {
     width: 30px;
   }
   
-  ${({ alignLeft }) => alignLeft && 'text-align: left;'}
+  &:last-of-type {
+    padding-right: 10px;
+  }
+  
+  ${({ alignLeft }): string => alignLeft && 'text-align: left;'}
 `
 
 const TableHead = styled(TableCell).attrs(() => ({
@@ -69,6 +79,13 @@ const TableLink = styled(Link)`
   color: #000;
 `
 
+const TableTitleLink = styled(TableLink)`
+  max-width: 280px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+`
+
 const NewTableButton = styled(Button.default).attrs(() => ({
   color: 'green'
 }))`
@@ -76,31 +93,21 @@ const NewTableButton = styled(Button.default).attrs(() => ({
   margin: 100px auto;
 `
 
-const NewTableInputText = styled.p`
-  text-align: center;
-  font-size: 22px;
-  font-weight: 400;
-`
+const refetchQueries = [{ query: graph.GetUser }]
 
-const NewTableInput = styled(Input)`
-  width: 400px;
-`
-
-const refetchQueries = [{ query: USER.GET }]
-
-function Tables() {
-  const [isNewTableModalVisible, setIsNewTableModalVisible] = useState(false)
-  const [newTableTitle, setNewTableTitle] = useState('')
+function Tables(): React.ReactElement {
   const [deletingTable, setDeletingTable] = useState(null)
+  const [editingTable, setEditingTable] = useState<TableProps | string>('')
 
-  const { data: { user }, loading } = useQuery(USER.GET);
-  const [createTableRequest] = useMutation(TABLE.CREATE)
-  const [deleteTableRequest] = useMutation(TABLE.DELETE)
-  const [duplicateTableRequest] = useMutation(TABLE.DUPLICATE)
+  const { data, loading } = useQuery(graph.GetUser);
+  const [deleteTableRequest] = useMutation(graph.DeleteTable)
+  const [duplicateTableRequest] = useMutation(graph.DuplicateTable)
   
   if (loading) return <Preloader />;
 
-  function deleteTable() {
+  const { user } = data
+
+  function deleteTable(): void {
     deleteTableRequest({
       variables: {
         id: deletingTable.id
@@ -111,21 +118,7 @@ function Tables() {
     setDeletingTable(null)
   }
 
-  function createTable(e) {
-    e.preventDefault()
-    if (!newTableTitle) return
-
-    createTableRequest({
-      variables: {
-        title: newTableTitle
-      },
-      refetchQueries
-    })
-    setIsNewTableModalVisible(false)
-    setNewTableTitle('')
-  }
-
-  function duplicateTable(id) {
+  function duplicateTable(id): void {
     duplicateTableRequest({
       variables: { id },
       refetchQueries,
@@ -141,66 +134,56 @@ function Tables() {
             <TableHead alignLeft>{translation('tableName')}</TableHead>
             {/* <TableHead>{translation('classes')}</TableHead> */}
             {/* <TableHead>{translation('teachers')}</TableHead> */}
-            <TableHead>{translation('lastEdited')}</TableHead>
+            <TableHead>{translation('lastModified')}</TableHead>
             <TableHead>{translation('created')}</TableHead>
-            <TableHead></TableHead>
+            <TableHead />
           </tr>
         </TableHeader>
         <TableBody>
-          {user?.tables.map(({ id, slug, title, created, lastEdited }, index) => (
+          {user?.tables.map(({ id, slug, title, created, lastModified }, index) => (
             <TableRow key={id}>
               <TableCell>
-                <TableLink to={`/table/${slug}`}>{index + 1}</TableLink>
+                <TableLink to={`/cedvel/${slug}`}>{index + 1}</TableLink>
               </TableCell>
               <TableCell alignLeft>
-                <TableLink to={`/table/${slug}`}>
+                <TableTitleLink to={`/cedvel/${slug}`}>
                   {title}
+                </TableTitleLink>
+              </TableCell>
+              <TableCell>
+                <TableLink to={`/cedvel/${slug}`}>
+                  {lastModified}
                 </TableLink>
               </TableCell>
               <TableCell>
-                <TableLink to={`/table/${slug}`}>
-                {lastEdited}
-                </TableLink>
-              </TableCell>
-              <TableCell>
-                <TableLink to={`/table/${slug}`}>
+                <TableLink to={`/cedvel/${slug}`}>
                   {created}
                 </TableLink>
               </TableCell>
               <TableCell>
-                <Button.Icon onClick={() => duplicateTable(id)} src={DuplicateIcon} />
-                <Button.Icon onClick={() => setDeletingTable({ id, title })} src={TrashCan} />
+                <Button.Icon onClick={(): void => setEditingTable({ id, title })} src={EditIcon} />
+                <Button.Icon onClick={(): void => duplicateTable(id)} src={DuplicateIcon} />
+                <Button.Icon onClick={(): void => setDeletingTable({ id, title })} src={TrashCan} />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <NewTableButton onClick={() => setIsNewTableModalVisible(true)}>{translation('addNewTable')}</NewTableButton>
+      <NewTableButton onClick={(): void => setEditingTable('new')}>
+        {translation('addNewTable')}
+      </NewTableButton>
       {deletingTable && (
         <Modal.Confirm
           text={translation('pleaseConfirmDelete', deletingTable.title)}
-          onClose={() => void setDeletingTable(null)}
-          onConfirm={() => void deleteTable()}
+          onClose={(): void => setDeletingTable(null)}
+          onConfirm={(): void => deleteTable()}
         />
       )}
-      {isNewTableModalVisible && (
-        <Modal.default
-          onClose={() => void setIsNewTableModalVisible(false)}
-          buttons={[{
-            color: 'green',
-            text: translation('create'),
-            onClick: createTable,
-            type: 'submit',
-          }]}
-        >
-          <NewTableInputText>{translation('newTableTitle')}</NewTableInputText>
-          <NewTableInput
-            onChange={e => setNewTableTitle(e.target.value)}
-            value={newTableTitle}
-            autoFocus
-            placeholder={translation('exampleTablePlaceholder')}
-          />
-        </Modal.default>
+      {editingTable && (
+        <TitleModal
+          table={editingTable}
+          onClose={setEditingTable}
+        />
       )}
     </Container>
   );

@@ -1,5 +1,5 @@
 export default {
-  loginTitle: 'Dərs cədvəli yaratmaq hələ belə asan olmamışdı !',
+  signInTitle: 'Cədvəllər yaratmaq hələ belə asan olmamışdı !',
   username: 'İstifadəçi adı',
   password: 'Şifrə',
   signIn: 'Daxil ol',
@@ -10,13 +10,16 @@ export default {
   teachers: 'Müəllimlər',
 
   tableName: 'Cədvəlin adı',
-  lastEdited: 'Son düzəliş',
+  lastModified: 'Son düzəliş',
   created: 'Yaradılıb',
   addNewTable: 'Yeni cədvəl yarat',
-  pleaseConfirmDelete: tableTitle => `Əminsiz ki, "${tableTitle}" cədvəli silmək istəyirsiz?`,
+  pleaseConfirmDelete: (tableTitle): string =>
+    `Əminsiz ki, "${tableTitle}" cədvəli silmək istəyirsiz?`,
   no: 'Xeyr',
   yes: 'Bəli',
   create: 'Yarat',
+  edit: 'Dəyiş',
   exampleTablePlaceholder: 'Nümunə: "Dərs cədvəli"',
   newTableTitle: 'Yeni cədvəlin adı',
+  editTableTitle: 'Cədvəlin yeni adı',
 };
