@@ -29,3 +29,12 @@ mutation DuplicateTable($id: ID!) {
     id
   }
 }
+
+query GetTable($slug: String!) {
+  table(slug: $slug) {
+    id
+    title
+    created
+    lastModified
+  }
+}
