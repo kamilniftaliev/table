@@ -29,12 +29,13 @@ export const global = createGlobalStyle`
   p,
   span,
   div {
-    cursor: default;
+    cursor: inherit;
   }
   
   body {
     margin: 0;
     background-color: #f5f9fa;
+    cursor: default;
   }
 
   ul {

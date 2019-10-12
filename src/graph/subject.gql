@@ -1,0 +1,39 @@
+mutation CreateSubject($tableId: ID!, $title: String!, $isDivisible: Boolean!) {
+  createSubject(title: $title, isDivisible: $isDivisible, tableId: $tableId) {
+    id
+    isDivisible
+    title
+  }
+}
+
+mutation UpdateSubject(
+  $tableId: ID!
+  $title: String!
+  $isDivisible: Boolean!
+  $id: ID!
+) {
+  updateSubject(
+    title: $title
+    isDivisible: $isDivisible
+    id: $id
+    tableId: $tableId
+  ) {
+    id
+    title
+    isDivisible
+  }
+}
+
+mutation DeleteSubject($id: ID!, $tableId: ID!) {
+  deleteSubject(id: $id, tableId: $tableId) {
+    id
+  }
+}
+
+query GetSubjects($tableId: ID!) {
+  subjects(tableId: $tableId) {
+    id
+    title
+    isDivisible
+  }
+}

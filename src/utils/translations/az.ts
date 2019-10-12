@@ -7,7 +7,10 @@ export default {
   logout: 'Çıxış',
 
   tables: 'Cədvəllər',
+  table: 'Cədvəl',
   teachers: 'Müəllimlər',
+  classes: 'Sinflər',
+  subjects: 'Fənnlər',
 
   tableName: 'Cədvəlin adı',
   lastModified: 'Son düzəliş',
@@ -22,4 +25,16 @@ export default {
   exampleTablePlaceholder: 'Nümunə: "Dərs cədvəli"',
   newTableTitle: 'Yeni cədvəlin adı',
   editTableTitle: 'Cədvəlin yeni adı',
+
+  addNewSubject: 'Yeni fənn yarat',
+  newSubject: 'Yeni fənn',
+  exampleSubjectPlaceholder: 'Nümunə: "Riyaziyyat"',
+  isDivisibleByGroups: 'Qruplara bölünür',
+  subjectTitle: 'Fənnin Adı',
+  actions: 'Əməliyyatlar',
+  
+  addNewClass: 'Yeni sinif yarat',
+  newClass: 'Yeni sinif',
+  exampleClassPlaceholder: 'Nümunə: "9a"',
+  classTitle: 'Sinfin Adı',
 };

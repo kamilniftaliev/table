@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { NavLink } from 'react-router-dom';
+// import { NavLink } from 'react-router-dom';
 import { useQuery } from 'react-apollo';
 
 import { Domain } from '../ui';
@@ -40,33 +40,33 @@ const Logout = styled.span`
   cursor: pointer;
 `;
 
-const Menu = styled.nav`
-  display: flex;
-`;
+// const Menu = styled.nav`
+//   display: flex;
+// `;
 
-const menuItemLineHeight = 8;
+// const menuItemLineHeight = 8;
 
-const MenuItem = styled(NavLink)`
-  position: relative;
-  padding: 15px;
-  color: #2a3646;
-  font-weight: 500;
-  font-size: 18px;
+// const MenuItem = styled(NavLink)`
+//   position: relative;
+//   padding: 15px;
+//   color: #2a3646;
+//   font-weight: 500;
+//   font-size: 18px;
 
-  &.active {
-    &:before {
-      display: block;
-      width: 100%;
-      content: '';
-      height: ${menuItemLineHeight}px;
-      border-radius: ${menuItemLineHeight / 2}px;
-      position: absolute;
-      bottom: -${menuItemLineHeight / 2}px;
-      left: 0;
-      background-color: #0b75d7;
-    }
-  }
-`;
+//   &.active {
+//     &:before {
+//       display: block;
+//       width: 100%;
+//       content: '';
+//       height: ${menuItemLineHeight}px;
+//       border-radius: ${menuItemLineHeight / 2}px;
+//       position: absolute;
+//       bottom: -${menuItemLineHeight / 2}px;
+//       left: 0;
+//       background-color: #0b75d7;
+//     }
+//   }
+// `;
 
 function Header(): React.ReactElement {
   const { data, loading } = useQuery(graph.GetUser);
@@ -76,11 +76,11 @@ function Header(): React.ReactElement {
   return (
     <Container>
       <Domain />
-      <Menu>
+      {/* <Menu>
         <MenuItem to="/" exact>
           {translation('tables')}
         </MenuItem>
-      </Menu>
+      </Menu> */}
       <UserInfo>
         <Username>{data?.user?.name}</Username>
         <Logout onClick={Auth.logout}>{translation('logout')}</Logout>

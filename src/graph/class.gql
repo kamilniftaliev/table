@@ -1,0 +1,39 @@
+mutation CreateClass($tableId: ID!, $title: String!, $isDivisible: Boolean!) {
+  createClass(title: $title, isDivisible: $isDivisible, tableId: $tableId) {
+    id
+    isDivisible
+    title
+  }
+}
+
+mutation UpdateClass(
+  $tableId: ID!
+  $title: String!
+  $isDivisible: Boolean!
+  $id: ID!
+) {
+  updateClass(
+    title: $title
+    isDivisible: $isDivisible
+    id: $id
+    tableId: $tableId
+  ) {
+    id
+    title
+    isDivisible
+  }
+}
+
+mutation DeleteClass($id: ID!, $tableId: ID!) {
+  deleteClass(id: $id, tableId: $tableId) {
+    id
+  }
+}
+
+query GetClasses($tableId: ID!) {
+  classes(tableId: $tableId) {
+    id
+    title
+    isDivisible
+  }
+}

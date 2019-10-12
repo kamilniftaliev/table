@@ -1,14 +1,61 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-apollo';
+import { NavLink, Route, Switch } from 'react-router-dom';
 
 import graph from '../../graph';
+import { translation } from '../../utils';
+
+import { Content } from '../ui';
+import GeneratedTable from './GeneratedTable';
+import Teachers from './Teachers';
+import Classes from './Classes/Classes';
+import Subjects from './Subjects/Subjects';
 
 interface Props {
   match: { params: { slug: string } };
 }
 
-const Container = styled.main``;
+const Header = styled.header``;
+
+const Tabs = styled.nav`
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #e5e5e5;
+`;
+
+const tabHeight = 2;
+
+const Tab = styled(NavLink)`
+  position: relative;
+  padding: 15px;
+  color: #2a3646;
+  font-weight: 500;
+  font-size: 18px;
+
+  &.active {
+    color: #0b75d7;
+
+    &:before {
+      display: block;
+      width: 100%;
+      content: '';
+      height: ${tabHeight}px;
+      border-radius: ${tabHeight / 2}px;
+      position: absolute;
+      bottom: -${tabHeight / 2}px;
+      left: 0;
+      background-color: #0b75d7;
+    }
+  }
+`;
+
+const Container = styled.section`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
 
 function Table({
   match: {
@@ -21,9 +68,49 @@ function Table({
 
   const { table } = data;
 
-  console.log('table :', table);
+  const mainPath = `/cedvel/${slug}`;
+  const teachersPath = `${mainPath}/muellimler`;
+  const classesPath = `${mainPath}/sinfler`;
+  const subjectsPath = `${mainPath}/fennler`;
 
-  return <Container>AAAA</Container>;
+  return (
+    <Content>
+      <Header>
+        <Tabs>
+          <Tab to={mainPath} exact>
+            {translation('table')}
+          </Tab>
+          <Tab to={teachersPath}>{translation('teachers')}</Tab>
+          <Tab to={classesPath}>{translation('classes')}</Tab>
+          <Tab to={subjectsPath}>{translation('subjects')}</Tab>
+        </Tabs>
+      </Header>
+      <Container>
+        <Switch>
+          <Route
+            path={mainPath}
+            exact
+            component={() => <GeneratedTable {...table} />}
+          />
+          <Route
+            path={teachersPath}
+            exact
+            component={() => <Teachers {...table} />}
+          />
+          <Route
+            path={classesPath}
+            exact
+            component={() => <Classes {...table} />}
+          />
+          <Route
+            path={subjectsPath}
+            exact
+            component={() => <Subjects {...table} />}
+          />
+        </Switch>
+      </Container>
+    </Content>
+  );
 }
 
 export default React.memo(Table);

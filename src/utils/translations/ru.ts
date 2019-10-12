@@ -7,7 +7,10 @@ export default {
   logout: 'Выход',
 
   tables: 'Таблицы',
+  table: 'Таблица',
   teachers: 'Учителя',
+  classes: 'Классы',
+  subjects: 'Предметы',
 
   tableName: 'Название таблицы',
   lastModified: 'Последняя правка',
@@ -22,4 +25,16 @@ export default {
   exampleTablePlaceholder: 'Пример: "Расписание уроков"',
   newTableTitle: 'Название новой таблицы',
   editTableTitle: 'Новое название таблицы',
+
+  addNewSubject: 'Добавить предмет',
+  newSubject: 'Новый предмет',
+  exampleSubjectPlaceholder: 'Пример: "Математика"',
+  isDivisibleByGroups: 'Делится на группы',
+  subjectTitle: 'Название предмета',
+  actions: 'Действия',
+
+  addNewClass: 'Добавить класс',
+  newClass: 'Новый класс',
+  exampleClassPlaceholder: 'Пример: "9кл"',
+  classTitle: 'Название класса',
 };

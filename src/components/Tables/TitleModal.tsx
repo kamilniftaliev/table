@@ -20,19 +20,19 @@ const refetchQueries = [{ query: graph.GetUser }];
 
 export interface TableProps {
   id: string;
-  title: string;
+  title?: string;
 }
 
 interface Props {
-  table: TableProps | string;
-  onClose: React.Dispatch<React.SetStateAction<string>>;
+  table: TableProps;
+  onClose: React.Dispatch<React.SetStateAction<TableProps | null>>;
 }
 
 export default function TitleModal({
   table,
   onClose,
 }: Props): React.ReactElement {
-  const isNewTable = table === 'new';
+  const isNewTable = table.id === 'new';
   const [title, setTitle] = useState(table.title || '');
   const [createTableRequest] = useMutation(graph.CreateTable);
   const [updateTableRequest] = useMutation(graph.UpdateTable);
@@ -67,12 +67,12 @@ export default function TitleModal({
       });
     }
 
-    onClose('');
+    onClose(null);
   }
 
   return (
     <Modal.default
-      onClose={(): void => onClose('')}
+      onClose={onClose}
       buttons={[
         {
           color: 'green',

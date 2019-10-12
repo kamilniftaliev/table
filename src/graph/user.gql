@@ -11,6 +11,10 @@ query GetUser {
       id
       slug
       created
+      subjectsCount
+      subjects {
+        id
+      }
       lastModified
       title
     }

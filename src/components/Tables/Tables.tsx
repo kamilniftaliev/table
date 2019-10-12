@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
-import { Link } from 'react-router-dom'
 
 import TitleModal, { TableProps } from './TitleModal';
-import { Preloader, Button, Modal } from '../ui';
+import { Preloader, Button, Modal, Content, Table } from '../ui';
 
 import { translation } from '../../utils';
 import graph from '../../graph';
@@ -13,91 +12,18 @@ import TrashCan from '../../images/icons/trash.svg'
 import DuplicateIcon from '../../images/icons/duplicate.svg'
 import EditIcon from '../../images/icons/edit.svg'
 
-const Container = styled.main`
-  display: flex;
-  flex-direction: column;
-  min-height: 500px;
-  width: 100%;
-  background-color: #fff;
-  border-radius: 3px;
-  box-shadow: 0 2px 5px rgba(0,0,0,.1);
-`;
-
-const Table = styled.table`
-  width: 100%;
-  text-align: center;
-  border-spacing: 0;
-`
-
-const TableHeader = styled.thead`
-  
-`
-
-const TableBody = styled.tbody`
-
-`
-
-const TableRow = styled.tr`
-  &:hover {
-    background-color: rgba(0,0,0,.02);
-    cursor: pointer;
-  }
-
-  &:last-of-type td {
-    border: none;
-  }
-`
-
-interface CellProps {
-  alignLeft?: boolean;
-}
-
-const TableCell = styled.td<CellProps>`
-  border-bottom: 1px solid #f2f2f2;
-
-  &:first-of-type {
-    width: 30px;
-  }
-  
-  &:last-of-type {
-    padding-right: 10px;
-  }
-  
-  ${({ alignLeft }): string => alignLeft && 'text-align: left;'}
-`
-
-const TableHead = styled(TableCell).attrs(() => ({
-  as: 'th',
-}))`
-  padding: 15px;
-  font-weight: 500;
-`
-
-const TableLink = styled(Link)`
-  display: block;
-  padding: 15px;
-  color: #000;
-`
-
-const TableTitleLink = styled(TableLink)`
+const TitleCell = styled(Table.Cell)`
   max-width: 280px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 `
 
-const NewTableButton = styled(Button.default).attrs(() => ({
-  color: 'green'
-}))`
-  display: block;
-  margin: 100px auto;
-`
-
 const refetchQueries = [{ query: graph.GetUser }]
 
 function Tables(): React.ReactElement {
   const [deletingTable, setDeletingTable] = useState(null)
-  const [editingTable, setEditingTable] = useState<TableProps | string>('')
+  const [editingTable, setEditingTable] = useState<TableProps>(null)
 
   const { data, loading } = useQuery(graph.GetUser);
   const [deleteTableRequest] = useMutation(graph.DeleteTable)
@@ -126,52 +52,43 @@ function Tables(): React.ReactElement {
   }
 
   return (
-    <Container>
-      <Table>
-        <TableHeader>
+    <Content>
+      <Table.default>
+        <Table.Header>
           <tr>
-            <TableHead>№</TableHead>
-            <TableHead alignLeft>{translation('tableName')}</TableHead>
-            {/* <TableHead>{translation('classes')}</TableHead> */}
-            {/* <TableHead>{translation('teachers')}</TableHead> */}
-            <TableHead>{translation('lastModified')}</TableHead>
-            <TableHead>{translation('created')}</TableHead>
-            <TableHead />
+            <Table.Head>№</Table.Head>
+            <Table.Head align="left">{translation('tableName')}</Table.Head>
+            {/* <Table.Head>{translation('classes')}</Table.Head> */}
+            {/* <Table.Head>{translation('teachers')}</Table.Head> */}
+            <Table.Head>{translation('subjects')}</Table.Head>
+            <Table.Head>{translation('lastModified')}</Table.Head>
+            <Table.Head>{translation('created')}</Table.Head>
+            <Table.Head>{translation('actions')}</Table.Head>
           </tr>
-        </TableHeader>
-        <TableBody>
-          {user?.tables.map(({ id, slug, title, created, lastModified }, index) => (
-            <TableRow key={id}>
-              <TableCell>
-                <TableLink to={`/cedvel/${slug}`}>{index + 1}</TableLink>
-              </TableCell>
-              <TableCell alignLeft>
-                <TableTitleLink to={`/cedvel/${slug}`}>
-                  {title}
-                </TableTitleLink>
-              </TableCell>
-              <TableCell>
-                <TableLink to={`/cedvel/${slug}`}>
-                  {lastModified}
-                </TableLink>
-              </TableCell>
-              <TableCell>
-                <TableLink to={`/cedvel/${slug}`}>
-                  {created}
-                </TableLink>
-              </TableCell>
-              <TableCell>
-                <Button.Icon onClick={(): void => setEditingTable({ id, title })} src={EditIcon} />
-                <Button.Icon onClick={(): void => duplicateTable(id)} src={DuplicateIcon} />
-                <Button.Icon onClick={(): void => setDeletingTable({ id, title })} src={TrashCan} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <NewTableButton onClick={(): void => setEditingTable('new')}>
+        </Table.Header>
+        <Table.Body>
+          {user?.tables.map(({ id, slug, title, created, subjectsCount, lastModified }, index) => {
+            const link = `/cedvel/${slug}`
+            return (
+              <Table.Row key={id}>
+                <Table.Cell link={link}>{index + 1}</Table.Cell>
+                <TitleCell link={link} align="left">{title}</TitleCell>
+                <Table.Cell link={link}>{subjectsCount}</Table.Cell>
+                <Table.Cell link={link}>{lastModified}</Table.Cell>
+                <Table.Cell link={link}>{created}</Table.Cell>
+                <Table.Cell>
+                  <Button.Icon onClick={(): void => setEditingTable({ id, title })} src={EditIcon} />
+                  <Button.Icon onClick={(): void => duplicateTable(id)} src={DuplicateIcon} />
+                  <Button.Icon onClick={(): void => setDeletingTable({ id, title })} src={TrashCan} />
+                </Table.Cell>
+              </Table.Row>
+            )
+          })}
+        </Table.Body>
+      </Table.default>
+      <Button.Add onClick={(): void => setEditingTable({ id: 'new' })}>
         {translation('addNewTable')}
-      </NewTableButton>
+      </Button.Add>
       {deletingTable && (
         <Modal.Confirm
           text={translation('pleaseConfirmDelete', deletingTable.title)}
@@ -185,7 +102,7 @@ function Tables(): React.ReactElement {
           onClose={setEditingTable}
         />
       )}
-    </Container>
+    </Content>
   );
 }
 

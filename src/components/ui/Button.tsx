@@ -37,6 +37,13 @@ export const Icon = styled.img.attrs(() => ({
   opacity: 0.5;
 `;
 
+export const Add = styled(Component).attrs(() => ({
+  color: 'green',
+}))`
+  display: block;
+  margin: 100px auto;
+`;
+
 const Button = React.memo(Component);
 
 export default Button;

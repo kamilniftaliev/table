@@ -88,7 +88,7 @@ interface ButtonProps {
   color?: string;
   type?: string;
   text: string;
-  onClick: (e: Event) => {};
+  onClick: (e: React.MouseEvent) => void;
 }
 
 interface ModalProps {
@@ -99,7 +99,7 @@ interface ModalProps {
 
 interface ConfirmProps extends ModalProps {
   text: string;
-  onConfirm: () => {}
+  onConfirm: () => void
 }
 
 export default function Modal({
@@ -108,7 +108,7 @@ export default function Modal({
   buttons,
 }: ModalProps): React.ReactElement {
   function onOverlayClick(e): void {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget) onClose(null);
   }
 
   return (
