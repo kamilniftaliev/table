@@ -5,6 +5,7 @@ import Preloader from './Preloader';
 import Domain from './Domain';
 import Content from './Content';
 import Checkbox from './Checkbox';
+import Selector from './Selector';
 import * as Modal from './Modal';
 import * as Table from './Table';
 import * as Messages from './Messages';
@@ -22,4 +23,5 @@ export {
   Content,
   Table,
   Checkbox,
+  Selector,
 };

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
-// import { NavLink } from 'react-router-dom';
 
 import graph from '../../../graph';
 import { translation } from '../../../utils';
 
-import ClassModal, { ClassProps } from './ClassModal';
-import { Table, Button, Modal } from '../../ui';
+import EditModal, { ClassProps } from './EditModal';
+import { TableRow } from '../Subjects/Subjects';
+import { Table, Button, Modal, Preloader } from '../../ui';
 
 import TrashCan from '../../../images/icons/trash.svg'
 import EditIcon from '../../../images/icons/edit.svg'
@@ -18,10 +18,6 @@ interface Props {
   classes: any;
 }
 
-const TableRow = styled(Table.Row)`
-  cursor: pointer;
-`;
-
 function Classes(table: Props): React.ReactElement {
   const { id: tableId } = table;
   const [editingClass, setEditingClass] = useState<ClassProps>(null)
@@ -30,7 +26,7 @@ function Classes(table: Props): React.ReactElement {
   const { data, loading } = useQuery(graph.GetClasses, { variables: { tableId } });
   const [deleteClassRequest] = useMutation(graph.DeleteClass)
 
-  if (loading) return 'Loading...'
+  if (loading) return <Preloader isCentered />
 
   function deleteClass(): void {
     deleteClassRequest({
@@ -38,7 +34,10 @@ function Classes(table: Props): React.ReactElement {
         id: deletingClass.id,
         tableId,
       },
-      refetchQueries: [{ query: graph.GetClasses, variables: { tableId } }],
+      refetchQueries: [
+        { query: graph.GetClasses, variables: { tableId } },
+        { query: graph.GetUser },
+      ],
     })    
 
     setDeletingClass(null)
@@ -85,14 +84,14 @@ function Classes(table: Props): React.ReactElement {
 
       {deletingClass && (
         <Modal.Confirm
-          text={translation('pleaseConfirmDelete', deletingClass.title)}
+          text={translation('pleaseConfirmClassDelete', deletingClass.title)}
           onClose={(): void => setDeletingClass(null)}
           onConfirm={(): void => deleteClass()}
         />
       )}
 
       {editingClass && (
-        <ClassModal
+        <EditModal
           tableId={tableId}
           class={editingClass}
           onClose={setEditingClass}

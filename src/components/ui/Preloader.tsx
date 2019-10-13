@@ -2,20 +2,30 @@ import React from 'react';
 import styled from 'styled-components';
 
 import Icon from '../../images/icons/spinner.svg';
-import { dom } from '../../utils';
 
 import DefaultDomain from './Domain';
 
 interface ContainerProps {
-  fullHeight: boolean;
+  isCentered: boolean;
 }
 
-const Container = styled(props => <div {...dom.getTagProps(props)} />)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  ${({ fullHeight }: ContainerProps): string => fullHeight && 'height: 85vh;'}
+const Container = styled.div<ContainerProps>`
+  ${({ isCentered }): string =>
+    isCentered &&
+    `
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 300px;
+    height: 300px;
+  `}
 `;
 
 const Domain = styled(DefaultDomain)`
@@ -26,23 +36,20 @@ const Spinner = styled.img.attrs(() => ({
   src: Icon,
   alt: 'Yüklənir...',
 }))`
-  width: 150px;
+  width: 50%;
   margin-bottom: -50px;
 `;
 
 interface Props {
-  withoutDomain?: boolean;
+  withDomain?: boolean;
   isCentered?: boolean;
 }
 
-const Preloader = ({
-  withoutDomain,
-  isCentered,
-}: Props): React.ReactElement => {
+const Preloader = ({ withDomain, isCentered }: Props): React.ReactElement => {
   return (
-    <Container fullHeight={isCentered}>
+    <Container isCentered={isCentered}>
       <Spinner />
-      {!withoutDomain && <Domain />}
+      {withDomain && <Domain />}
     </Container>
   );
 };

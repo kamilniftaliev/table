@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
 
-import TitleModal, { TableProps } from './TitleModal';
+import EditModal, { TableProps } from './EditModal';
 import { Preloader, Button, Modal, Content, Table } from '../ui';
 
 import { translation } from '../../utils';
@@ -29,7 +29,7 @@ function Tables(): React.ReactElement {
   const [deleteTableRequest] = useMutation(graph.DeleteTable)
   const [duplicateTableRequest] = useMutation(graph.DuplicateTable)
   
-  if (loading) return <Preloader />;
+  if (loading) return <Preloader isCentered />;
 
   const { user } = data
 
@@ -58,8 +58,8 @@ function Tables(): React.ReactElement {
           <tr>
             <Table.Head>№</Table.Head>
             <Table.Head align="left">{translation('tableName')}</Table.Head>
-            {/* <Table.Head>{translation('classes')}</Table.Head> */}
-            {/* <Table.Head>{translation('teachers')}</Table.Head> */}
+            <Table.Head>{translation('classes')}</Table.Head>
+            <Table.Head>{translation('teachers')}</Table.Head>
             <Table.Head>{translation('subjects')}</Table.Head>
             <Table.Head>{translation('lastModified')}</Table.Head>
             <Table.Head>{translation('created')}</Table.Head>
@@ -67,12 +67,14 @@ function Tables(): React.ReactElement {
           </tr>
         </Table.Header>
         <Table.Body>
-          {user?.tables.map(({ id, slug, title, created, subjectsCount, lastModified }, index) => {
+          {user?.tables.map(({ id, slug, title, created, subjectsCount, teachersCount, classesCount, lastModified }, index: number) => {
             const link = `/cedvel/${slug}`
             return (
               <Table.Row key={id}>
                 <Table.Cell link={link}>{index + 1}</Table.Cell>
                 <TitleCell link={link} align="left">{title}</TitleCell>
+                <Table.Cell link={link}>{classesCount}</Table.Cell>
+                <Table.Cell link={link}>{teachersCount}</Table.Cell>
                 <Table.Cell link={link}>{subjectsCount}</Table.Cell>
                 <Table.Cell link={link}>{lastModified}</Table.Cell>
                 <Table.Cell link={link}>{created}</Table.Cell>
@@ -91,13 +93,13 @@ function Tables(): React.ReactElement {
       </Button.Add>
       {deletingTable && (
         <Modal.Confirm
-          text={translation('pleaseConfirmDelete', deletingTable.title)}
+          text={translation('pleaseConfirmTableDelete', deletingTable.title)}
           onClose={(): void => setDeletingTable(null)}
           onConfirm={(): void => deleteTable()}
         />
       )}
       {editingTable && (
-        <TitleModal
+        <EditModal
           table={editingTable}
           onClose={setEditingTable}
         />

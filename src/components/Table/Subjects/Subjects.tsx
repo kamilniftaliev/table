@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
-// import { NavLink } from 'react-router-dom';
 
 import graph from '../../../graph';
 import { translation } from '../../../utils';
 
-import SubjectModal, { SubjectProps } from './SubjectModal';
-import { Table, Button, Modal } from '../../ui';
+import EditModal, { SubjectProps } from './EditModal';
+import { Table, Button, Modal, Preloader } from '../../ui';
 
 import TrashCan from '../../../images/icons/trash.svg'
 import EditIcon from '../../../images/icons/edit.svg'
@@ -18,7 +17,7 @@ interface Props {
   subjects: any;
 }
 
-const TableRow = styled(Table.Row)`
+export const TableRow = styled(Table.Row)`
   cursor: pointer;
 `;
 
@@ -30,7 +29,7 @@ function Subjects(table: Props): React.ReactElement {
   const { data, loading } = useQuery(graph.GetSubjects, { variables: { tableId } });
   const [deleteSubjectRequest] = useMutation(graph.DeleteSubject)
 
-  if (loading) return 'Loading...'
+  if (loading) return <Preloader isCentered />
 
   function deleteSubject(): void {
     deleteSubjectRequest({
@@ -38,7 +37,10 @@ function Subjects(table: Props): React.ReactElement {
         id: deletingSubject.id,
         tableId,
       },
-      refetchQueries: [{ query: graph.GetSubjects, variables: { tableId } }],
+      refetchQueries: [
+        { query: graph.GetSubjects, variables: { tableId } },
+        { query: graph.GetUser },
+      ],
     })    
 
     setDeletingSubject(null)
@@ -86,14 +88,14 @@ function Subjects(table: Props): React.ReactElement {
 
       {deletingSubject && (
         <Modal.Confirm
-          text={translation('pleaseConfirmDelete', deletingSubject.title)}
+          text={translation('pleaseConfirmSubjectDelete', deletingSubject.title)}
           onClose={(): void => setDeletingSubject(null)}
           onConfirm={(): void => deleteSubject()}
         />
       )}
 
       {editingSubject && (
-        <SubjectModal
+        <EditModal
           tableId={tableId}
           subject={editingSubject}
           onClose={setEditingSubject}

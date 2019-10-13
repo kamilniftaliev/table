@@ -22,6 +22,8 @@ export default {
   yes: 'Да',
   create: 'Создать',
   edit: 'Изменить',
+  actions: 'Действия',
+
   exampleTablePlaceholder: 'Пример: "Расписание уроков"',
   newTableTitle: 'Название новой таблицы',
   editTableTitle: 'Новое название таблицы',
@@ -31,10 +33,17 @@ export default {
   exampleSubjectPlaceholder: 'Пример: "Математика"',
   isDivisibleByGroups: 'Делится на группы',
   subjectTitle: 'Название предмета',
-  actions: 'Действия',
+
+  addNewTeacher: 'Добавить нового учителя',
+  newTeacher: 'Новый учитель',
+  exampleTeacherPlaceholder: 'Пример: "Камиль Нифталиев"',
+  teacherName: 'Имя учителя',
 
   addNewClass: 'Добавить класс',
   newClass: 'Новый класс',
   exampleClassPlaceholder: 'Пример: "9кл"',
   classTitle: 'Название класса',
+
+  workloadTitle: 'Часы',
+  hour: 'часов',
 };

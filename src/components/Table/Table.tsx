@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-apollo';
 import { NavLink, Route, Switch } from 'react-router-dom';
@@ -6,11 +6,26 @@ import { NavLink, Route, Switch } from 'react-router-dom';
 import graph from '../../graph';
 import { translation } from '../../utils';
 
-import { Content } from '../ui';
-import GeneratedTable from './GeneratedTable';
-import Teachers from './Teachers';
-import Classes from './Classes/Classes';
-import Subjects from './Subjects/Subjects';
+import { Content, Preloader } from '../ui';
+const GeneratedTable = lazy(() =>
+  import(/* webpackChunkName: "generated-table" */ './GeneratedTable'),
+);
+const Teachers = lazy(() =>
+  import(/* webpackChunkName: "teachers" */ './Teachers/Teachers'),
+);
+// import Teachers from './Teachers/Teachers';
+const Teacher = lazy(() =>
+  import(/* webpackChunkName: "teacher" */ './Teachers/Teacher'),
+);
+// import Teacher from './Teachers/Teacher';
+const Classes = lazy(() =>
+  import(/* webpackChunkName: "classes" */ './Classes/Classes'),
+);
+// import Classes from './Classes/Classes';
+const Subjects = lazy(() =>
+  import(/* webpackChunkName: "subjects" */ './Subjects/Subjects'),
+);
+// import Subjects from './Subjects/Subjects';
 
 interface Props {
   match: { params: { slug: string } };
@@ -64,10 +79,9 @@ function Table({
 }: Props): React.ReactElement {
   const { data, loading } = useQuery(graph.GetTable, { variables: { slug } });
 
-  if (loading) return <>Loading...</>;
+  if (loading) return <Preloader isCentered />;
 
   const { table } = data;
-
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;
   const classesPath = `${mainPath}/sinfler`;
@@ -86,28 +100,48 @@ function Table({
         </Tabs>
       </Header>
       <Container>
-        <Switch>
-          <Route
-            path={mainPath}
-            exact
-            component={() => <GeneratedTable {...table} />}
-          />
-          <Route
-            path={teachersPath}
-            exact
-            component={() => <Teachers {...table} />}
-          />
-          <Route
-            path={classesPath}
-            exact
-            component={() => <Classes {...table} />}
-          />
-          <Route
-            path={subjectsPath}
-            exact
-            component={() => <Subjects {...table} />}
-          />
-        </Switch>
+        <Suspense fallback={<Preloader isCentered />}>
+          <Switch>
+            <Route
+              path={mainPath}
+              exact
+              component={() => <GeneratedTable {...table} />}
+            />
+            <Route
+              path={teachersPath}
+              exact
+              component={() => <Teachers {...table} />}
+            />
+            <Route
+              path={`${teachersPath}/:slug`}
+              exact
+              component={({
+                match: {
+                  params: { slug: teacherSlug },
+                },
+              }) => (
+                <Teacher
+                  tableId={table.id}
+                  slug={teacherSlug}
+                  tableSlug={slug}
+                  teachers={table.teachers}
+                  classes={table.classes}
+                  subjects={table.subjects}
+                />
+              )}
+            />
+            <Route
+              path={classesPath}
+              exact
+              component={() => <Classes {...table} />}
+            />
+            <Route
+              path={subjectsPath}
+              exact
+              component={() => <Subjects {...table} />}
+            />
+          </Switch>
+        </Suspense>
       </Container>
     </Content>
   );

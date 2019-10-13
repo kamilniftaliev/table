@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 import Button from "./Button";
@@ -111,7 +112,7 @@ export default function Modal({
     if (e.target === e.currentTarget) onClose(null);
   }
 
-  return (
+  return createPortal(
     <Overlay onClick={onOverlayClick}>
       <Window>
         <Close onClick={onClose} />
@@ -129,7 +130,8 @@ export default function Modal({
           </ButtonsContainer>
         )}
       </Window>
-    </Overlay>
+    </Overlay>,
+    document.getElementById('modal'),
   );
 }
 

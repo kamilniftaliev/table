@@ -1,0 +1,75 @@
+mutation CreateTeacher($tableId: ID!, $name: String!, $slug: String!) {
+  createTeacher(name: $name, tableId: $tableId, slug: $slug) {
+    id
+    name
+    slug
+  }
+}
+
+mutation UpdateTeacher(
+  $tableId: ID!
+  $name: String!
+  $id: ID!
+  $slug: String!
+) {
+  updateTeacher(name: $name, id: $id, tableId: $tableId, slug: $slug) {
+    id
+    name
+    slug
+  }
+}
+
+mutation DeleteTeacher($id: ID!, $tableId: ID!) {
+  deleteTeacher(id: $id, tableId: $tableId) {
+    id
+  }
+}
+
+mutation UpdateWorkload(
+  $tableId: ID!
+  $teacherId: ID!
+  $subjectId: ID!
+  $classId: ID!
+  $hours: Int!
+  $prevHours: Int!
+) {
+  updateWorkload(
+    tableId: $tableId
+    teacherId: $teacherId
+    subjectId: $subjectId
+    classId: $classId
+    hours: $hours
+    prevHours: $prevHours
+  ) {
+    subjectId
+    classId
+    hours
+  }
+}
+
+query GetTeachers($tableId: ID!) {
+  teachers(tableId: $tableId) {
+    id
+    name
+    workloadAmount
+    workload {
+      subjectId
+      classId
+      hours
+    }
+    slug
+  }
+}
+
+query GetTeacher($tableId: ID!, $slug: String!) {
+  teacher(tableId: $tableId, slug: $slug) {
+    id
+    name
+    workload {
+      subjectId
+      classId
+      hours
+    }
+    slug
+  }
+}

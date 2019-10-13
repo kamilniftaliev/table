@@ -28,12 +28,17 @@ export const Row = styled.tr`
 interface CellProps {
   align?: string;
   link?: string;
+  children: [Element] | Element | string | number;
 }
 
 export const TD = styled.td`
   padding: 0;
   border-bottom: 1px solid #f2f2f2;
 
+  ${({ align }): string => align && `text-align: ${align};`}
+`;
+
+const CellTD = styled(TD)`
   &:first-of-type {
     width: 30px;
   }
@@ -41,8 +46,6 @@ export const TD = styled.td`
   &:last-of-type {
     padding-right: 10px;
   }
-
-  ${({ align }): string => align && `text-align: ${align};`}
 `;
 
 interface TextProps {
@@ -57,11 +60,11 @@ const Text = styled.span<TextProps>`
 
 export const Cell = ({ link, children, ...props }: CellProps) => {
   return (
-    <TD {...props}>
+    <CellTD {...props}>
       <Text as={link ? Link : 'span'} to={link}>
         {children}
       </Text>
-    </TD>
+    </CellTD>
   );
 };
 

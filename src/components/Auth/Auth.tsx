@@ -66,9 +66,6 @@ function Auth(): React.ReactFragment {
         username,
         password,
       },
-      // refetchQueries: [{
-      //   query: graph.GetUser
-      // }]
     });
   }
 

@@ -2,27 +2,15 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from 'react-apollo';
 
-import {
-  Modal,
-  Input as DefaultInput,
-  Checkbox as DefaultCheckbox,
-} from '../../ui';
-import { translation, text } from '../../../utils';
+import { Modal, Checkbox as DefaultCheckbox } from '../../ui';
+import { Input, InputLabel } from '../../Tables/EditModal';
+
+import { translation } from '../../../utils';
 import graph from '../../../graph';
 
-const Checkbox = styled(DefaultCheckbox)`
+export const Checkbox = styled(DefaultCheckbox)`
   display: block;
   margin-top: 20px;
-`;
-
-const InputLabel = styled.p`
-  text-align: center;
-  font-size: 22px;
-  font-weight: 400;
-`;
-
-const Input = styled(DefaultInput)`
-  width: 400px;
 `;
 
 export interface SubjectProps {
@@ -34,14 +22,10 @@ export interface SubjectProps {
 interface Props {
   tableId: string;
   subject: SubjectProps;
-  onClose: React.Dispatch<React.SetStateAction<string>>;
+  onClose: React.Dispatch<React.SetStateAction<SubjectProps>>;
 }
 
-export default function SubjectModal({
-  tableId,
-  subject,
-  onClose,
-}: Props): React.ReactElement {
+function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {
   const isNewSubject = subject.id === 'new';
   const [title, setTitle] = useState<string>(subject.title || '');
   const [isDivisible, setIsDivisible] = useState<boolean>(
@@ -68,7 +52,10 @@ export default function SubjectModal({
     if (isNewSubject) {
       createSubjectRequest({
         variables: { title: saveTitle, isDivisible, tableId },
-        refetchQueries: [{ query: graph.GetSubjects, variables: { tableId } }],
+        refetchQueries: [
+          { query: graph.GetSubjects, variables: { tableId } },
+          { query: graph.GetUser },
+        ],
       });
     } else {
       updateSubjectRequest({
@@ -108,3 +95,5 @@ export default function SubjectModal({
     </Modal.default>
   );
 }
+
+export default React.memo(EditModal);

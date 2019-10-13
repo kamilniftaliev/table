@@ -1,29 +1,12 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { useMutation } from 'react-apollo';
 
-import {
-  Modal,
-  Input as DefaultInput,
-  Checkbox as DefaultCheckbox,
-} from '../../ui';
+import { Modal } from '../../ui';
+import { Input, InputLabel } from '../../Tables/EditModal';
+import { Checkbox } from '../Subjects/EditModal';
+
 import { translation } from '../../../utils';
 import graph from '../../../graph';
-
-const Checkbox = styled(DefaultCheckbox)`
-  display: block;
-  margin-top: 20px;
-`;
-
-const InputLabel = styled.p`
-  text-align: center;
-  font-size: 22px;
-  font-weight: 400;
-`;
-
-const Input = styled(DefaultInput)`
-  width: 400px;
-`;
 
 export interface ClassProps {
   id: string;
@@ -37,7 +20,7 @@ interface Props {
   onClose: React.Dispatch<React.SetStateAction<ClassProps>>;
 }
 
-export default function ClassModal({
+function EditModal({
   tableId,
   class: { id, title: classTitle, isDivisible: classIsDivisible },
   onClose,
@@ -66,7 +49,10 @@ export default function ClassModal({
     if (isNewClass) {
       createClassRequest({
         variables: { title: saveTitle, isDivisible, tableId },
-        refetchQueries: [{ query: graph.GetClasses, variables: { tableId } }],
+        refetchQueries: [
+          { query: graph.GetClasses, variables: { tableId } },
+          { query: graph.GetUser },
+        ],
       });
     } else {
       updateClassRequest({
@@ -106,3 +92,5 @@ export default function ClassModal({
     </Modal.default>
   );
 }
+
+export default React.memo(EditModal);

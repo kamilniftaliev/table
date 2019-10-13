@@ -32,9 +32,9 @@ function Component(props: React.ButtonHTMLAttributes<{}>): React.ReactElement {
 export const Icon = styled.img.attrs(() => ({
   alt: 'Icon',
 }))`
-  width: 22px;
+  width: 20px;
   margin-left: 10px;
-  opacity: 0.5;
+  opacity: 0.4;
 `;
 
 export const Add = styled(Component).attrs(() => ({

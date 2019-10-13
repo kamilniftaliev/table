@@ -20,6 +20,7 @@ const Table = lazy(() =>
 );
 
 export const Container = styled.div`
+  position: relative;
   padding: 80px 20px 20px 20px;
   min-height: 100vh;
 `;
@@ -32,7 +33,7 @@ const App: FC = (): JSX.Element => {
       <Router>
         <ErrorHandler>
           <Container>
-            <Suspense fallback={<Preloader isCentered />}>
+            <Suspense fallback={<Preloader withDomain isCentered />}>
               {isAuth && <Header />}
               <Switch>
                 <Route path="/" exact component={isAuth ? Tables : Auth} />

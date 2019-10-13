@@ -35,6 +35,24 @@ query GetTable($slug: String!) {
     id
     title
     created
+    subjects {
+      id
+      title
+    }
+    classes {
+      id
+      title
+    }
+    teachers {
+      id
+      name
+      slug
+      workload {
+        subjectId
+        classId
+        hours
+      }
+    }
     lastModified
   }
 }

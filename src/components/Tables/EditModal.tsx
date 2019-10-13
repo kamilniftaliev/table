@@ -6,13 +6,13 @@ import { Modal, Input as DefaultInput } from '../ui';
 import { translation, text } from '../../utils';
 import graph from '../../graph';
 
-const InputLabel = styled.p`
+export const InputLabel = styled.p`
   text-align: center;
   font-size: 22px;
   font-weight: 400;
 `;
 
-const Input = styled(DefaultInput)`
+export const Input = styled(DefaultInput)`
   width: 400px;
 `;
 
@@ -21,6 +21,7 @@ const refetchQueries = [{ query: graph.GetUser }];
 export interface TableProps {
   id: string;
   title?: string;
+  slug?: string;
 }
 
 interface Props {
@@ -28,7 +29,7 @@ interface Props {
   onClose: React.Dispatch<React.SetStateAction<TableProps | null>>;
 }
 
-export default function TitleModal({
+export default function EditModal({
   table,
   onClose,
 }: Props): React.ReactElement {
