@@ -47,6 +47,26 @@ mutation UpdateWorkload(
   }
 }
 
+mutation UpdateWorkhour(
+  $tableId: ID!
+  $teacherId: ID!
+  $day: String!
+  $hour: String!
+  $value: Boolean!
+) {
+  updateWorkhour(
+    tableId: $tableId
+    teacherId: $teacherId
+    day: $day
+    hour: $hour
+    value: $value
+  ) {
+    day
+    hour
+    value
+  }
+}
+
 query GetTeachers($tableId: ID!) {
   teachers(tableId: $tableId) {
     id
@@ -57,6 +77,7 @@ query GetTeachers($tableId: ID!) {
       classId
       hours
     }
+    workhours
     slug
   }
 }
@@ -70,6 +91,7 @@ query GetTeacher($tableId: ID!, $slug: String!) {
       classId
       hours
     }
+    workhours
     slug
   }
 }

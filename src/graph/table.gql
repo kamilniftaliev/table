@@ -52,6 +52,7 @@ query GetTable($slug: String!) {
         classId
         hours
       }
+      workhours
     }
     lastModified
   }

@@ -84,6 +84,7 @@ function Table({
   const { table } = data;
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;
+  const teacherPath = `${teachersPath}/:slug`;
   const classesPath = `${mainPath}/sinfler`;
   const subjectsPath = `${mainPath}/fennler`;
 
@@ -113,7 +114,7 @@ function Table({
               component={() => <Teachers {...table} />}
             />
             <Route
-              path={`${teachersPath}/:slug`}
+              path={teacherPath}
               exact
               component={({
                 match: {

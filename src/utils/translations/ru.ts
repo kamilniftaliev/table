@@ -46,4 +46,8 @@ export default {
 
   workloadTitle: 'Часы',
   hour: 'часов',
+
+  workHoursTitle: 'Рабочие часы',
+  lesson: 'Урок',
+  days: 'Дни',
 };
