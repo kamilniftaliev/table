@@ -84,7 +84,7 @@ function Table({
   const { table } = data;
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;
-  const teacherPath = `${teachersPath}/:slug`;
+  const teacherPath = `${teachersPath}/:id`;
   const classesPath = `${mainPath}/sinfler`;
   const subjectsPath = `${mainPath}/fennler`;
 
@@ -118,12 +118,12 @@ function Table({
               exact
               component={({
                 match: {
-                  params: { slug: teacherSlug },
+                  params: { id },
                 },
               }) => (
                 <Teacher
                   tableId={table.id}
-                  slug={teacherSlug}
+                  id={id}
                   tableSlug={slug}
                   teachers={table.teachers}
                   classes={table.classes}

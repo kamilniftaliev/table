@@ -20,6 +20,7 @@ const Container = styled.header`
   background-color: #fff;
   border-bottom: 1px solid #e3e5e9;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  z-index: 1;
 `;
 
 const UserInfo = styled.div`

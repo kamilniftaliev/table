@@ -54,7 +54,9 @@ export default {
   workloadTitle: 'Dərs yükü',
   hour: 'saat',
 
-  workHoursTitle: 'İş saatları',
+  workhoursTitle: 'İş saatları',
   lesson: 'Dərs',
   days: 'Günlər',
+
+  generateTimeTable: 'Cədvəli yenilə',
 };

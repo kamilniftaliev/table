@@ -6,6 +6,7 @@ export default styled.table`
   width: 100%;
   text-align: center;
   border-spacing: 0;
+  border-collapse: collapse;
 `;
 
 export const Header = styled.thead`
@@ -20,9 +21,9 @@ export const Row = styled.tr`
     cursor: pointer;
   }
 
-  &:last-of-type td {
-    border: none;
-  }
+  // &:last-of-type td {
+  //   border: none;
+  // }
 `;
 
 interface CellProps {
@@ -38,7 +39,7 @@ export const TD = styled.td`
   ${({ align }): string => align && `text-align: ${align};`}
 `;
 
-const CellTD = styled(TD)`
+export const CellTD = styled(TD)`
   &:first-of-type {
     width: 30px;
   }

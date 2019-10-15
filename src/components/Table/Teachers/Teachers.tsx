@@ -58,8 +58,8 @@ function Teachers(table: Props): React.ReactElement {
           </Table.Header>
           <Table.Body>
             {teachers.map(
-              ({ id, name, slug, workloadAmount }: TeacherProps, index: number) => {
-                const link = `muellimler/${slug}`
+              ({ id, name, workloadAmount }: TeacherProps, index: number) => {
+                const link = `muellimler/${id}`
                 return (
                   <TableRow key={id}>
                     <Table.Cell link={link}>{index + 1}</Table.Cell>

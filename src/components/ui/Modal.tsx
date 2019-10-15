@@ -9,7 +9,7 @@ import { translation, dom } from '../../utils';
 
 const Overlay = styled.div`
   display: flex;
-  position: absolute;
+  position: fixed;
   left: 0;
   top: 0;
   width: 100%;

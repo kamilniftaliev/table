@@ -47,7 +47,9 @@ export default {
   workloadTitle: 'Часы',
   hour: 'часов',
 
-  workHoursTitle: 'Рабочие часы',
+  workhoursTitle: 'Рабочие часы',
   lesson: 'Урок',
   days: 'Дни',
+
+  generateTimeTable: 'Обновить таблицу',
 };

@@ -8,7 +8,15 @@ import { translation } from '../../../utils';
 import graph from '../../../graph';
 
 const TableCell = styled(Table.TD)`
-  padding: 10px;
+  padding: 5px;
+  border: none;
+`;
+
+const SubjectTitleCell = styled(TableCell).attrs(() => ({
+  align: 'left',
+}))`
+  width: 150px;
+  padding-left: 10px;
 `;
 
 function Workload({ teacher, tableSlug, tableId, classes, subjects }) {
@@ -31,7 +39,7 @@ function Workload({ teacher, tableSlug, tableId, classes, subjects }) {
       <Table.Body>
         {subjects.map(({ id: subjectId, title }) => (
           <Table.Row key={subjectId}>
-            <TableCell align="left">{title}</TableCell>
+            <SubjectTitleCell align="left">{title}</SubjectTitleCell>
             {classes.map(({ id: classId }) => {
               const defaultHours = workload[subjectId]
                 ? workload[subjectId][classId]
@@ -86,7 +94,14 @@ function HoursSelector({ value, onChange, ...props }) {
           color: 'transparent',
         }),
         valueContainer: () => ({ width: 50 }),
-        control: provided => ({ ...provided, cursor: 'pointer' }),
+        container: provided => ({ ...provided, width: 50, margin: 'auto' }),
+        control: provided => ({
+          ...provided,
+          cursor: 'pointer',
+          minHeight: '30px',
+          width: 50,
+          borderColor: '#f9f7f7',
+        }),
         option: provided => ({ ...provided, cursor: 'pointer' }),
         singleValue: provided => ({ ...provided, width: '100%' }),
       }}
