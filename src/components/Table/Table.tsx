@@ -82,6 +82,7 @@ function Table({
   if (loading) return <Preloader isCentered />;
 
   const { table } = data;
+  console.log('INIT table :', table);
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;
   const teacherPath = `${teachersPath}/:id`;

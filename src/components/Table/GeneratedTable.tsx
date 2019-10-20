@@ -49,15 +49,25 @@ const ControlContainer = styled.div`
 
 const GenerateTimeTableButton = styled(Button.default)``;
 
+function getTeachersName(teachers) {
+  if (!teachers?.length) return ''
+
+  if (teachers.length === 1) return teachers[0].name
+
+  return `${teachers[0].name} və ${teachers[1].name}`;
+}
+
 function GeneratedTable(table): React.ReactElement {
   const [timetable, setTimetable] = useState(null);
   const { classes } = table;
 
-  console.table('timetable :', timetable);
+  if (timetable) console.table('timetable :', timetable);
 
   function generateTimeTable() {
-    setTimetable(Timetable.generate(table));
+    if (!timetable) setTimetable(Timetable.generate(table));
   }
+
+  generateTimeTable();
 
   return (
     <TableContainer>
@@ -82,12 +92,16 @@ function GeneratedTable(table): React.ReactElement {
               return day.map((hourClasses, hourIndex) => {
                 return (
                   <Row isStartOfDay={hourIndex === 0} key={hourIndex}>
-                    {hourClasses.map(({ lessonTitle }, classIndex) => (
-                      <React.Fragment key={classIndex}>
-                        {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
-                        <Cell>{lessonTitle}</Cell>
-                      </React.Fragment>
-                    ))}
+                    {hourClasses.map(
+                      ({ subjectId, teachers }, classIndex) => (
+                        <React.Fragment key={classIndex}>
+                          {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
+                          <Cell title={`${getTeachersName(teachers)}`}>
+                            {Timetable.getSubjectTitleById(subjectId) || subjectId}
+                          </Cell>
+                        </React.Fragment>
+                      ),
+                    )}
                   </Row>
                 );
               });

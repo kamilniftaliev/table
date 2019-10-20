@@ -38,15 +38,18 @@ query GetTable($slug: String!) {
     subjects {
       id
       title
+      isDivisible
     }
     classes {
       id
       title
+      isDivisible
     }
     teachers {
       id
       name
       slug
+      workloadAmount
       workload {
         subjectId
         classId
