@@ -5,20 +5,10 @@ export default class Loggger {
 
   logWarnings = false;
 
-  dayIndex = null;
-
-  hourIndex = null;
-
-  classIndex = null;
-
   constructor(table) {
     this.table = table;
     this.helpers = new Helpers(table)
   }
-
-  set day(value) { return this.dayIndex = value; }
-  set hour(value) { return this.hourIndex = value; }
-  set theClass(value) { return this.classIndex = value; }
 
   workload = ({ classId, subjectId, hours }) => {
     const classTitle = this.helpers.getClassTitleById(classId)
@@ -30,9 +20,12 @@ export default class Loggger {
   parseLesson = (lesson) => {
     if (!lesson) return ''
     const { teacherIndex, subjectIndex } = lesson
-    const { name: lessonTeacher } = this.table.teachers[teacherIndex]
-    const { title: subject } = this.table.subjects[subjectIndex]
-    return `${subject}, ${lessonTeacher}`
+    const { title: subject, id: subjectId } = this.table.subjects[subjectIndex]
+    const { name: lessonTeacher, workload } = this.table.teachers[teacherIndex]
+    const { id: classId } = this.table.classes[this.table.classIndex]
+    const leftHours = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
+    
+    return `${subject}, ${lessonTeacher}, ${leftHours} hours`;
   }
 
   lesson = (
@@ -53,40 +46,48 @@ export default class Loggger {
       else teachers = [teachers]
     }
 
-    const curDay = this.dayIndex + 1
-    const curHour = this.hourIndex + 1
-    const { title: curClassTitle } = this.table.classes[this.classIndex]
+    const curDay = this.table.dayIndex + 1
+    const curHour = this.table.hourIndex + 1
+    const { title: curClassTitle } = this.table.classes[this.table.classIndex]
     const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`
+    const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number'
+    const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number'
+    const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined'
+    const timeFits = fitsDay && fitsHour && fitsClass
     
     const teachersLog = teachers?.reduce((acc, lesson) => {
       const log = `${timeText}, ${this.parseLesson(lesson)}`
   
-      const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number'
-      const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number'
-      const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined'
       const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined'
   
-      const fits = fitsDay && fitsHour && fitsClass && fitsTeacher
+      const fits = timeFits && fitsTeacher
   
       return fits ? `${acc}\n${log}` : acc;
     }, '').trim()
 
-    let logArr = []
+    let logArr = ''
   
     if (teachersLog?.length) {
-      logArr = [`${title}\n${teachersLog}`, ...rest]
-    } else if (logEmpty) {
-      logArr = [`NOTHING FOR ${title}`]
+      logArr = `${title}\n${teachersLog}`
+    } else if (timeFits && logEmpty) {
+      logArr = `NOTHING ${title}`
     }
 
-    console.log.apply(null, logArr)
+    if (logArr) {
+      console.log(`${logArr}\n${rest.join(',')}`)
+    }
     return logArr
   }
 
   warning = (...text) => {
     if (!this.logWarnings) return;
-    const { title: classTitle } = this.table.classes[this.classIndex]
-    console.info(text.join(','), classTitle, this.dayIndex + 1, this.hourIndex + 1)
+    const { title: classTitle } = this.table.classes[this.table.classIndex]
+    console.info(text.join(','), classTitle, this.table.dayIndex + 1, this.table.hourIndex + 1)
+  }
+
+  // If couldn't find a teacher that works in the class
+  teachersError = (title, teachers, ...text) => {
+    if (!teachers?.length) this.warning(`Couldn"t find ${title}`, ...text);
   }
   
   results = () => {

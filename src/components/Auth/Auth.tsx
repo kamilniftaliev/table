@@ -81,6 +81,7 @@ function Auth(): React.ReactFragment {
           placeholder={translation('username')}
         />
         <Input
+          type="password"
           value={password}
           onChange={(e): void => setPassword(e.target?.value)}
           placeholder={translation('password')}

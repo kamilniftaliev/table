@@ -11,7 +11,10 @@ let helpers = null
 let Teachers = null
 let table = null
 let timetable = []
-let dayIndex, hourIndex, classIndex
+let dayIndex
+let hourIndex
+let classIndex
+
 const emptyLesson = {
   subjectId: null,
   teachers: [],
@@ -23,9 +26,7 @@ const notFoundLesson = {
 }
 
 function getLesson() {
-  const {
-    suitableTeachers: teachers
-  } = Teachers
+  const { suitableTeachers: teachers } = Teachers
     .sortByWorkload()
     .getWithLessonsInClass()
     .getWorkingNow()
@@ -33,19 +34,25 @@ function getLesson() {
     .getHasntBeenYet()
     .getTodayMustBe()
     .sortBySubjectDivisibility()
+    .sortByHoursCount()
     .findWithCoWorker()
 
-  log.lesson(
-    Teachers
-      .sortByWorkload()
-      .getWithLessonsInClass()
-      .getWorkingNow()
-      .getFree()
-      .getHasntBeenYet()
-      .getTodayMustBe()
-      .sortBySubjectDivisibility()
-      // .findWithCoWorker()
-  , { day: 1, classTitle: '5ə' })
+  log.lesson(Teachers
+    .sortByWorkload()
+    .getWithLessonsInClass()
+    // .getWorkingNow()
+    // .getFree()
+    // .getHasntBeenYet()
+    // .getTodayMustBe()
+    // .sortBySubjectDivisibility()
+    // .sortByHoursCount()
+    // .findWithCoWorker()
+  , {
+    day: 5,
+    hour: 3,
+    classTitle: 9,
+    // logEmpty: true,
+  })
 
   if (!teachers.filter(Boolean).length) return null
 
@@ -76,24 +83,21 @@ export function generate(defaultTable: object): object {
   Array(schoolDaysCount).fill(null).forEach((d, curDayIndex) => {
     // Init the day
     dayIndex = curDayIndex
-    log.dayIndex = dayIndex
-    Teachers.dayIndex = dayIndex
+    table.dayIndex = dayIndex
     timetable[dayIndex] = []
     
     // Loop through school hours
     Array(schoolHoursCount).fill(null).forEach((hour, curHourIndex) => {
       // Init the hour
       hourIndex = curHourIndex
-      log.hourIndex = hourIndex
-      Teachers.hourIndex = hourIndex
+      table.hourIndex = hourIndex
       timetable[dayIndex][hourIndex] = []
 
       // Loop through all classes and get a lesson for the hour
       table.classes.forEach(({ id }, curClassIndex) => {
         // Init the hour of the class
         classIndex = curClassIndex
-        log.classIndex = classIndex
-        Teachers.classIndex = classIndex
+        table.classIndex = classIndex
 
         timetable[dayIndex][hourIndex][classIndex] = emptyLesson
 
@@ -104,7 +108,8 @@ export function generate(defaultTable: object): object {
 
         // If no teachers found, put a placeholder for now
         if (!lesson) {
-          timetable[dayIndex][hourIndex][classIndex] = notFoundLesson
+          const stillLeftLessons = Teachers.classHasLeftLessons()
+          if (stillLeftLessons) timetable[dayIndex][hourIndex][classIndex] = notFoundLesson
           return
         }
         
@@ -114,7 +119,7 @@ export function generate(defaultTable: object): object {
     })
   });
 
-  log.results()
+  // log.results()
   return timetable
 }
 

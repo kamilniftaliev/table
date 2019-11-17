@@ -37,6 +37,8 @@ export default class Helpers {
   
           return totalHours + teacherTotalClassHours
         }, 0)
+
+      // console.log('totalHoursOfClass :', totalHoursOfClass, this.getClassTitleById(id));
   
       acc[id] = Math.round(totalHoursOfClass / schoolDaysCount)
       
