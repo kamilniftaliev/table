@@ -18,6 +18,7 @@ const TableWrapper = styled(Table.default)`
 const Cell = styled(Table.CellTD)`
   padding: 5px;
   min-width: 120px;
+  white-space: nowrap;
 
   &:first-child {
     min-width: 20px;
@@ -96,7 +97,7 @@ function GeneratedTable(table): React.ReactElement {
                       ({ subjectId, teachers }, classIndex) => (
                         <React.Fragment key={classIndex}>
                           {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
-                          <Cell title={`${getTeachersName(teachers)}`}>
+                          <Cell title={getTeachersName(teachers)}>
                             {Timetable.getSubjectTitleById(subjectId) || subjectId}
                           </Cell>
                         </React.Fragment>

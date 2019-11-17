@@ -16,6 +16,14 @@ export default class Loggger {
   
     return `${classTitle}, ${subjectTitle}, ${hours}`
   }
+
+  howManyWorkingHoursFromNow({ teacherIndex }) {
+    const workhours = this.table.teachers[teacherIndex].workhours
+      .slice(this.table.dayIndex, this.table.schoolDaysCount - 1)
+      .map(hours => hours.slice(this.table.hourIndex, this.table.schoolHoursCount))
+
+    return workhours.flat().filter(Boolean).length
+  }
   
   parseLesson = (lesson) => {
     if (!lesson) return ''
@@ -23,9 +31,10 @@ export default class Loggger {
     const { title: subject, id: subjectId } = this.table.subjects[subjectIndex]
     const { name: lessonTeacher, workload } = this.table.teachers[teacherIndex]
     const { id: classId } = this.table.classes[this.table.classIndex]
-    const leftHours = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
+    const leftLessonsInClass = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
+    const leftWorkingHours = this.howManyWorkingHoursFromNow(lesson)
     
-    return `${subject}, ${lessonTeacher}, ${leftHours} hours`;
+    return `${subject}, ${lessonTeacher}, ${leftLessonsInClass} lessons, ${leftWorkingHours} hours`;
   }
 
   lesson = (
@@ -74,7 +83,7 @@ export default class Loggger {
     }
 
     if (logArr) {
-      console.log(`${logArr}\n${rest.join(',')}`)
+      console.log(`${logArr}\n`, ...rest)
     }
     return logArr
   }

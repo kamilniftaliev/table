@@ -160,8 +160,15 @@ export default class Teachers {
     const { workhours } = this.table.teachers[teacherIndex]
 
     return workhours
-      .slice(this.table.dayIndex, this.schoolDaysCount - 1)
-      .reduce((acc, day) => acc + Number(day.filter(Boolean).length > 0), 0)
+      .slice(this.table.dayIndex, this.table.schoolDaysCount)
+      .reduce((acc, day) => {
+        const daysCount = Number(
+          day
+            .slice(this.table.hourIndex, this.table.schoolHoursCount - 1)
+            .filter(Boolean).length > 0
+        )
+        return acc + daysCount;
+      }, 0)
   }
 
   getCoWorker({ subjectIndex, teacherIndex }, suitableTeachers) {
@@ -182,10 +189,41 @@ export default class Teachers {
     return teacher
   }
 
-  howManyWorkingHoursFromNow({ teacherIndex }) {
-    const workhours = this.table.teachers[teacherIndex].workhours.slice(this.table.dayIndex, this.schoolDaysCount - 1)
+  howManyWorkHoursFromNow({ teacherIndex }, returnWorkhours) {
+    const workhours = this.table.teachers[teacherIndex].workhours
+      .slice(this.table.dayIndex, this.table.schoolDaysCount)
+      .map(hours => hours.slice(this.table.hourIndex, this.table.schoolHoursCount - 1))
+
+    // For calculating work days
+    if (returnWorkhours) return workhours
 
     return workhours.flat().filter(Boolean).length
+  }
+  
+  howManyWorkDaysFromNow(teacher) {
+    const workhours = this.howManyWorkHoursFromNow(teacher, true)
+
+    return workhours.filter(day => day.length).length
+  }
+
+  sortByLessWorkingHours(teachers) {
+    return teachers.sort((first, second) => {
+      const firstHours = this.howManyWorkHoursFromNow(first)
+      const secondHours = this.howManyWorkHoursFromNow(second)
+
+      // Ascending sort by left working hours count
+      // because less hours left more important to include it
+      return firstHours - secondHours
+    })
+  }
+  
+  sortByLessWorkingDays(teachers) {
+    return teachers.sort((first, second) => {
+      const firstDays = this.howManyWorkDaysFromNow(first)
+      const secondDays = this.howManyWorkDaysFromNow(second)
+
+      return firstDays - secondDays
+    })
   }
 
   findWithCoWorker(customTeachers) {
@@ -212,11 +250,11 @@ export default class Teachers {
     })
   
     let notDivisibleTeachers = this.findNotDivisibleSubject(suitableTeachers)
-    notDivisibleTeachers = notDivisibleTeachers.sort((first, second) => {
-      const firstHours = this.howManyWorkingHoursFromNow(first)
-      const secondHours = this.howManyWorkingHoursFromNow(second)
-      return firstHours - secondHours
-    })
+    notDivisibleTeachers = this
+      .sortByLessWorkingDays(
+        this
+          .sortByLessWorkingHours(notDivisibleTeachers)
+      )
     
     if (notDivisibleTeachers?.length) {
       teachersWithoutCoWorker.push(notDivisibleTeachers[0])
@@ -239,23 +277,23 @@ export default class Teachers {
     return this
   }
 
-  doesTeacherHaveMoreHours = ({ teacherIndex, workloadIndex }) => {
+  doesTeacherHaveMoreHours = (props) => {
+    const { teacherIndex, workloadIndex } = props;
     const leftDays = this.getTeacherLeftDays(teacherIndex)
     const { hours: leftSubjectHours } = this.table.teachers[teacherIndex].workload[workloadIndex]
-    const hasMoreLessons = leftSubjectHours > leftDays
+    const hasMoreLessons = leftSubjectHours >= leftDays
     
     return hasMoreLessons
   }
 
   getTodayMustBe() {
     let teachers = this.suitableTeachers
-    const todayMustBeTeachers = teachers.filter(this.doesTeacherHaveMoreHours)
     
-    const todayMustBeWithCoWorker = this.findWithCoWorker(todayMustBeTeachers)
+    const todayMustBe = this.findWithCoWorker(
+      teachers.filter(this.doesTeacherHaveMoreHours)
+    )
 
-    if (todayMustBeWithCoWorker.length) {
-      teachers = todayMustBeWithCoWorker
-    }
+    if (todayMustBe.length) teachers = todayMustBe
 
     this.suitableTeachers = teachers
     return this

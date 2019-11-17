@@ -37,22 +37,22 @@ function getLesson() {
     .sortByHoursCount()
     .findWithCoWorker()
 
-  log.lesson(Teachers
-    .sortByWorkload()
-    .getWithLessonsInClass()
-    // .getWorkingNow()
-    // .getFree()
-    // .getHasntBeenYet()
-    // .getTodayMustBe()
-    // .sortBySubjectDivisibility()
-    // .sortByHoursCount()
-    // .findWithCoWorker()
-  , {
-    day: 5,
-    hour: 3,
-    classTitle: 9,
-    // logEmpty: true,
-  })
+  // log.lesson(Teachers
+  //   .sortByWorkload()
+  //   .getWithLessonsInClass()
+  //   // .getWorkingNow()
+  //   // .getFree()
+  //   // .getHasntBeenYet()
+  //   // .getTodayMustBe()
+  //   // .sortBySubjectDivisibility()
+  //   // .sortByHoursCount()
+  //   // .findWithCoWorker()
+  // , {
+  //   day: 5,
+  //   hour: 3,
+  //   classTitle: 9,
+  //   // logEmpty: true,
+  // })
 
   if (!teachers.filter(Boolean).length) return null
 
@@ -69,6 +69,9 @@ function getLesson() {
 export function generate(defaultTable: object): object {
   // The very init
   table = JSON.parse(JSON.stringify(defaultTable));
+  table.schoolDaysCount = schoolDaysCount
+  table.schoolHoursCount = schoolHoursCount
+
   log = new Logger(table)
   window.log = log
   helpers = new Helpers(table)
@@ -77,7 +80,6 @@ export function generate(defaultTable: object): object {
 
   timetable = [];
   Teachers.timetable = timetable;
-  Teachers.schoolDaysCount = schoolDaysCount
 
   // Loop through school days
   Array(schoolDaysCount).fill(null).forEach((d, curDayIndex) => {
