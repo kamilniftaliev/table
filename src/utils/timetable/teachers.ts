@@ -209,7 +209,7 @@ export default class Teachers {
         // If it's today then count from current hour
         // Or else count from start of the day
         const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0
-        day.slice(hourStartIndex, this.table.schoolHoursCount)
+        return day.slice(hourStartIndex, this.table.schoolHoursCount)
       })
 
     // For calculating work days
@@ -236,26 +236,33 @@ export default class Teachers {
   }
 
   // Only if teachers have same amount of workload left
-  sortByWorkhoursIfNeeded() {
-    const teachers = this.suitableTeachers;
+  sortByWorkhoursIfNeeded(customTeachers) {
+    let teachers = customTeachers || this.suitableTeachers;
 
-    if (teachers.length <= 1) return this;
+    if (teachers.length <= 1) {
+      if (customTeachers) return teachers;
+      return this;
+    }
 
     const teachersHours = teachers.map(({ subjectIndex, teacherIndex }) => {
       const { id: subjectId } = this.table.subjects[subjectIndex]
       const { workload } = this.table.teachers[teacherIndex]
       const { id: classId } = this.table.classes[this.table.classIndex]
-      const hours = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
-
-      return hours;
+      
+      return workload
+        .find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
     })
 
     const set = new Set(teachersHours)
 
     // If all teachers have same workload
     if (set.size === 1) {
-      this.suitableTeachers = this.sortByLessWorkingHours(teachers)
+      teachers = this.sortByLessWorkingHours(teachers)
     }
+
+    if (customTeachers) return teachers;
+
+    this.suitableTeachers = teachers
 
     return this
   }
@@ -294,13 +301,12 @@ export default class Teachers {
     })
   
     let notDivisibleTeachers = this.findNotDivisibleSubject(suitableTeachers)
-    notDivisibleTeachers = this
-      .sortByLessWorkingDays(
-        this
-          .sortByLessWorkingHours(notDivisibleTeachers)
-      )
+    notDivisibleTeachers = this.sortByLessWorkingDays(
+      this.sortByLessWorkingHours(notDivisibleTeachers)
+    )
     
     if (notDivisibleTeachers?.length) {
+      notDivisibleTeachers = this.sortByWorkhoursIfNeeded(notDivisibleTeachers)
       teachersWithoutCoWorker.push(notDivisibleTeachers[0])
     }
 
@@ -346,16 +352,9 @@ export default class Teachers {
   getTodayMustBe() {
     let teachers = this.suitableTeachers
 
-    const filtered = teachers.filter(this.doesTeacherHaveMoreHours)
+    const filtered = teachers.filter(this.doesTeacherHaveMoreHours);
     
     const todayMustBe = this.findWithCoWorker(filtered)
-
-    this.log.lesson(filtered, {
-      day: 2,
-      hour: 3,
-      classTitle: '5e',
-      logEmpty: true,
-    })
 
     if (todayMustBe.length) teachers = todayMustBe
 
