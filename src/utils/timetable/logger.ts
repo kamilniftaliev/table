@@ -116,6 +116,7 @@ export default class Loggger {
   results = () => {
     console.log('--------- LEFT TEACHERS -------');
     const resultTable = JSON.parse(JSON.stringify(this.table))
+    let totalLeftHours = 0;
     resultTable.teachers.forEach(({ workload, name }) => {
       const leftHours = workload.filter(({ hours }) => hours)
   
@@ -124,11 +125,14 @@ export default class Loggger {
         const classTitle = this.helpers.getClassTitleById(classId)
   
         if (subjectTitle) {
+          totalLeftHours += hours;
           console.log(name, subjectTitle, classTitle, hours);
         }
       })
   
     })
+
+    console.log('TOTAL LEFT HOURS :', totalLeftHours);
     console.log('------- END LEFT TEACHERS END ------- ');
   }
 }
