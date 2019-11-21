@@ -29,19 +29,19 @@ function getLesson() {
   log.lesson(Teachers
     .sortByWorkload()
     .getWithLessonsInClass()
-    .getWorkingNow()
-    .getHasntBeenYet()
-    .getFree()
-    .noNeedToSkipForThisClass()
-    .getTodayMustBe()
+    // .getWorkingNow()
+    // .getHasntBeenYet()
+    // .getFree()
+    // .noNeedToSkipForThisClass()
+    // .getTodayMustBe()
     // .sortByLeftWorkload()
     // .sortByWorkhoursIfNeeded()
     // .sortBySubjectDivisibility()
     // .findWithCoWorker()
   , {
     day: 5,
-    hour: 2,
-    classTitle: 8,
+    hour: 7,
+    classTitle: 9,
     logEmpty: true,
   })
 

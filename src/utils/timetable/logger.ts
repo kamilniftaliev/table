@@ -18,9 +18,17 @@ export default class Loggger {
   }
 
   howManyWorkingHoursFromNow({ teacherIndex }) {
+    const curDayIndex = this.table.dayIndex
+  
     const workhours = this.table.teachers[teacherIndex].workhours
-      .slice(this.table.dayIndex, this.table.schoolDaysCount - 1)
-      .map(hours => hours.slice(this.table.hourIndex, this.table.schoolHoursCount))
+      .slice(this.table.dayIndex, this.table.schoolDaysCount)
+      .map((day, dayIndex) => {
+        // Start counting from the hour of each day
+        // If it's today then count from current hour
+        // Or else count from start of the day
+        const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0
+        return day.slice(hourStartIndex, this.table.schoolHoursCount)
+      })
 
     return workhours.flat().filter(Boolean).length
   }
