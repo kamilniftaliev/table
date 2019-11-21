@@ -24,6 +24,25 @@ export default class Loggger {
 
     return workhours.flat().filter(Boolean).length
   }
+
+  match({
+    day,
+    hour,
+    classTitle,
+  }) {
+    const curDay = this.table.dayIndex + 1
+    const curHour = this.table.hourIndex + 1
+    const { title: curClassTitle } = this.table.classes[this.table.classIndex]
+    const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`
+    const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number'
+    const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number'
+    const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined'
+
+    const match = fitsDay && fitsHour && fitsClass
+    
+    // Time fits
+    return match ? timeText : false;
+  }
   
   parseLesson = (lesson) => {
     if (!lesson) return ''
@@ -55,30 +74,25 @@ export default class Loggger {
       else teachers = [teachers]
     }
 
-    const curDay = this.table.dayIndex + 1
-    const curHour = this.table.hourIndex + 1
-    const { title: curClassTitle } = this.table.classes[this.table.classIndex]
-    const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`
-    const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number'
-    const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number'
-    const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined'
-    const timeFits = fitsDay && fitsHour && fitsClass
+    const timeText = this.match({ day, hour, classTitle })
+
+    if (!timeText || !teachers) return;
     
-    const teachersLog = teachers?.reduce((acc, lesson) => {
+    const teachersLog = teachers.reduce((acc, lesson) => {
       const log = `${timeText}, ${this.parseLesson(lesson)}`
   
       const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined'
   
-      const fits = timeFits && fitsTeacher
+      const fits = fitsTeacher
   
       return fits ? `${acc}\n${log}` : acc;
     }, '').trim()
 
     let logArr = ''
   
-    if (teachersLog?.length) {
+    if (teachersLog) {
       logArr = `${title}\n${teachersLog}`
-    } else if (timeFits && logEmpty) {
+    } else if (logEmpty) {
       logArr = `NOTHING ${title}`
     }
 

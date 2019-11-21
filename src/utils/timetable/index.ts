@@ -26,33 +26,35 @@ const notFoundLesson = {
 }
 
 function getLesson() {
+  log.lesson(Teachers
+    .sortByWorkload()
+    .getWithLessonsInClass()
+    .getWorkingNow()
+    .getHasntBeenYet()
+    // .getFree()
+    // .noNeedToSkipForThisClass()
+    // .getTodayMustBe()
+    .sortBySubjectDivisibility()
+    .sortByHoursCount()
+    // .findWithCoWorker()
+  , {
+    day: 5,
+    hour: 3,
+    classTitle: '9',
+    logEmpty: true,
+  })
+
   const { suitableTeachers: teachers } = Teachers
     .sortByWorkload()
     .getWithLessonsInClass()
     .getWorkingNow()
-    .getFree()
     .getHasntBeenYet()
+    .getFree()
+    .noNeedToSkipForThisClass()
     .getTodayMustBe()
     .sortBySubjectDivisibility()
     .sortByHoursCount()
     .findWithCoWorker()
-
-  // log.lesson(Teachers
-  //   .sortByWorkload()
-  //   .getWithLessonsInClass()
-  //   // .getWorkingNow()
-  //   // .getFree()
-  //   // .getHasntBeenYet()
-  //   // .getTodayMustBe()
-  //   // .sortBySubjectDivisibility()
-  //   // .sortByHoursCount()
-  //   // .findWithCoWorker()
-  // , {
-  //   day: 5,
-  //   hour: 3,
-  //   classTitle: 9,
-  //   // logEmpty: true,
-  // })
 
   if (!teachers.filter(Boolean).length) return null
 
@@ -95,8 +97,7 @@ export function generate(defaultTable: object): object {
       table.hourIndex = hourIndex
       timetable[dayIndex][hourIndex] = []
 
-      // Loop through all classes and get a lesson for the hour
-      table.classes.forEach(({ id }, curClassIndex) => {
+      const findLesson = ({ id }, curClassIndex) => {
         // Init the hour of the class
         classIndex = curClassIndex
         table.classIndex = classIndex
@@ -114,10 +115,45 @@ export function generate(defaultTable: object): object {
           if (stillLeftLessons) timetable[dayIndex][hourIndex][classIndex] = notFoundLesson
           return
         }
-        
+
         // Building a lesson's actual data
         timetable[dayIndex][hourIndex][classIndex] = lesson
-      })
+      }
+
+      // Loop through all classes and get a lesson for the hour
+      table.classes.forEach(findLesson)
+
+      // Switch lessons between classes
+      // So that maybe it can fill empty lessons
+      // table.classes.forEach(({ id: classId, title }, curClassIndex) => {
+      //   if (timetable[dayIndex][hourIndex][curClassIndex] === notFoundLesson) {
+      //     // Find replacable lesson for absence lesson
+      //     const replacableClassIndex = timetable[dayIndex][hourIndex].findIndex(({ teachers }) => {
+      //       // Find replacable teacher
+      //       return teachers.find(({ workload, workhours }) => {
+      //         const hasWorkInClass = workload.find(w => w.classId === classId)
+      //         if (!hasWorkInClass) return false;
+
+      //         const canWorkNow = workhours[dayIndex][hourIndex]
+      //         return canWorkNow
+      //       })
+      //     })
+
+      //     if (!~replacableClassIndex) return;
+
+      //     timetable[dayIndex][hourIndex][curClassIndex] = timetable[dayIndex][hourIndex][replacableClassIndex]
+      //     timetable[dayIndex][hourIndex][replacableClassIndex] = null;
+
+      //     findLesson({ id: classId }, replacableClassIndex)
+
+      //     // console.log(dayIndex + 1, hourIndex + 1, title, timetable[dayIndex][hourIndex][replacableClassIndex]);
+          
+      //     if (timetable[dayIndex][hourIndex][replacableClassIndex] === notFoundLesson) {
+      //       // timetable[dayIndex][hourIndex][replacableClassIndex] = timetable[dayIndex][hourIndex][curClassIndex]
+      //       // timetable[dayIndex][hourIndex][curClassIndex] = notFoundLesson
+      //     }
+      //   }
+      // })
     })
   });
 

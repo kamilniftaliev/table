@@ -39,7 +39,7 @@ export default class Teachers {
     const { id: classId } = this.table.classes[this.table.classIndex]
     const { id: subjectId } = this.table.subjects[subjectIndex]
 
-    return workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours
+    return workload.reduce((acc, w) => w.classId === classId ? acc + w.hours : acc, 0)
   }
   
   sortBySubjectDivisibility() {
@@ -82,7 +82,7 @@ export default class Teachers {
   // Get teachers that has enough left lessons for the class yet
   getWithLessonsInClass() {
     const teachers = this.suitableTeachers
-    const { id: theClassId, title } = this.table.classes[this.table.classIndex]
+    const { id: theClassId } = this.table.classes[this.table.classIndex]
     const todaysSubjectsId = this.getTodaySubjectsIdOfClass()
   
     const teachersWithLessonsInClass = teachers
@@ -93,29 +93,33 @@ export default class Teachers {
         // If didn't find any workload
         if (!foundWorkloads.length) return null;
         
-        // Find a workload with a new subject that hasn't been yet today
-        let foundWorkIndex = foundWorkloads.findIndex(foundWorkload => !todaysSubjectsId.includes(foundWorkload.subjectId))
+        // Find a workloads with a new subject that hasn't been yet today
+        let foundWorks = foundWorkloads.filter(foundWorkload => !todaysSubjectsId.includes(foundWorkload.subjectId))
   
         // If didn't find subject that hasn't been today
-        if (foundWorkIndex === -1) {
+        if (!foundWorks.length) {
           // If there's workload that already been today
-          if (foundWorkloads.length) foundWorkIndex = workload.indexOf(foundWorkloads[0])
+          if (foundWorkloads.length) [foundWorks] = foundWorkloads
           else return null
-        } else {
-          // Index of the founded workload that hasn't been today
-          foundWorkIndex = workload.indexOf(foundWorkloads[foundWorkIndex])
         }
-        
-        const { subjectId } = workload[foundWorkIndex]
-  
-        return {
+
+        const makeTeacher = (work) => ({
           teacherIndex,
-          subjectIndex: this.helpers.getSubjectIndexById(subjectId),
-          workloadIndex: foundWorkIndex,
+          subjectIndex: this.helpers.getSubjectIndexById(work.subjectId),
+          workloadIndex: workload.indexOf(work),
           workhours,
+        })
+        
+        if (Array.isArray(foundWorks)) {
+          return foundWorks.map(makeTeacher)
+        } else {
+          return makeTeacher(foundWorks)
         }
+
+        
       })
       .filter(Boolean)
+      .flat()
 
     this.suitableTeachers = teachersWithLessonsInClass
   
@@ -158,13 +162,17 @@ export default class Teachers {
 
   getTeacherLeftDays(teacherIndex) {
     const { workhours } = this.table.teachers[teacherIndex]
+    const curDayIndex = this.table.dayIndex;
 
     return workhours
-      .slice(this.table.dayIndex, this.table.schoolDaysCount)
-      .reduce((acc, day) => {
+      .slice(curDayIndex, this.table.schoolDaysCount)
+      .reduce((acc, day, dayIndex) => {
+        // Slice the day's hours from current hour if the day is current day (today)
+        // else just count rest of the day
+        const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0;
         const daysCount = Number(
           day
-            .slice(this.table.hourIndex, this.table.schoolHoursCount - 1)
+            .slice(hourStartIndex, this.table.schoolHoursCount)
             .filter(Boolean).length > 0
         )
         return acc + daysCount;
@@ -190,9 +198,16 @@ export default class Teachers {
   }
 
   howManyWorkHoursFromNow({ teacherIndex }, returnWorkhours) {
+    const curDayIndex = this.table.dayIndex
     const workhours = this.table.teachers[teacherIndex].workhours
-      .slice(this.table.dayIndex, this.table.schoolDaysCount)
-      .map(hours => hours.slice(this.table.hourIndex, this.table.schoolHoursCount - 1))
+      .slice(curDayIndex, this.table.schoolDaysCount)
+      .map((day, dayIndex) => {
+        // Start counting from the hour of each day
+        // If it's today then count from current hour
+        // Or else count from start of the day
+        const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0
+        day.slice(hourStartIndex, this.table.schoolHoursCount)
+      })
 
     // For calculating work days
     if (returnWorkhours) return workhours
@@ -203,7 +218,7 @@ export default class Teachers {
   howManyWorkDaysFromNow(teacher) {
     const workhours = this.howManyWorkHoursFromNow(teacher, true)
 
-    return workhours.filter(day => day.length).length
+    return workhours.filter(day => day?.length).length
   }
 
   sortByLessWorkingHours(teachers) {
@@ -277,8 +292,7 @@ export default class Teachers {
     return this
   }
 
-  doesTeacherHaveMoreHours = (props) => {
-    const { teacherIndex, workloadIndex } = props;
+  doesTeacherHaveMoreHours = ({ teacherIndex, workloadIndex }) => {
     const leftDays = this.getTeacherLeftDays(teacherIndex)
     const { hours: leftSubjectHours } = this.table.teachers[teacherIndex].workload[workloadIndex]
     const hasMoreLessons = leftSubjectHours >= leftDays
@@ -304,34 +318,41 @@ export default class Teachers {
     const { id: theSubjectId } = this.table.subjects[subjectIndex]
     const { id: theClassId } = this.table.classes[this.table.classIndex]
     const leftDays = this.getTeacherLeftDays(teacherIndex)
-  
-    return !!workload.find(({ hours, classId, subjectId }) => {
-      return classId === theClassId && hours >= leftDays && subjectId === theSubjectId
-    })
+
+    const found = workload.find(({ hours, classId, subjectId }) => (
+      classId === theClassId
+        && hours >= leftDays
+        && subjectId === theSubjectId
+    ))
+
+    return !!found;
   }
   
-  howManyTimesTeacherHasBeenToday(subjectIndex) {
+  hasBeenToday(subjectIndex, classIndex = this.table.classIndex) {
     const { id: subjectId } = this.table.subjects[subjectIndex]
   
     let found = false
     this.timetable[this.table.dayIndex].forEach(hour => {
-      if (hour[this.table.classIndex]?.subjectId === subjectId) found = true
+      if (hour[classIndex]?.subjectId === subjectId) found = true
     })
   
     return found
   }
   
-  getHasntBeenYet() {
-    const teachers = this.suitableTeachers
+  getHasntBeenYet(customTeachers, classIndex) {
+    const teachers = customTeachers || this.suitableTeachers
     if (!teachers?.length) return this
   
-    const hasntBeenYetTeachers = teachers.filter(({ teacherIndex, subjectIndex }) => {
-      const subjectAlreadyBeen = this.howManyTimesTeacherHasBeenToday(subjectIndex)
+    const hasntBeenYetTeachers = teachers.filter((teacher) => {
+      const { teacherIndex, subjectIndex } = teacher;
+      const subjectAlreadyBeen = this.hasBeenToday(subjectIndex, classIndex)
   
       const hasMoreLessons = this.hasMoreLessonsThanLeftDays(teacherIndex, subjectIndex)
   
       return !subjectAlreadyBeen || hasMoreLessons
     })
+
+    if (customTeachers) return hasntBeenYetTeachers;
 
     this.log.teachersError('hasntBeenYetTeachers', hasntBeenYetTeachers, teachers[0].subjectTitle);
   
@@ -343,5 +364,53 @@ export default class Teachers {
     teachers.forEach(({ teacherIndex, workloadIndex }) => {
       this.table.teachers[teacherIndex].workload[workloadIndex].hours -= 1
     })
+  }
+
+  noNeedToSkipForThisClass() {
+    const noNeedToSkipForThisClassTeachers = this.suitableTeachers.filter((teacher) => {
+      const { teacherIndex, workloadIndex, subjectIndex } = teacher;
+      const { workload } = this.table.teachers[teacherIndex];
+      const { subjectId, classId, hours } = workload[workloadIndex]
+
+      let hasMoreHours = this.doesTeacherHaveMoreHours(teacher)
+      let coWorker;
+      let coWorkerHasMoreHours;
+
+      if (this.isDivisiblePair(subjectIndex)) {
+        coWorker = this.getCoWorker(teacher, this.suitableTeachers)
+        coWorkerHasMoreHours = coWorker && this.doesTeacherHaveMoreHours(coWorker)
+        hasMoreHours = hasMoreHours || coWorkerHasMoreHours
+      }
+
+      const hasMoreImportantWorkload = workload.find((w, index) => {
+        const hasMoreWorkloadInOtherClass = w.classId !== classId && w.subjectId === subjectId && w.hours > hours 
+
+        if (!hasMoreWorkloadInOtherClass) return false
+
+        // const classIndex = this.table.classes.findIndex(s => s.id === w.classId)
+        // const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length
+
+        // if (!hasntBeenYetInOtherClass) return false
+
+        const hasMoreHoursInOtherClass = this.doesTeacherHaveMoreHours({
+          ...teacher,
+          workloadIndex: index,
+        })
+
+        return hasMoreHoursInOtherClass
+      })
+
+      // The teacher have more hours in other class
+      // So include the teacher only if it's inevitable
+      if (hasMoreImportantWorkload) return hasMoreHours
+      
+      return true
+    })
+
+    if (noNeedToSkipForThisClassTeachers.length) {
+      this.suitableTeachers = noNeedToSkipForThisClassTeachers
+    }
+
+    return this
   }
 }

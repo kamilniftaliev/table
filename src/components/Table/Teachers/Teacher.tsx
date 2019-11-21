@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useMutation } from 'react-apollo';
 
@@ -70,6 +70,13 @@ function Teacher({
   const teacher = teachers.find(t => t.id === id);
   const [name, setName] = useName(teacher?.name, id, tableId);
   const [tab, setTab] = useState<string>('workload');
+
+  useEffect(() => {
+    document.title = name
+    return (): void => {
+      document.title = 'Table.az'
+    };
+  }, [id, name])
 
   if (!teacher) return null;
 
