@@ -5,7 +5,7 @@ import TeachersClass from './teachers'
 const schoolDaysCount = 5
 const schoolHoursCount = 7
 
-let maxLessons = {}
+let maxClassHours = {}
 let log = null
 let helpers = null
 let Teachers = null
@@ -29,19 +29,19 @@ function getLesson() {
   log.lesson(Teachers
     .sortByWorkload()
     .getWithLessonsInClass()
-    // .getWorkingNow()
-    // .getHasntBeenYet()
-    // .getFree()
-    // .noNeedToSkipForThisClass()
+    .getWorkingNow()
+    .getHasntBeenYet()
+    .getFree()
+    .noNeedToSkipForThisClass()
     // .getTodayMustBe()
-    // .sortByLeftWorkload()
-    // .sortByWorkhoursIfNeeded()
-    // .sortBySubjectDivisibility()
+    .sortByLeftWorkload()
+    .sortByWorkhoursIfNeeded()
+    .sortBySubjectDivisibility()
     // .findWithCoWorker()
   , {
     day: 5,
-    hour: 7,
-    classTitle: 9,
+    hour: 2,
+    classTitle: '5ə',
     logEmpty: true,
   })
 
@@ -80,7 +80,9 @@ export function generate(defaultTable: object): object {
   window.log = log
   helpers = new Helpers(table)
   Teachers = new TeachersClass(table)
-  maxLessons = helpers.getMaxLessonsForClass(schoolDaysCount)
+  maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount)
+
+  // console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
 
   timetable = [];
   Teachers.timetable = timetable;
@@ -93,21 +95,21 @@ export function generate(defaultTable: object): object {
     timetable[dayIndex] = []
     
     // Loop through school hours
-    Array(schoolHoursCount).fill(null).forEach((hour, curHourIndex) => {
+    Array(schoolHoursCount).fill(null).forEach((h, curHourIndex) => {
       // Init the hour
       hourIndex = curHourIndex
+      const hour = hourIndex + 1
       table.hourIndex = hourIndex
       timetable[dayIndex][hourIndex] = []
 
-      const findLesson = ({ id }, curClassIndex) => {
+      const findLesson = ({ id: classId }, curClassIndex) => {
         // Init the hour of the class
         classIndex = curClassIndex
         table.classIndex = classIndex
 
         timetable[dayIndex][hourIndex][classIndex] = emptyLesson
 
-        // If current hour exceeds max hour limit of the class
-        if (maxLessons[id] < hourIndex + 1) return
+        if (!helpers.decreaseClassHour(maxClassHours, classId, hour)) return
 
         const lesson = getLesson()
 

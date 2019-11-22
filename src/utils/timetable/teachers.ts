@@ -436,10 +436,10 @@ export default class Teachers {
 
         if (!hasMoreWorkloadInOtherClass) return false
 
-        // const classIndex = this.table.classes.findIndex(s => s.id === w.classId)
-        // const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length
+        const classIndex = this.table.classes.findIndex(s => s.id === w.classId)
+        const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length
 
-        // if (!hasntBeenYetInOtherClass) return false
+        if (!hasntBeenYetInOtherClass) return false
 
         const hasMoreHoursInOtherClass = this.doesTeacherHaveMoreHours({
           ...teacher,
@@ -451,7 +451,18 @@ export default class Teachers {
 
       // The teacher have more hours in other class
       // So include the teacher only if it's inevitable
-      if (hasMoreImportantWorkload) return hasMoreHours
+      if (hasMoreImportantWorkload) {
+        if (this.log.match({
+          day: 5,
+          hour: 2,
+          classTitle: '5ə',
+          logEmpty: true,
+        })) {
+          // console.log('hasMoreImportantWorkload :', hasMoreImportantWorkload);
+          debugger
+        }
+        return hasMoreHours
+      }
       
       return true
     })
