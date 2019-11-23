@@ -26,24 +26,25 @@ const notFoundLesson = {
 }
 
 function getLesson() {
-  log.lesson(Teachers
-    .sortByWorkload()
-    .getWithLessonsInClass()
-    .getWorkingNow()
-    .getHasntBeenYet()
-    .getFree()
-    .noNeedToSkipForThisClass()
-    // .getTodayMustBe()
-    .sortByLeftWorkload()
-    .sortByWorkhoursIfNeeded()
-    .sortBySubjectDivisibility()
-    // .findWithCoWorker()
-  , {
-    day: 5,
-    hour: 2,
-    classTitle: '5ə',
-    logEmpty: true,
-  })
+  // log.lesson(Teachers
+  //   .sortByWorkload()
+  //   .getWithLessonsInClass()
+  //   .getWorkingNow()
+  //   .getHasntBeenYet()
+  //   .getFree()
+  //   .noNeedToSkipForThisClass()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .getTodayMustBe()
+  //   .sortBySubjectDivisibility()
+  //   .sortByLeftWorkload()
+  //   .sortByWorkIfNeeded()
+  //   // .getLessonTeachers()
+  // , {
+  //   day: 5,
+  //   hour: 4,
+  //   classTitle: '9',
+  //   logEmpty: true,
+  // })
 
   const { suitableTeachers: teachers } = Teachers
     .sortByWorkload()
@@ -52,11 +53,12 @@ function getLesson() {
     .getHasntBeenYet()
     .getFree()
     .noNeedToSkipForThisClass()
+    .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
     .sortBySubjectDivisibility()
     .sortByLeftWorkload()
-    .sortByWorkhoursIfNeeded()
-    .findWithCoWorker()
+    .sortByWorkIfNeeded()
+    .getLessonTeachers()
 
   if (!teachers.filter(Boolean).length) return null
 
