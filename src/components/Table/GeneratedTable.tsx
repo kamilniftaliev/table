@@ -62,7 +62,7 @@ function GeneratedTable(table): React.ReactElement {
   const [timetable, setTimetable] = useState(null);
   const { classes } = table;
 
-  if (timetable) console.table('timetable :', timetable);
+  // if (timetable) console.table('timetable :', timetable);
 
   function generateTimeTable() {
     if (!timetable) setTimetable(Timetable.generate(table));

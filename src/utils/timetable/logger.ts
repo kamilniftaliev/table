@@ -21,8 +21,9 @@ export default class Loggger {
     const curDayIndex = this.table.dayIndex
   
     const workhours = this.table.teachers[teacherIndex].workhours
-      .slice(this.table.dayIndex, this.table.schoolDaysCount)
-      .map((day, dayIndex) => {
+      .slice(curDayIndex, this.table.schoolDaysCount)
+      .map((day, di) => {
+        const dayIndex = curDayIndex + di
         // Start counting from the hour of each day
         // If it's today then count from current hour
         // Or else count from start of the day
@@ -31,6 +32,12 @@ export default class Loggger {
       })
 
     return workhours.flat().filter(Boolean).length
+  }
+
+  getTeacherOverallWorkload = ({ teacherIndex }) => {
+    const { workload } = this.table.teachers[teacherIndex]
+
+    return workload.reduce((acc, w) => acc + w.hours, 0);
   }
 
   match({
@@ -60,8 +67,9 @@ export default class Loggger {
     const { id: classId } = this.table.classes[this.table.classIndex]
     const leftLessonsInClass = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
     const leftWorkingHours = this.howManyWorkingHoursFromNow(lesson)
+    const overallWorkload = this.getTeacherOverallWorkload(lesson)
     
-    return `${subject}, ${lessonTeacher}, ${leftLessonsInClass} lessons, ${leftWorkingHours} hours`;
+    return `${subject}, ${lessonTeacher}, ${leftLessonsInClass}/${overallWorkload} lessons, ${leftWorkingHours} hours`;
   }
 
   lesson = (
@@ -87,7 +95,7 @@ export default class Loggger {
     if (!timeText || !teachers) return;
     
     const teachersLog = teachers.reduce((acc, lesson) => {
-      const log = `${timeText}, ${this.parseLesson(lesson)}`
+      const log = this.parseLesson(lesson)
   
       const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined'
   
@@ -99,7 +107,7 @@ export default class Loggger {
     let logArr = ''
   
     if (teachersLog) {
-      logArr = `${title}\n${teachersLog}`
+      logArr = `${title}\n\t\t\t\t${timeText}\n${teachersLog}`
     } else if (logEmpty) {
       logArr = `NOTHING ${title}`
     }

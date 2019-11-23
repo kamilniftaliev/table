@@ -201,7 +201,8 @@ export default class Teachers {
 
     return workhours
       .slice(curDayIndex, this.table.schoolDaysCount)
-      .reduce((acc, day, dayIndex) => {
+      .reduce((acc, day, di) => {
+        const dayIndex = di + curDayIndex
         // Slice the day's hours from current hour if the day is current day (today)
         // else just count rest of the day
         const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0;
@@ -236,7 +237,8 @@ export default class Teachers {
     const curDayIndex = this.table.dayIndex
     const workhours = this.table.teachers[teacherIndex].workhours
       .slice(curDayIndex, this.table.schoolDaysCount)
-      .map((day, dayIndex) => {
+      .map((day, di) => {
+        const dayIndex = di + curDayIndex
         // Start counting from the hour of each day
         // If it's today then count from current hour
         // Or else count from start of the day
@@ -378,6 +380,12 @@ export default class Teachers {
     return this.getTeacherWorkloadCountInClass(this.sortByLeftWorkload(teachers)[0])
   }
 
+  getTeacherOverallWorkload = ({ teacherIndex }) => {
+    const { workload } = this.table.teachers[teacherIndex]
+
+    return workload.reduce((acc, w) => acc + w.hours, 0);
+  }
+
   getTodayMustBe() {
     let teachers = this.suitableTeachers
 
@@ -386,52 +394,57 @@ export default class Teachers {
       return this;
     }
 
-    // If all the teachers have same amount of work hours left
-    // Prefer divisible subjects
-    // const divisibleSubjects = this.filterDivisibleSubjects(teachers)
-    // const uniqueDivisibleSubjects = this.filterUniqueDivisibleSubjects(divisibleSubjects)
-    // const notDivisibleSubjects = this.filterNotDivisibleSubjects(teachers)
-    const firstTeacherWorkhours = this.howManyWorkhoursFromNow(teachers[0])
-    const allWorkhoursAreSame = !teachers.find(teacher => this.howManyWorkhoursFromNow(teacher) !== firstTeacherWorkhours)
+    const haveMoreWorkloadThanHours = teachers.filter(teacher => {
+      let overallWorkload = this.getTeacherOverallWorkload(teacher)
+      let workhours = this.howManyWorkhoursFromNow(teacher)
+      let hasMoreWorkloadThanHours = overallWorkload >= workhours
+      const coWorker = this.getCoWorker(teacher)
 
-    // if (this.log.match({
-    //   day: 4,
-    //   hour: 1,
-    //   classTitle: '5e',
-    //   logEmpty: true,
-    // })) {
-    //   debugger;
-    // }
-    // this.log.lesson(teachers, {
-    //   day: 5,
-    //   hour: 4,
-    //   classTitle: '9',
-    //   logEmpty: true,
-    // }, allWorkhoursAreSame)
+      if (this.isDivisiblePair(teacher.subjectIndex) && coWorker && !hasMoreWorkloadThanHours) {
+        overallWorkload = this.getTeacherOverallWorkload(coWorker)
+        workhours = this.howManyWorkhoursFromNow(coWorker)
 
-    // if (allWorkhoursAreSame) {
+        hasMoreWorkloadThanHours = overallWorkload >= workhours
+      }
 
-    // }
-    // if (
-    //   allWorkhoursAreSame
-    //   && uniqueDivisibleSubjects.length === 1
-    //   && notDivisibleSubjects.length === 1
-    // ) {
-    //   const minDivisibleWorkhours = this.getTeacherWithMinWorkload(divisibleSubjects)
-    //   const minNotDivisibleWorkhours = this.getTeacherWithMinWorkload(notDivisibleSubjects)
-
-    //   if (minNotDivisibleWorkhours > minDivisibleWorkhours) {
-    //     teachers = divisibleSubjects
-    //   } else if (minNotDivisibleWorkhours < minDivisibleWorkhours) {
-    //     teachers = notDivisibleSubjects
-    //   }
-    // }
+      return hasMoreWorkloadThanHours
+    })
     
-    const filtered = teachers.filter(this.doesTeacherHaveMoreHours);
+    if (haveMoreWorkloadThanHours.length) {
+      teachers = this.sortByLessWorkhours(haveMoreWorkloadThanHours)
+    } else {
+      // If all the teachers have same amount of work hours left
+      // Prefer divisible subjects
+      // const divisibleSubjects = this.filterDivisibleSubjects(teachers)
+      // const uniqueDivisibleSubjects = this.filterUniqueDivisibleSubjects(divisibleSubjects)
+      // const notDivisibleSubjects = this.filterNotDivisibleSubjects(teachers)
+      // const firstTeacherWorkhours = this.howManyWorkhoursFromNow(teachers[0])
+      // const allWorkhoursAreSame = !teachers.find(teacher => this.howManyWorkhoursFromNow(teacher) !== firstTeacherWorkhours)
 
-    const todayMustBe = this.filterWithCoWorkerIfNeeded(filtered)
+      // if (allWorkhoursAreSame) {
 
-    if (todayMustBe.length) teachers = todayMustBe
+      // }
+      // if (
+      //   allWorkhoursAreSame
+      //   && uniqueDivisibleSubjects.length === 1
+      //   && notDivisibleSubjects.length === 1
+      // ) {
+      //   const minDivisibleWorkhours = this.getTeacherWithMinWorkload(divisibleSubjects)
+      //   const minNotDivisibleWorkhours = this.getTeacherWithMinWorkload(notDivisibleSubjects)
+
+      //   if (minNotDivisibleWorkhours > minDivisibleWorkhours) {
+      //     teachers = divisibleSubjects
+      //   } else if (minNotDivisibleWorkhours < minDivisibleWorkhours) {
+      //     teachers = notDivisibleSubjects
+      //   }
+      // }
+      
+      const filtered = teachers.filter(this.doesTeacherHaveMoreHours);
+
+      const todayMustBe = this.filterWithCoWorkerIfNeeded(filtered)
+
+      if (todayMustBe.length) teachers = todayMustBe
+    }
 
     this.suitableTeachers = teachers
     return this

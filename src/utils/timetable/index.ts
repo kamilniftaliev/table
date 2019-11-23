@@ -34,15 +34,13 @@ function getLesson() {
   //   .getFree()
   //   .noNeedToSkipForThisClass()
   //   .filterWithCoWorkerIfNeeded()
-  //   .getTodayMustBe()
-  //   .sortBySubjectDivisibility()
-  //   .sortByLeftWorkload()
+  //   // .getTodayMustBe()
   //   .sortByWorkIfNeeded()
   //   // .getLessonTeachers()
   // , {
-  //   day: 5,
+  //   day: 4,
   //   hour: 4,
-  //   classTitle: '9',
+  //   classTitle: '11',
   //   logEmpty: true,
   // })
 
@@ -55,8 +53,6 @@ function getLesson() {
     .noNeedToSkipForThisClass()
     .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
-    .sortBySubjectDivisibility()
-    .sortByLeftWorkload()
     .sortByWorkIfNeeded()
     .getLessonTeachers()
 
