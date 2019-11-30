@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
 
@@ -19,11 +19,18 @@ interface Props {
 
 function Teachers(table: Props): React.ReactElement {
   const { id: tableId } = table;
-  const [editingTeacher, setEditingTeacher] = useState<TeacherProps>(null)
-  const [deletingTeacher, setDeletingTeacher] = useState<TeacherProps>(null)
+  const [editingTeacher, setEditingTeacher] = useState<TeacherProps>(null);
+  const [deletingTeacher, setDeletingTeacher] = useState<TeacherProps>(null);
 
   const { data, loading } = useQuery(graph.GetTeachers, { variables: { tableId } });
-  const [deleteTeacherRequest] = useMutation(graph.DeleteTeacher)
+  const [deleteTeacherRequest] = useMutation(graph.DeleteTeacher);
+
+  useEffect(() => {
+    document.title = translation('teachers');
+    return (): void => {
+      document.title = 'Table.az';
+    };
+  }, []);
 
   if (loading) return <Preloader isCentered />
 

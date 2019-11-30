@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
 
@@ -25,6 +25,13 @@ function Classes(table: Props): React.ReactElement {
 
   const { data, loading } = useQuery(graph.GetClasses, { variables: { tableId } });
   const [deleteClassRequest] = useMutation(graph.DeleteClass)
+
+  useEffect(() => {
+    document.title = translation('classes');
+    return (): void => {
+      document.title = 'Table.az';
+    };
+  }, []);
 
   if (loading) return <Preloader isCentered />
 

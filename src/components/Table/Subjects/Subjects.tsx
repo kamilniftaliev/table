@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
 
@@ -28,6 +28,13 @@ function Subjects(table: Props): React.ReactElement {
 
   const { data, loading } = useQuery(graph.GetSubjects, { variables: { tableId } });
   const [deleteSubjectRequest] = useMutation(graph.DeleteSubject)
+
+  useEffect(() => {
+    document.title = translation('subjects');
+    return (): void => {
+      document.title = 'Table.az';
+    };
+  }, []);
 
   if (loading) return <Preloader isCentered />
 
