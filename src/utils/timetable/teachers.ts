@@ -567,31 +567,122 @@ export default class Teachers {
         hasMoreHours = hasMoreHours || coWorkerHasMoreHours
       }
 
-      const hasMoreImportantWorkload = workload.find((w, index) => {
-        const hasMoreWorkloadInOtherClass = w.classId !== classId && w.subjectId === subjectId && w.hours > hours 
+      const workloadByClass = workload.reduce((acc, w) => {
+        if (!acc[w.classId]) acc[w.classId] = 0;
 
-        if (!hasMoreWorkloadInOtherClass) return false
+        acc[w.classId] += w.hours;
 
-        const classIndex = this.table.classes.findIndex(s => s.id === w.classId)
-        const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length
+        return acc;
+      }, {});
+
+      const maxHourAmongClasses = Math.max(...Object.values(workloadByClass));
+
+      const hasMoreWorkloadInOtherClass = workloadByClass[classId] < maxHourAmongClasses;
+      const hasEqualWorkloadInOtherClass = workloadByClass[classId] <= maxHourAmongClasses;
+
+      // if (hasMoreWorkloadInOtherClass) return false;
+
+      // const hasSameWorkloadInOtherClass = workloadByClass[classId] === maxHourAmongClasses;
+      const maxHourForClass = Math.max(...Object.keys(this.table.maxClassHours[classId]).map(Number));
+
+      const overallWorkload = workload
+          .filter(w => w.classId === classId)
+          .reduce((acc, w) => acc + w.hours, 0)
+
+      let otherClassIsMoreImportant = false;
+
+      const found = Object.keys(workloadByClass).find(theClassId => {
+        const maxHourForTheClass = Math.max(...Object.keys(this.table.maxClassHours[theClassId]).map(Number));
+
+        const otherClassHasLessDailyHours = maxHourForTheClass < maxHourForClass;
+
+        // if (!otherClassHasLessDailyHours) return false;
+
+        const classIndex = this.table.classes.findIndex(({ id }) => id === theClassId);
+
+        const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length;
 
         if (!hasntBeenYetInOtherClass) return false
 
-        const hasMoreHoursInOtherClass = this.doesTeacherHaveMoreHours({
-          ...teacher,
-          workloadIndex: index,
-        })
+        const overallWorkloadInOtherClass = workload
+          .filter(w => w.classId === theClassId)
+          .reduce((acc, w) => acc + w.hours, 0)
 
-        return hasMoreHoursInOtherClass
+        otherClassIsMoreImportant = (
+          overallWorkloadInOtherClass >= overallWorkload
+          && otherClassHasLessDailyHours
+        )
+
+        // this.log.lesson(teacher, {
+        //   day: 5,
+        //   hour: 2,
+        //   // classTitle: '5ə',
+        //   classTitle: '8',
+        //   // teacher: 'Ellada',
+        //   logEmpty: true,
+        // }, otherClassHasLessDailyHours, otherClassIsMoreImportant, overallWorkloadInOtherClass > overallWorkload)
+
+        return overallWorkloadInOtherClass > overallWorkload || otherClassIsMoreImportant;
       })
+
+      this.log.lesson(teacher, {
+        day: 1,
+        hour: 6,
+        classTitle: '5ə',
+        teacher: 'Vakansiya',
+        logEmpty: true,
+      }, found, hasMoreWorkloadInOtherClass, hasMoreHours, otherClassIsMoreImportant, hasEqualWorkloadInOtherClass, maxHourAmongClasses, workloadByClass[classId])
+
+      if (found && (
+        hasMoreWorkloadInOtherClass
+        || (
+          hasEqualWorkloadInOtherClass
+          && otherClassIsMoreImportant
+        )
+      )) {
+        return otherClassIsMoreImportant || hasMoreHours;
+      }
+
+      // const hasMoreImportantWorkload = workload.find((w, index) => {
+      //   const hasMoreWorkloadInOtherClass = (
+      //     w.classId !== classId
+      //     && w.subjectId === subjectId
+      //     && w.hours > hours
+      //   );
+
+      //   // if (this.log.match({
+      //   //   day: 5,
+      //   //   hour: 2,
+      //   //   classTitle: '9',
+      //   //   teacher: 'Nəzirova',
+      //   //   logEmpty: true,
+      //   // })) {
+      //   //   console.log('workloadByClass :', workloadByClass);
+      //   //   // debugger;
+      //   //   // console.log('hasMoreWorkloadInOtherClass :', hasMoreWorkloadInOtherClass);
+      //   // }
+
+      //   if (!hasMoreWorkloadInOtherClass) return false
+
+      //   const classIndex = this.table.classes.findIndex(s => s.id === w.classId)
+      //   const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length
+
+      //   if (!hasntBeenYetInOtherClass) return false
+
+      //   const hasMoreHoursInOtherClass = this.doesTeacherHaveMoreHours({
+      //     ...teacher,
+      //     workloadIndex: index,
+      //   })
+
+      //   return hasMoreHoursInOtherClass
+      // })
 
       // The teacher have more hours in other class
       // So include the teacher only if it's inevitable
-      if (hasMoreImportantWorkload) return hasMoreHours
+      // if (hasMoreImportantWorkload) return hasMoreHours
       
       return true
     })
-
     if (noNeedToSkipForThisClassTeachers.length) {
       this.suitableTeachers = noNeedToSkipForThisClassTeachers
     }

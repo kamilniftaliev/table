@@ -32,6 +32,7 @@ function getLesson() {
     .getWorkingNow()
     .getHasntBeenYet()
     .getFree()
+    .filterWithCoWorkerIfNeeded()
     .noNeedToSkipForThisClass()
     .filterWithCoWorkerIfNeeded()
     // .getTodayMustBe()
@@ -39,8 +40,8 @@ function getLesson() {
     // .getLessonTeachers()
   , {
     day: 4,
-    hour: 5,
-    classTitle: '5e',
+    hour: 4,
+    classTitle: '5ə',
     logEmpty: true,
   })
 
@@ -50,6 +51,7 @@ function getLesson() {
     .getWorkingNow()
     .getHasntBeenYet()
     .getFree()
+    .filterWithCoWorkerIfNeeded()
     .noNeedToSkipForThisClass()
     .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
