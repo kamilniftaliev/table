@@ -599,6 +599,7 @@ export default class Teachers {
         // if (!otherClassHasLessDailyHours) return false;
 
         const classIndex = this.table.classes.findIndex(({ id }) => id === theClassId);
+        const theClass = this.table.classes[classIndex];
 
         const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length;
 
@@ -613,32 +614,36 @@ export default class Teachers {
           && otherClassHasLessDailyHours
         )
 
-        // this.log.lesson(teacher, {
-        //   day: 5,
-        //   hour: 2,
-        //   // classTitle: '5ə',
-        //   classTitle: '8',
-        //   // teacher: 'Ellada',
-        //   logEmpty: true,
-        // }, otherClassHasLessDailyHours, otherClassIsMoreImportant, overallWorkloadInOtherClass > overallWorkload)
+        const classHasNoLessonNow = !this.timetable[this.table.dayIndex][this.table.hourIndex][classIndex];
 
-        return overallWorkloadInOtherClass > overallWorkload || otherClassIsMoreImportant;
+        // if (classHasNoLessonNow) {
+        //   this.log.lesson(teacher, {
+        //     title: theClass.title,
+        //     day: 3,
+        //     hour: 4,
+        //     classTitle: 9,
+        //     teacher: 'narə',
+        //     // logEmpty: true,
+        //   }, otherClassHasLessDailyHours, otherClassIsMoreImportant, overallWorkloadInOtherClass, overallWorkload)
+        // }
+
+        return classHasNoLessonNow && (overallWorkloadInOtherClass > overallWorkload || otherClassHasLessDailyHours);
       })
 
-      this.log.lesson(teacher, {
-        day: 1,
-        hour: 6,
-        classTitle: '5ə',
-        teacher: 'Vakansiya',
-        logEmpty: true,
-      }, found, hasMoreWorkloadInOtherClass, hasMoreHours, otherClassIsMoreImportant, hasEqualWorkloadInOtherClass, maxHourAmongClasses, workloadByClass[classId])
+      // this.log.lesson(teacher, {
+      //   day: 1,
+      //   hour: 6,
+      //   classTitle: '5ə',
+      //   teacher: 'Vakansiya',
+      //   logEmpty: true,
+      // }, found, hasMoreWorkloadInOtherClass, hasMoreHours, otherClassIsMoreImportant, hasEqualWorkloadInOtherClass, maxHourAmongClasses, workloadByClass[classId])
 
       if (found && (
         hasMoreWorkloadInOtherClass
-        || (
-          hasEqualWorkloadInOtherClass
-          && otherClassIsMoreImportant
-        )
+        // || (
+        //   hasEqualWorkloadInOtherClass
+        //   && otherClassIsMoreImportant
+        // )
       )) {
         return otherClassIsMoreImportant || hasMoreHours;
       }

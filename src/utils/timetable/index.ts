@@ -26,24 +26,24 @@ const notFoundLesson = {
 }
 
 function getLesson() {
-  log.lesson(Teachers
-    .sortByWorkload()
-    .getWithLessonsInClass()
-    .getWorkingNow()
-    .getHasntBeenYet()
-    .getFree()
-    .filterWithCoWorkerIfNeeded()
-    .noNeedToSkipForThisClass()
-    .filterWithCoWorkerIfNeeded()
-    // .getTodayMustBe()
-    // .sortByWorkIfNeeded()
-    // .getLessonTeachers()
-  , {
-    day: 4,
-    hour: 4,
-    classTitle: '5ə',
-    logEmpty: true,
-  })
+  // log.lesson(Teachers
+  //   .sortByWorkload()
+  //   .getWithLessonsInClass()
+  //   .getWorkingNow()
+  //   .getHasntBeenYet()
+  //   .getFree()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .noNeedToSkipForThisClass()
+  //   .filterWithCoWorkerIfNeeded()
+  //   // .getTodayMustBe()
+  //   // .sortByWorkIfNeeded()
+  //   // .getLessonTeachers()
+  // , {
+  //   day: 3,
+  //   hour: 4,
+  //   classTitle: 9,
+  //   logEmpty: true,
+  // })
 
   const { suitableTeachers: teachers } = Teachers
     .sortByWorkload()
