@@ -42,14 +42,28 @@ export default class Loggger {
     return workload.reduce((acc, w) => acc + w.hours, 0);
   }
 
-  match({
-    day,
-    hour,
-    classTitle,
-  }) {
-    const curDay = this.table.dayIndex + 1
-    const curHour = this.table.hourIndex + 1
-    const { title: curClassTitle } = this.table.classes[this.table.classIndex]
+  match(
+    {
+      day,
+      hour,
+      classTitle,
+    },
+    {
+      teacherIndex,
+      workloadIndex,
+    } = {},
+  ) {
+    let { classIndex } = this.table;
+
+    // If need to read class title from given teacher
+    if (typeof teacherIndex === 'number' && typeof workloadIndex === 'number') {
+      const { classId } = this.table.teachers[teacherIndex].workload[workloadIndex];
+      classIndex = this.table.classes.findIndex(({ id }) => id === classId);
+    }
+
+    const curDay = this.table.dayIndex + 1;
+    const curHour = this.table.hourIndex + 1;
+    const { title: curClassTitle } = this.table.classes[classIndex];
     const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`
     const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number'
     const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number'
@@ -62,14 +76,15 @@ export default class Loggger {
   }
   
   parseLesson = (lesson) => {
-    if (!lesson) return ''
-    const { teacherIndex, subjectIndex } = lesson
-    const { title: subject, id: subjectId } = this.table.subjects[subjectIndex]
-    const { name: lessonTeacher, workload } = this.table.teachers[teacherIndex]
-    const { id: classId } = this.table.classes[this.table.classIndex]
+    if (!lesson) return '';
+    const { teacherIndex, subjectIndex, workloadIndex } = lesson;
+    const { title: subject, id: subjectId } = this.table.subjects[subjectIndex];
+    const { name: lessonTeacher, workload } = this.table.teachers[teacherIndex];
+    const { classId } = workload[workloadIndex];
+    // const { id: classId } = this.table.classes[this.table.classIndex];
     const leftLessonsInClass = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
-    const leftWorkingHours = this.howManyWorkingHoursFromNow(lesson)
-    const overallWorkload = this.getTeacherOverallWorkload(lesson)
+    const leftWorkingHours = this.howManyWorkingHoursFromNow(lesson);
+    const overallWorkload = this.getTeacherOverallWorkload(lesson);
     
     return `${subject}, ${lessonTeacher}, ${leftLessonsInClass}/${overallWorkload} lessons, ${leftWorkingHours} hours`;
   }
@@ -92,7 +107,7 @@ export default class Loggger {
       else teachers = [teachers]
     }
 
-    const timeText = this.match({ day, hour, classTitle })
+    const timeText = this.match({ day, hour, classTitle }, teachers[0]);
 
     if (!timeText || !teachers) return;
     

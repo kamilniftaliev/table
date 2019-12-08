@@ -39,9 +39,9 @@ function getLesson() {
   //   // .sortByWorkIfNeeded()
   //   // .getLessonTeachers()
   // , {
-  //   day: 3,
-  //   hour: 4,
-  //   classTitle: 9,
+  //   day: 5,
+  //   hour: 3,
+  //   classTitle: 11,
   //   logEmpty: true,
   // })
 
@@ -83,7 +83,7 @@ export function generate(defaultTable: object): object {
   maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount)
   table.maxClassHours = maxClassHours;
 
-  console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
+  // console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
 
   timetable = [];
   Teachers.timetable = timetable;

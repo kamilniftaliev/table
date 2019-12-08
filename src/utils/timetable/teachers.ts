@@ -115,9 +115,14 @@ export default class Teachers {
   }
   
   // Get teachers that has enough left lessons for the class yet
-  getWithLessonsInClass() {
-    const teachers = this.suitableTeachers
-    const { id: theClassId } = this.table.classes[this.table.classIndex]
+  getWithLessonsInClass(
+    customTeachers,
+    {
+      classIndex = this.table.classIndex,
+    } = {}
+  ) {
+    const teachers = customTeachers || this.suitableTeachers
+    const { id: theClassId } = this.table.classes[classIndex]
     const todaysSubjectsId = this.getTodaySubjectsIdOfClass()
   
     const teachersWithLessonsInClass = teachers
@@ -150,11 +155,11 @@ export default class Teachers {
         } else {
           return makeTeacher(foundWorks)
         }
-
-        
       })
       .filter(Boolean)
       .flat()
+
+    if (customTeachers) return teachersWithLessonsInClass;
 
     this.suitableTeachers = teachersWithLessonsInClass
   
@@ -164,8 +169,11 @@ export default class Teachers {
   }
 
   // Get teachers that work today and at the hour
-  getWorkingNow() {
-    const workingNowTeachers = this.suitableTeachers?.filter(({ workhours }) => workhours[this.table.dayIndex][this.table.hourIndex])
+  getWorkingNow(customTeachers) {
+    const teachers = customTeachers || this.suitableTeachers;
+    const workingNowTeachers = teachers?.filter(({ workhours }) => workhours[this.table.dayIndex][this.table.hourIndex])
+
+    if (customTeachers) return workingNowTeachers;
 
     this.log.teachersError('workingNowTeachers', workingNowTeachers);
 
@@ -173,9 +181,12 @@ export default class Teachers {
     return this
   }
 
-  getFree() {
-    const teachers = this.suitableTeachers
-    if (!teachers?.length) return this
+  getFree(customTeachers) {
+    const teachers = customTeachers || this.suitableTeachers
+    if (!teachers?.length) {
+      if (customTeachers) return customTeachers;
+      return this
+    }
   
     // Filter only the teachers that aren't in any class
     const freeTeachers = teachers.filter(({ teacherIndex }) => {
@@ -188,6 +199,8 @@ export default class Teachers {
         return lessonTeachers?.find(({ id }) => id === teacherId)
       })
     })
+
+    if (customTeachers) return freeTeachers;
 
     this.log.teachersError('free teachers', freeTeachers, teachers[0].subjectTitle);
   
@@ -522,7 +535,10 @@ export default class Teachers {
   
   getHasntBeenYet(customTeachers, classIndex) {
     const teachers = customTeachers || this.suitableTeachers
-    if (!teachers?.length) return this
+    if (!teachers?.length) {
+      if (customTeachers) return customTeachers;
+      return this
+    }
   
     // Filter only those who wasn't teaching today
     // Or got more hours than left days
@@ -552,7 +568,7 @@ export default class Teachers {
   }
 
   noNeedToSkipForThisClass() {
-    const noNeedToSkipForThisClassTeachers = this.suitableTeachers.filter((teacher) => {
+    const noNeedToSkipForThisClassTeachers = this.suitableTeachers.filter((teacher, index, arr) => {
       const { teacherIndex, workloadIndex, subjectIndex } = teacher;
       const { workload } = this.table.teachers[teacherIndex];
       const { subjectId, classId, hours } = workload[workloadIndex]
@@ -566,6 +582,9 @@ export default class Teachers {
         coWorkerHasMoreHours = coWorker && this.doesTeacherHaveMoreHours(coWorker)
         hasMoreHours = hasMoreHours || coWorkerHasMoreHours
       }
+
+      const lessonTeacherIndexes = [coWorker?.teacherIndex, teacherIndex];
+      const teachersWithoutThisLesson = arr.filter(t => !lessonTeacherIndexes.includes(t.teacherIndex))
 
       const workloadByClass = workload.reduce((acc, w) => {
         if (!acc[w.classId]) acc[w.classId] = 0;
@@ -589,12 +608,15 @@ export default class Teachers {
           .filter(w => w.classId === classId)
           .reduce((acc, w) => acc + w.hours, 0)
 
-      let otherClassIsMoreImportant = false;
+      let otherClassHasMoreWorkloadAndLessDailyHours = false;
+      let otherClassWillBeEmptyIfTake = false;
+      let otherClassHasLessDailyHours = false;
+      let otherClassTeachersWithoutThisOne = false;
 
       const found = Object.keys(workloadByClass).find(theClassId => {
         const maxHourForTheClass = Math.max(...Object.keys(this.table.maxClassHours[theClassId]).map(Number));
 
-        const otherClassHasLessDailyHours = maxHourForTheClass < maxHourForClass;
+        otherClassHasLessDailyHours = maxHourForTheClass < maxHourForClass;
 
         // if (!otherClassHasLessDailyHours) return false;
 
@@ -609,43 +631,85 @@ export default class Teachers {
           .filter(w => w.classId === theClassId)
           .reduce((acc, w) => acc + w.hours, 0)
 
-        otherClassIsMoreImportant = (
+        otherClassHasMoreWorkloadAndLessDailyHours = (
           overallWorkloadInOtherClass >= overallWorkload
           && otherClassHasLessDailyHours
         )
 
         const classHasNoLessonNow = !this.timetable[this.table.dayIndex][this.table.hourIndex][classIndex];
 
-        // if (classHasNoLessonNow) {
-        //   this.log.lesson(teacher, {
-        //     title: theClass.title,
-        //     day: 3,
-        //     hour: 4,
-        //     classTitle: 9,
-        //     teacher: 'narə',
-        //     // logEmpty: true,
-        //   }, otherClassHasLessDailyHours, otherClassIsMoreImportant, overallWorkloadInOtherClass, overallWorkload)
+        if (!classHasNoLessonNow) return;
+
+        let teachersOfOtherClass = this.getWithLessonsInClass(this.table.teachers, { classIndex });
+        teachersOfOtherClass = this.getWorkingNow(teachersOfOtherClass);
+        teachersOfOtherClass = this.getHasntBeenYet(teachersOfOtherClass, classIndex);
+        teachersOfOtherClass = this.getFree(teachersOfOtherClass);
+        otherClassTeachersWithoutThisOne = teachersOfOtherClass.filter(t => t.teacherIndex !== teacherIndex);
+
+        otherClassWillBeEmptyIfTake = teachersOfOtherClass.length && !otherClassTeachersWithoutThisOne.length;
+
+        // if (
+        //   this.log.match({
+        //     day: 5,
+        //     hour: 1,
+        //     classTitle: 6,
+        //     // teacher: 'Moxova',
+        //   })
+        //   && theClass.title.includes('11')
+        // ) {
+        //   debugger;
         // }
 
-        return classHasNoLessonNow && (overallWorkloadInOtherClass > overallWorkload || otherClassHasLessDailyHours);
-      })
+        return (
+          otherClassWillBeEmptyIfTake
+          || overallWorkloadInOtherClass > overallWorkload
+          || otherClassHasLessDailyHours
+        );
+      });
 
       // this.log.lesson(teacher, {
-      //   day: 1,
-      //   hour: 6,
-      //   classTitle: '5ə',
-      //   teacher: 'Vakansiya',
-      //   logEmpty: true,
-      // }, found, hasMoreWorkloadInOtherClass, hasMoreHours, otherClassIsMoreImportant, hasEqualWorkloadInOtherClass, maxHourAmongClasses, workloadByClass[classId])
+      //   day: 5,
+      //   hour: 4,
+      //   classTitle: 10,
+      //   teacher: 'Moxova',
+      // }, found, hasMoreWorkloadInOtherClass, hasMoreHours, otherClassHasMoreWorkloadAndLessDailyHours, hasEqualWorkloadInOtherClass, maxHourAmongClasses, workloadByClass[classId])
+      // this.log.lesson(teacher, {
+      //   day: 5,
+      //   hour: 1,
+      //   classTitle: 6,
+      //   teacher: 'Moxova',
+      // }, {
+      //   found,
+      //   hasMoreWorkloadInOtherClass,
+      //   hasMoreHours,
+      //   otherClassHasMoreWorkloadAndLessDailyHours,
+      //   hasEqualWorkloadInOtherClass,
+      //   maxHourAmongClasses,
+      //   workloadByClass: workloadByClass[classId],
+      //   otherClassWillBeEmptyIfTake,
+      //   otherClassHasLessDailyHours,
+      //   otherClassTeachersWithoutThisOne,
+      //   teachersWithoutThisLesson,
+      // })
 
       if (found && (
         hasMoreWorkloadInOtherClass
-        // || (
-        //   hasEqualWorkloadInOtherClass
-        //   && otherClassIsMoreImportant
-        // )
+        || (
+          hasEqualWorkloadInOtherClass
+          && (
+            otherClassHasMoreWorkloadAndLessDailyHours
+            || (
+              otherClassWillBeEmptyIfTake
+              && otherClassHasLessDailyHours
+              && teachersWithoutThisLesson.length
+            )
+          )
+        )
       )) {
-        return otherClassIsMoreImportant || hasMoreHours;
+        return !otherClassWillBeEmptyIfTake && (
+          otherClassHasMoreWorkloadAndLessDailyHours
+          || hasMoreHours
+        );
       }
 
       // const hasMoreImportantWorkload = workload.find((w, index) => {
