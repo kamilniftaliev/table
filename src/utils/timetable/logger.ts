@@ -98,6 +98,8 @@ export default class Loggger {
       teacher,
       logEmpty = false,
       title = '',
+      logFunc = console.log,
+      justReturn = false,
     } = {},
     ...rest
   ) => {
@@ -129,8 +131,8 @@ export default class Loggger {
       logArr = `NOTHING ${title}`
     }
 
-    if (logArr) {
-      console.log(`${logArr}\n`, ...rest)
+    if (logArr && !justReturn) {
+      logFunc(`${logArr}\n`, ...rest)
     }
     return logArr
   }

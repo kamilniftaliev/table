@@ -9,6 +9,8 @@ import { Table, Button } from '../ui';
 
 const TableContainer = styled.section`
   padding: 10px;
+  overflow-x: auto;
+  max-width: 92vw;
 `;
 
 const TableWrapper = styled(Table.default)`

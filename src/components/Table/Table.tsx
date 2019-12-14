@@ -82,6 +82,13 @@ function Table({
   if (loading) return <Preloader isCentered />;
 
   const { table } = data;
+  table.classes.sort((first, second) => {
+    const firstClassNum = parseInt(first.title, 10);
+    const secondClassNum = parseInt(second.title, 10);
+
+    return firstClassNum - secondClassNum;
+  });
+  // table.classes = table.classes.filter(({ title }) => parseInt(title, 10) > 5);
   console.log('INIT table :', table);
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;

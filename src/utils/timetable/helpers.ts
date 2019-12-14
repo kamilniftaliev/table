@@ -20,17 +20,44 @@ export default class Helpers {
   public getClassTitleById(id: string): string {
     return this.table.classes.find(s => s.id === id)?.title
   }
+  
+  public getClassIndexFromTeacher({ teacherIndex, workloadIndex }) {
+    const { classId } = this.table.teachers[teacherIndex].workload[workloadIndex];
+    return this.table.classes.findIndex(s => s.id === classId);
+  }
+
+  // If class and the given subject both are divisible
+  isDivisiblePair(subjectIndex, classIndex = this.table.classIndex) {
+    const { id: classId, title: classTitle } = this.table.classes[classIndex];
+    const { id: subjectId, title: subjectTitle } = this.table.subjects[subjectIndex];
+
+    const sameClassSameSubjectTeachers = this.table.teachers.filter(({ workload }) => {
+      return workload.find(w => (
+        w.classId === classId
+        && w.subjectId === subjectId
+        && w.hours
+      ));
+    });
+
+    // If same subject is taught by more than 2 teachers
+    // Warn about it
+    if (sameClassSameSubjectTeachers.length > 2) {
+      console.warn(classTitle, subjectTitle, sameClassSameSubjectTeachers)
+    }
+
+    return sameClassSameSubjectTeachers.length === 2;
+  }
 
   public getMaxHoursForClass(schoolDaysCount) {
-    return this.table.classes.reduce((acc, { id, isDivisible }) => {
+    return this.table.classes.reduce((acc, { id }, classIndex) => {
       const totalHoursOfClass = this.table.teachers
         .reduce((totalHours, { workload }) => {
           const teacherTotalClassHours = workload
             .filter(({ classId }) => classId === id)
             .reduce((teacherClassHours, { hours, subjectId }) => {
-              const { isDivisible: isSubjectDivisible } = this.getSubjectById(subjectId)
-              if (isDivisible && isSubjectDivisible) {
-                hours = hours / 2
+              const subject = this.getSubjectById(subjectId)
+              if (this.isDivisiblePair(this.table.subjects.indexOf(subject), classIndex)) {
+                hours /= 2;
               }
               return teacherClassHours + hours
             }, 0)
@@ -49,8 +76,12 @@ export default class Helpers {
       } else {
         const intTotalDailyHours = Math.floor(totalDailyHours)
         const moreHoursCount = totalHoursOfClass - (intTotalDailyHours * schoolDaysCount)
-        
-        hours[intTotalDailyHours] = intTotalDailyHours - moreHoursCount
+
+        // if (intTotalDailyHours - moreHoursCount === 0) {
+        //   debugger
+        // }
+
+        hours[intTotalDailyHours] = Math.round(totalDailyHours - moreHoursCount);
         hours[intTotalDailyHours + 1] = moreHoursCount
       }
 
