@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from 'react-apollo';
 
@@ -11,12 +11,26 @@ const TableCell = styled(Table.TD)`
   padding: 10px;
 `;
 
+const ShiftTitle = styled.p`
+  margin-top: 30px;
+  margin-bottom: 5px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 400;
+`;
+
 const daysOfWeek = [1, 2, 3, 4, 5, 6, 7];
-const lessonHours = [1, 2, 3, 4, 5, 6, 7, 8];
+const lessonsCount = 16;
+const lessonHours = Array(lessonsCount)
+  .fill(null)
+  .map((a, i) => i + 1);
 
-function WorkHours({ teacher, tableSlug, tableId, classes, subjects }) {
-  const updateWorkhour = useWorkhours(tableSlug, teacher.id);
-
+function renderWorkhours({
+  hours,
+  tableId,
+  teacher,
+  updateWorkhour,
+}): React.ReactElement {
   return (
     <Table.default>
       <Table.Header>
@@ -28,29 +42,31 @@ function WorkHours({ teacher, tableSlug, tableId, classes, subjects }) {
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {lessonHours.map(hour => (
+        {hours.map((hour, index) => (
           <Table.Row key={hour}>
             <TableCell align="left">
-              {translation('lesson')} {hour}
+              {translation('lesson')} {index + 1}
             </TableCell>
-            {daysOfWeek.map(day => (
-              <TableCell key={day}>
-                <Checkbox
-                  checked={teacher.workhours[day - 1][hour - 1]}
-                  onChange={value =>
-                    updateWorkhour({
-                      variables: {
-                        tableId,
-                        teacherId: teacher.id,
-                        day: `${day - 1}`,
-                        hour: `${hour - 1}`,
-                        value,
-                      },
-                    })
-                  }
-                />
-              </TableCell>
-            ))}
+            {daysOfWeek.map(day => {
+              const initialValue = !!teacher.workhours[day - 1][hour - 1];
+
+              const updater = value =>
+                updateWorkhour({
+                  variables: {
+                    tableId,
+                    teacherId: teacher.id,
+                    day: `${day - 1}`,
+                    hour: `${hour - 1}`,
+                    value,
+                  },
+                });
+
+              return (
+                <TableCell onClick={() => updater(!initialValue)} key={day}>
+                  <Checkbox checked={initialValue} onChange={updater} />
+                </TableCell>
+              );
+            })}
           </Table.Row>
         ))}
       </Table.Body>
@@ -58,7 +74,31 @@ function WorkHours({ teacher, tableSlug, tableId, classes, subjects }) {
   );
 }
 
+function Workhours({ teacher, tableSlug, tableId }) {
+  const updateWorkhour = useWorkhours(tableSlug, teacher.id);
+
+  return (
+    <>
+      <ShiftTitle>{translation('shift')} 1</ShiftTitle>
+      {renderWorkhours({
+        hours: lessonHours.slice(0, 8),
+        tableId,
+        teacher,
+        updateWorkhour,
+      })}
+      <ShiftTitle>{translation('shift')} 2</ShiftTitle>
+      {renderWorkhours({
+        hours: lessonHours.slice(8),
+        tableId,
+        teacher,
+        updateWorkhour,
+      })}
+    </>
+  );
+}
+
 function useWorkhours(tableSlug, teacherId) {
+  const [inProgress, setInProgress] = useState<boolean>(false);
   const [updateWorkhour] = useMutation(graph.UpdateWorkhour, {
     update(
       cache,
@@ -82,11 +122,16 @@ function useWorkhours(tableSlug, teacherId) {
           query: graph.GetTable,
           data: { table },
         });
+        setInProgress(false);
       }
     },
   });
 
-  return updateWorkhour;
+  return (props): void => {
+    if (inProgress) return;
+    setInProgress(true);
+    updateWorkhour(props);
+  };
 }
 
-export default React.memo(WorkHours);
+export default React.memo(Workhours);

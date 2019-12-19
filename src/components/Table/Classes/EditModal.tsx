@@ -11,7 +11,7 @@ import graph from '../../../graph';
 export interface ClassProps {
   id: string;
   title?: string;
-  isDivisible?: boolean;
+  shift?: number;
 }
 
 interface Props {
@@ -22,12 +22,12 @@ interface Props {
 
 function EditModal({
   tableId,
-  class: { id, title: classTitle, isDivisible: classIsDivisible },
+  class: { id, title: classTitle, shift: initialShift = 1 },
   onClose,
 }: Props): React.ReactElement {
   const isNewClass = id === 'new';
   const [title, setTitle] = useState<string>(classTitle || '');
-  const [isDivisible, setIsDivisible] = useState<boolean>(!!classIsDivisible);
+  const [shift, setShift] = useState<number>(initialShift);
   const [createClassRequest] = useMutation(graph.CreateClass);
   const [updateClassRequest] = useMutation(graph.UpdateClass);
 
@@ -48,7 +48,7 @@ function EditModal({
 
     if (isNewClass) {
       createClassRequest({
-        variables: { title: saveTitle, isDivisible, tableId },
+        variables: { title: saveTitle, shift, tableId },
         refetchQueries: [
           { query: graph.GetClasses, variables: { tableId } },
           { query: graph.GetUser },
@@ -56,7 +56,7 @@ function EditModal({
       });
     } else {
       updateClassRequest({
-        variables: { title: saveTitle, isDivisible, id, tableId },
+        variables: { title: saveTitle, shift, id, tableId },
       });
     }
 
@@ -84,10 +84,19 @@ function EditModal({
         autoFocus
         placeholder={translation('exampleClassPlaceholder')}
       />
-      <Checkbox
-        onChange={(value: boolean): void => setIsDivisible(value)}
-        checked={isDivisible}
-        label={translation('isDivisibleByGroups')}
+      {/* <Checkbox
+        onChange={(value: boolean): void => setShift(value)}
+        checked={shift}
+        label={translation('shiftByGroups')}
+      /> */}
+      <br />
+      <br />
+      <Input
+        onChange={(e): void => setShift(e.target.value)}
+        value={shift}
+        autoFocus
+        type="number"
+        placeholder={translation('shift')}
       />
     </Modal.default>
   );

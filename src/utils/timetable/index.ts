@@ -26,24 +26,24 @@ const notFoundLesson = {
 }
 
 function getLesson() {
-  log.lesson(Teachers
-    .sortByWorkload()
-    .getWithLessonsInClass()
-    .getWorkingNow()
-    .getHasntBeenYet()
-    .getFree()
-    .filterWithCoWorkerIfNeeded()
-    .noNeedToSkipForThisClass()
-    .filterWithCoWorkerIfNeeded()
-    // .getTodayMustBe()
-    // .sortByWorkIfNeeded()
-    // .getLessonTeachers()
-  , {
-    day: 2,
-    hour: 4,
-    classTitle: '11',
-    logEmpty: true,
-  })
+  // log.lesson(Teachers
+  //   .sortByWorkload()
+  //   .getWithLessonsInClass()
+  //   .getWorkingNow()
+  //   .getHasntBeenYet()
+  //   .getFree()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .noNeedToSkipForThisClass()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .getTodayMustBe()
+  //   .sortByWorkIfNeeded()
+  //   .getLessonTeachers()
+  // , {
+  //   day: 1,
+  //   hour: 2,
+  //   classTitle: '4e',
+  //   logEmpty: true,
+  // })
 
   const { suitableTeachers: teachers } = Teachers
     .sortByWorkload()
@@ -53,7 +53,7 @@ function getLesson() {
     .getFree()
     .filterWithCoWorkerIfNeeded()
     .noNeedToSkipForThisClass()
-    .filterWithCoWorkerIfNeeded()
+    // .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
     .sortByWorkIfNeeded()
     .getLessonTeachers()
@@ -77,14 +77,14 @@ export function generate(defaultTable: object): object {
   table.schoolHoursCount = schoolHoursCount
 
   log = new Logger(table)
-  window.log = log
+  if (!window.log) window.log = log
   helpers = new Helpers(table)
   Teachers = new TeachersClass(table)
   window.T = Teachers;
   maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount)
   table.maxClassHours = maxClassHours;
 
-  console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
+  // console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
 
   timetable = [];
   Teachers.timetable = timetable;

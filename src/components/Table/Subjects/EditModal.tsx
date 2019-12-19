@@ -16,7 +16,6 @@ export const Checkbox = styled(DefaultCheckbox)`
 export interface SubjectProps {
   id: string;
   title?: string;
-  isDivisible?: boolean;
 }
 
 interface Props {
@@ -28,9 +27,6 @@ interface Props {
 function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {
   const isNewSubject = subject.id === 'new';
   const [title, setTitle] = useState<string>(subject.title || '');
-  const [isDivisible, setIsDivisible] = useState<boolean>(
-    !!subject.isDivisible,
-  );
   const [createSubjectRequest] = useMutation(graph.CreateSubject);
   const [updateSubjectRequest] = useMutation(graph.UpdateSubject);
 
@@ -51,7 +47,7 @@ function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {
 
     if (isNewSubject) {
       createSubjectRequest({
-        variables: { title: saveTitle, isDivisible, tableId },
+        variables: { title: saveTitle, tableId },
         refetchQueries: [
           { query: graph.GetSubjects, variables: { tableId } },
           { query: graph.GetUser },
@@ -59,7 +55,7 @@ function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {
       });
     } else {
       updateSubjectRequest({
-        variables: { title: saveTitle, isDivisible, id: subject.id, tableId },
+        variables: { title: saveTitle, id: subject.id, tableId },
       });
     }
 
@@ -86,11 +82,6 @@ function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {
         value={title}
         autoFocus
         placeholder={translation('exampleSubjectPlaceholder')}
-      />
-      <Checkbox
-        onChange={(value: boolean): void => setIsDivisible(value)}
-        checked={isDivisible}
-        label={translation('isDivisibleByGroups')}
       />
     </Modal.default>
   );

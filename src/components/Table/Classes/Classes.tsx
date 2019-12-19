@@ -60,20 +60,20 @@ function Classes(table: Props): React.ReactElement {
             <Table.Row>
               <Table.Head>№</Table.Head>
               <Table.Head align="left">{translation('classTitle')}</Table.Head>
-              <Table.Head>{translation('isDivisibleByGroups')}</Table.Head>
+              <Table.Head>{translation('shift')}</Table.Head>
               <Table.Head>{translation('actions')}</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {classes.map(
-              ({ id, title, isDivisible }: ClassProps, index: number) => {
+              ({ id, title, shift }: ClassProps, index: number) => {
                 const updateFn = (): void => setEditingClass({ id, title })
 
                 return (
                   <TableRow key={id}>
                     <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
                     <Table.Cell align="left" onClick={updateFn}>{title}</Table.Cell>
-                    <Table.Cell onClick={updateFn}>{isDivisible ? 'Bəli' : 'Xeyr'}</Table.Cell>
+                    <Table.Cell onClick={updateFn}>{shift}</Table.Cell>
                     <Table.Cell>
                       <Button.Icon onClick={updateFn} src={EditIcon} />
                       <Button.Icon onClick={(): void => setDeletingClass({ id, title })} src={TrashCan} />

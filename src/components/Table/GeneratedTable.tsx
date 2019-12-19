@@ -60,7 +60,7 @@ function getTeachersName(teachers) {
   return `${teachers[0].name} və ${teachers[1].name}`;
 }
 
-function GeneratedTable(table): React.ReactElement {
+function tableGenerator(table) {
   const [timetable, setTimetable] = useState(null);
   const { classes } = table;
 
@@ -114,6 +114,37 @@ function GeneratedTable(table): React.ReactElement {
       )}
     </TableContainer>
   );
+}
+
+function getShiftFromTable(
+  {
+    classes,
+    teachers,
+    ...rest
+  },
+  shift,
+) {
+  return {
+    ...rest,
+    classes: classes.filter(c => !c.shift || c.shift === shift),
+    teachers: teachers.map(teacher => ({
+      ...teacher,
+      workhours: teacher.workhours.map(hours => shift === 1 ? hours.slice(0, 8) : hours.slice(8)),
+      workload: teacher.workload.filter(w => classes.find(c => c.id === w.classId)?.shift === shift)
+    })),
+  }
+}
+
+function GeneratedTable(table): React.ReactElement {
+  const firstShift = getShiftFromTable(table, 1);
+  const secondShift = getShiftFromTable(table, 2);
+
+  return (
+    <>
+      {tableGenerator(firstShift)}
+      {tableGenerator(secondShift)}
+    </>
+  )
 }
 
 export default React.memo(GeneratedTable);

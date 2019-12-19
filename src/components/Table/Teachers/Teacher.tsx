@@ -69,7 +69,7 @@ function Teacher({
 }: Props): React.ReactElement {
   const teacher = teachers.find(t => t.id === id);
   const [name, setName] = useName(teacher?.name, id, tableId);
-  const [tab, setTab] = useState<string>('workload');
+  const [tab, setTab] = useState<string>('workhours');
 
   useEffect(() => {
     document.title = name

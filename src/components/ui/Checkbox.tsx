@@ -45,7 +45,7 @@ function Component({
     <Wrapper {...props}>
       <Container>
         <input
-          onChange={e => onChange(e.target.checked)}
+          onChange={e => onChange(!!e.target.checked)}
           type="checkbox"
           checked={checked}
           hidden

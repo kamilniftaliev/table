@@ -17,23 +17,32 @@ export default class Loggger {
     return `${classTitle}, ${subjectTitle}, ${hours}`
   }
 
-  howManyWorkingHoursFromNow({ teacherIndex }) {
-    const curDayIndex = this.table.dayIndex
-    const { id: classId } = this.table.classes[this.table.classIndex];
-    const maxHourForClass = Math.max(...Object.keys(this.table.maxClassHours[classId]).map(Number));
-  
-    const workhours = this.table.teachers[teacherIndex].workhours
+  howManyWorkhoursFromNow = ({ teacherIndex, workloadIndex }) => {
+    const curDayIndex = this.table.dayIndex;
+    const teacher = this.table.teachers[teacherIndex];
+    const { classId } = teacher.workload[workloadIndex];
+    const classHoursLimit = Object.keys(this.table.maxClassHours[classId]).map(Number);
+
+    const workhours = teacher.workhours
       .slice(curDayIndex, this.table.schoolDaysCount)
       .map((day, di) => {
-        const dayIndex = curDayIndex + di
+        const dayIndex = di + curDayIndex;
+
+        let maxHourForClass = Math.max(...classHoursLimit);
+
+        // Find max available hour for the class
+        if (this.table.maxClassHours[classId][maxHourForClass] - di <= 0) {
+          maxHourForClass = Math.min(...classHoursLimit);
+        }
+
         // Start counting from the hour of each day
         // If it's today then count from current hour
         // Or else count from start of the day
         const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0
         return day.slice(hourStartIndex, maxHourForClass)
-      })
+      });
 
-    return workhours.flat().filter(Boolean).length
+    return workhours.flat().filter(Boolean).length;
   }
 
   getTeacherOverallWorkload = ({ teacherIndex }) => {
@@ -83,7 +92,7 @@ export default class Loggger {
     const { classId } = workload[workloadIndex];
     // const { id: classId } = this.table.classes[this.table.classIndex];
     const leftLessonsInClass = workload.find(w => w.classId === classId && w.subjectId === subjectId)?.hours;
-    const leftWorkingHours = this.howManyWorkingHoursFromNow(lesson);
+    const leftWorkingHours = this.howManyWorkhoursFromNow(lesson);
     const overallWorkload = this.getTeacherOverallWorkload(lesson);
     
     return `${subject}, ${lessonTeacher}, ${leftLessonsInClass}/${overallWorkload} lessons, ${leftWorkingHours} hours`;

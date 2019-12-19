@@ -63,20 +63,18 @@ function Subjects(table: Props): React.ReactElement {
             <Table.Row>
               <Table.Head>№</Table.Head>
               <Table.Head align="left">{translation('subjectTitle')}</Table.Head>
-              <Table.Head>{translation('isDivisibleByGroups')}</Table.Head>
               <Table.Head>{translation('actions')}</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {subjects.map(
-              ({ id, title, isDivisible }: SubjectProps, index: number) => {
+              ({ id, title }: SubjectProps, index: number) => {
                 const updateFn = (): void => setEditingSubject({ id, title })
 
                 return (
                   <TableRow key={id}>
                     <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
                     <Table.Cell align="left" onClick={updateFn}>{title}</Table.Cell>
-                    <Table.Cell onClick={updateFn}>{isDivisible ? 'Bəli' : 'Xeyr'}</Table.Cell>
                     <Table.Cell>
                       <Button.Icon onClick={updateFn} src={EditIcon} />
                       <Button.Icon onClick={(): void => setDeletingSubject({ id, title })} src={TrashCan} />

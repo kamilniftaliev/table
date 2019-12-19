@@ -1,26 +1,16 @@
-mutation CreateClass($tableId: ID!, $title: String!, $isDivisible: Boolean!) {
-  createClass(title: $title, isDivisible: $isDivisible, tableId: $tableId) {
+mutation CreateClass($tableId: ID!, $title: String!, $shift: Int!) {
+  createClass(title: $title, tableId: $tableId, shift: $shift) {
     id
-    isDivisible
     title
+    shift
   }
 }
 
-mutation UpdateClass(
-  $tableId: ID!
-  $title: String!
-  $isDivisible: Boolean!
-  $id: ID!
-) {
-  updateClass(
-    title: $title
-    isDivisible: $isDivisible
-    id: $id
-    tableId: $tableId
-  ) {
+mutation UpdateClass($tableId: ID!, $title: String!, $id: ID!, $shift: Int!) {
+  updateClass(title: $title, id: $id, tableId: $tableId, shift: $shift) {
     id
     title
-    isDivisible
+    shift
   }
 }
 
@@ -34,6 +24,6 @@ query GetClasses($tableId: ID!) {
   classes(tableId: $tableId) {
     id
     title
-    isDivisible
+    shift
   }
 }

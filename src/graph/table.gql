@@ -38,12 +38,11 @@ query GetTable($slug: String!) {
     subjects {
       id
       title
-      isDivisible
     }
     classes {
       id
       title
-      isDivisible
+      shift
     }
     teachers {
       id

@@ -59,4 +59,6 @@ export default {
   days: 'Günlər',
 
   generateTimeTable: 'Cədvəli yenilə',
+
+  shift: 'Növbə',
 };

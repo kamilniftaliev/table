@@ -1,26 +1,14 @@
-mutation CreateSubject($tableId: ID!, $title: String!, $isDivisible: Boolean!) {
-  createSubject(title: $title, isDivisible: $isDivisible, tableId: $tableId) {
+mutation CreateSubject($tableId: ID!, $title: String!) {
+  createSubject(title: $title, tableId: $tableId) {
     id
-    isDivisible
     title
   }
 }
 
-mutation UpdateSubject(
-  $tableId: ID!
-  $title: String!
-  $isDivisible: Boolean!
-  $id: ID!
-) {
-  updateSubject(
-    title: $title
-    isDivisible: $isDivisible
-    id: $id
-    tableId: $tableId
-  ) {
+mutation UpdateSubject($tableId: ID!, $title: String!, $id: ID!) {
+  updateSubject(title: $title, id: $id, tableId: $tableId) {
     id
     title
-    isDivisible
   }
 }
 
@@ -34,6 +22,5 @@ query GetSubjects($tableId: ID!) {
   subjects(tableId: $tableId) {
     id
     title
-    isDivisible
   }
 }

@@ -52,4 +52,6 @@ export default {
   days: 'Дни',
 
   generateTimeTable: 'Обновить таблицу',
+
+  shift: 'Смена',
 };
