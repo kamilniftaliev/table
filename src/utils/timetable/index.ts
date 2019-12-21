@@ -53,7 +53,7 @@ function getLesson() {
     .getFree()
     .filterWithCoWorkerIfNeeded()
     .noNeedToSkipForThisClass()
-    // .filterWithCoWorkerIfNeeded()
+    .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
     .sortByWorkIfNeeded()
     .getLessonTeachers()
@@ -80,7 +80,7 @@ export function generate(defaultTable: object): object {
   if (!window.log) window.log = log
   helpers = new Helpers(table)
   Teachers = new TeachersClass(table)
-  window.T = Teachers;
+  if (!window.T) window.T = Teachers;
   maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount)
   table.maxClassHours = maxClassHours;
 

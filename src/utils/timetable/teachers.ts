@@ -647,45 +647,31 @@ export default class Teachers {
         // if (hasMoreWorkloadInOtherClass) return false;
 
         // const hasSameWorkloadInOtherClass = workloadByClass[classId] === maxHourAmongClasses;
-        const maxHourForClass = Math.max(...Object.keys(this.table.maxClassHours[classId]).map(Number));
+        // const maxHourForClass = Math.max(...Object.keys(this.table.maxClassHours[classId]).map(Number));
 
-        const overallWorkload = workload
-          .filter(w => w.classId === classId)
-          .reduce((acc, w) => acc + w.hours, 0)
+        // const overallWorkload = workload
+        //   .filter(w => w.classId === classId)
+        //   .reduce((acc, w) => acc + w.hours, 0)
 
-        // let otherClassHasMoreWorkloadAndLessDailyHours = false;
-        let otherClassWillBeEmptyIfTake = false;
-        let otherClassHasLessDailyHours = false;
-        let otherClassTeachersWithoutThisOne = false;
+        // let otherClassTeachersWithoutThisOne = false;
         let teachersOfOtherClass = false;
-        // let overallWorkloadInOtherClass = false;
-        // let hasMoreWorkloadInOtherClass = false;
 
-        const found = Object.keys(workloadByClass).find(theClassId => {
+        const findClass = (theClassId, sameSubjectWithCoWorker?) => {
           const theClassHours = Object.keys(this.table.maxClassHours[theClassId]).map(Number);
           if (!theClassHours.length) return;
 
           const maxHourForTheClass = Math.max(...theClassHours);
 
-          otherClassHasLessDailyHours = maxHourForTheClass < maxHourForClass;
+          // otherClassHasLessDailyHours = maxHourForTheClass < maxHourForClass;
 
           const classIndex = this.table.classes.findIndex(({ id }) => id === theClassId);
           const theClass = this.table.classes[classIndex];
           
-          // hasMoreWorkloadInOtherClass = workloadByClass[theClass.id];
+          if (!sameSubjectWithCoWorker) {
+            const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length;
 
-          const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length;
-
-          if (!hasntBeenYetInOtherClass) return false
-
-          // overallWorkloadInOtherClass = workload
-          //   .filter(w => w.classId === theClassId)
-          //   .reduce((acc, w) => acc + w.hours, 0)
-
-          // otherClassHasMoreWorkloadAndLessDailyHours = (
-          //   overallWorkloadInOtherClass >= overallWorkload
-          //   && otherClassHasLessDailyHours
-          // )
+            if (!hasntBeenYetInOtherClass) return false
+          }
 
           const classHasNoLessonNow = (
             !this.timetable[this.table.dayIndex][this.table.hourIndex][classIndex]
@@ -693,7 +679,7 @@ export default class Teachers {
           );
 
           if (!classHasNoLessonNow) return;
-
+          
           teachersOfOtherClass = this.getWithLessonsInClass(this.table.teachers, { classIndex });
           teachersOfOtherClass = this.getWorkingNow(teachersOfOtherClass);
           teachersOfOtherClass = this.getHasntBeenYet(teachersOfOtherClass, classIndex);
@@ -705,100 +691,140 @@ export default class Teachers {
           teachersOfOtherClass = this.sortByWorkIfNeeded(teachersOfOtherClass);
           teachersOfOtherClass = this.getLessonTeachers(teachersOfOtherClass);
 
-          otherClassTeachersWithoutThisOne = teachersOfOtherClass.filter(t => t.teacherIndex !== teacherIndex);
-
-          otherClassWillBeEmptyIfTake = teachersOfOtherClass.length && !otherClassTeachersWithoutThisOne.length;
-
-          // console.log('object :', this.helpers.getClassIndexFromTeacher(teachersOfOtherClass[0]));
+          if (sameSubjectWithCoWorker) {
+            return teachersOfOtherClass.filter(t => t.subjectIndex === subjectIndex);
+          }
 
           const coWorkerForTheClass = this.getCoWorker(teacher, teachersOfOtherClass);
-
-          // const isDivisible = this.isDivisiblePair(subjectIndex, classIndex);
-
-          // const sameSubjectTeachers = teachersOfOtherClass.filter(t => (
-          //   t.subjectIndex === subjectIndex
-          //   && t.teacherIndex !== teacherIndex
-          // ))
 
           const willBeInOtherClass = teachersOfOtherClass.find(t => (
             t.teacherIndex === teacherIndex
             || t.teacherIndex === coWorkerForTheClass?.teacherIndex
           ));
-          // const willBeInOtherClass = (
-          //   teachersOfOtherClass[0]
-          //   && teachersOfOtherClass[0].teacherIndex === teacherIndex
-          //   || teachersOfOtherClass[0].teacherIndex === coWorker.teacherIndex
-          // );
           
-          // if (
-          //   this.log.match({
-          //     day: 1,
-          //     hour: 2,
-          //     classTitle: '5ə',
-          //   })
-          //   && name.includes('Ellada')
-          //   // && theClass.title.includes('8')
-          // ) {
-          //   const teach = this.log.lesson(teacher, { justReturn: true }, theClass.title);
-
-          //   this.log.lesson(teachersOfOtherClass, {}, {
-          //     teach,
-          //     coWorker: this.log.lesson(coWorkerForTheClass, { justReturn: true }),
-          //     willBeInOtherClass: this.log.lesson(willBeInOtherClass, { justReturn: true }),
-          //     'workloadByClass[classId]': workloadByClass[classId],
-          //     'workloadByClass[theClassId]': workloadByClass[theClassId],
-          //   });
-          // }
-
-          return willBeInOtherClass && workloadByClass[theClassId] > workloadByClass[classId]
-            // || canBeInOtherClass && (
-            //   otherClassWillBeEmptyIfTake
-            //   || overallWorkloadInOtherClass > overallWorkload
-            //   || otherClassHasLessDailyHours
-            // );
-        });
-
-        if (found) {
-          this.log.lesson(teacher, {
-            day: 1,
-            hour: 2,
-            classTitle: '4e',
-            teacher: 'Bəsdi',
-          }, {
-            found: this.helpers.getClassTitleById(found),
-            // hasMoreWorkloadInOtherClass,
-            hasMoreHours,
-            // otherClassHasMoreWorkloadAndLessDailyHours,
-            // hasEqualWorkloadInOtherClass,
-            // maxHourAmongClasses,
-            workloadByClass: workloadByClass[classId],
-            otherClassWillBeEmptyIfTake,
-            otherClassHasLessDailyHours,
-            // overallWorkloadInOtherClass,
-            overallWorkload,
-            otherClassTeachersWithoutThisOne,
-            // teachersWithoutThisLesson,
-            teachersOfOtherClass: this.log.lesson(teachersOfOtherClass, { justReturn: true }),
-          })
+          return (
+            willBeInOtherClass
+            && workloadByClass[theClassId] > workloadByClass[classId]
+          );
         }
 
-        // const isEqualOtherHasLessHours = hasEqualWorkloadInOtherClass && otherClassHasMoreWorkloadAndLessDailyHours;
+        const found = Object.keys(workloadByClass).find(id => findClass(id));
+
+        window.findClass = findClass
+
+        // const coWorker = this.getCoWorker(teacher, arr);
+        // const coWorkerWorkload = this.table.teachers[coWorker?.teacherIndex]?.workload;
+
+        // const coWorkerWorkloadByClass = coWorkerWorkload?.reduce((acc, w) => {
+        //   if (!acc[w.classId]) acc[w.classId] = 0;
+
+        //   acc[w.classId] += w.hours;
+
+        //   return acc;
+        // }, {});
+
+        // const maxHourAmongClasses = coWorkerWorkloadByClass && Math.max(...Object.values(coWorkerWorkloadByClass));
+
+        // otherClassTeachersWithoutThisOne = teachersOfOtherClass.filter(t => t.teacherIndex !== teacherIndex);
+
+        // otherClassWillBeEmptyIfTake = teachersOfOtherClass.length && !otherClassTeachersWithoutThisOne.length;
+
+        // const coWorkerHasMoreWorkloadInOtherClass = workloadByClass[classId] < maxHourAmongClasses;
+
+        // if (
+        //   this.log.match({
+        //     day: 1,
+        //     hour: 2,
+        //     classTitle: '5ə',
+        //   })
+        //   // && this.table.teachers[willBeInOtherClass.teacherIndex].name =
+        //   && name.includes('Gülnarə')
+        // ) {
+        //   console.log({
+        //     coWorkerWorkload,
+        //     coWorkerHasMoreWorkloadInOtherClass,
+        //     lesson: this.log.lesson(teachersOfOtherClass, { justReturn: true }),
+        //   });
+        // }
+
+        // if (this.log.match({
+        //   day: 1,
+        //   hour: 2,
+        //   classTitle: '4e',
+        // })) {
+        //   console.log(found);//, this.log.lesson(foundSameSubjectWith2Teachers, { justReturn: true }));
+        // }
+
+        // if (found) {
+          // const classIndex = this.table.classes.findIndex(({ id }) => id === found);
+          // const classIndex = this.table.classIndex;
+          // const theClass = this.table.classes.find(({ id }) => id === found);
+
+        //   const coWorker = this.getCoWorker(theTeacher);
+
+        // if (this.isDivisiblePair(subjectIndex)) {
+        //   const sameSubjectInOtherClass = [];
+        //   this.table.classes
+        //     .slice(this.table.classIndex + 1)
+        //     .map(({ id }) => id)
+        //     .filter(id => {
+        //       const f = findClass(id, true);
+        //       if (Array.isArray(f)) sameSubjectInOtherClass.push(f);
+        //     });
+              
+        //   if (
+        //     this.log.match({
+        //       day: 1,
+        //       hour: 2,
+        //       classTitle: '4e',
+        //     })
+        //   ) {
+        //     const teach = this.log.lesson(teacher, { justReturn: true })
+        //     // debugger
+        //     // sameSubjectInOtherClass.map(t => this.log.lesson(t))
+        //     // window.sameSubjectInOtherClass = sameSubjectInOtherClass
+        //     // console.log(
+        //     //   'canBeInClasses :',
+        //     //   teach,
+        //     //   canBeInClasses,
+        //     //   findClass('5da63a7dfca6d418fdb15291', true),
+        //     // );
+
+        //     const foundSameSubjectWith2Teachers = sameSubjectInOtherClass.find(teachers => {
+        //       const anotherTeachersSameSubject = teachers.filter(t => (
+        //         t.subjectIndex === subjectIndex
+        //         && (
+        //           t.teacherIndex !== teacherIndex
+        //           && t.teacherIndex !== coWorker?.teacherIndex
+        //         )
+        //       ));
+
+        //       return anotherTeachersSameSubject.length === 2;
+        //     });
+
+        //     const myLog = this.log.lesson(foundSameSubjectWith2Teachers, { justReturn: true })
+
+        //     if (foundSameSubjectWith2Teachers) {
+        //       // debugger;
+        //       console.log('myLog :', myLog);
+        //       return true;
+        //     }
+        //   }
+        // }
 
         if (found) {
           return hasMoreHours;
         }
 
-        return true
+        return true;
       }
-
-      // return checkSkip(theTeacher);
 
       let dontSkip = checkSkip(theTeacher);
 
-      if (!dontSkip && this.isDivisiblePair(theTeacher.subjectIndex)) {
-        const coWorker = this.getCoWorker(theTeacher);
-        if (coWorker) dontSkip = checkSkip(coWorker);
-      }
+      // if (!dontSkip && this.isDivisiblePair(theTeacher.subjectIndex)) {
+      //   const coWorker = this.getCoWorker(theTeacher);
+      //   if (coWorker) dontSkip = checkSkip(coWorker);
+      // }
 
       return dontSkip;
     })
