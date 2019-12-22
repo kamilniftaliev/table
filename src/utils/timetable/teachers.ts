@@ -655,6 +655,7 @@ export default class Teachers {
 
         // let otherClassTeachersWithoutThisOne = false;
         let teachersOfOtherClass = false;
+        let otherClassIsCriticalForCoWorker = false;
 
         const findClass = (theClassId, sameSubjectWithCoWorker?) => {
           const theClassHours = Object.keys(this.table.maxClassHours[theClassId]).map(Number);
@@ -697,14 +698,30 @@ export default class Teachers {
 
           const coWorkerForTheClass = this.getCoWorker(teacher, teachersOfOtherClass);
 
+          const coWorkerLeftWorkingHours = coWorkerForTheClass && this.howManyWorkhoursFromNow(coWorkerForTheClass);
+          const coWorkerOverallWorkload = coWorkerForTheClass && this.getTeacherOverallWorkload(coWorkerForTheClass);
+          const hasMoreHoursInOtherClass = coWorkerForTheClass && this.doesTeacherHaveMoreHours({
+            ...teacher,
+            workloadIndex: workload.findIndex(w => (
+              w.classId === theClassId
+              && w.subjectId === this.table.subjects[teacher.subjectIndex].id
+            )),
+          });
+          
+          otherClassIsCriticalForCoWorker = (
+            workloadByClass[theClassId] === workloadByClass[classId]
+            && coWorkerOverallWorkload === coWorkerLeftWorkingHours
+            && hasMoreHoursInOtherClass
+          );
+
           const willBeInOtherClass = teachersOfOtherClass.find(t => (
             t.teacherIndex === teacherIndex
             || t.teacherIndex === coWorkerForTheClass?.teacherIndex
           ));
           
-          return (
-            willBeInOtherClass
-            && workloadByClass[theClassId] > workloadByClass[classId]
+          return willBeInOtherClass && (
+            workloadByClass[theClassId] > workloadByClass[classId]
+            || otherClassIsCriticalForCoWorker
           );
         }
 
@@ -712,122 +729,16 @@ export default class Teachers {
 
         window.findClass = findClass
 
-        // const coWorker = this.getCoWorker(teacher, arr);
-        // const coWorkerWorkload = this.table.teachers[coWorker?.teacherIndex]?.workload;
-
-        // const coWorkerWorkloadByClass = coWorkerWorkload?.reduce((acc, w) => {
-        //   if (!acc[w.classId]) acc[w.classId] = 0;
-
-        //   acc[w.classId] += w.hours;
-
-        //   return acc;
-        // }, {});
-
-        // const maxHourAmongClasses = coWorkerWorkloadByClass && Math.max(...Object.values(coWorkerWorkloadByClass));
-
-        // otherClassTeachersWithoutThisOne = teachersOfOtherClass.filter(t => t.teacherIndex !== teacherIndex);
-
-        // otherClassWillBeEmptyIfTake = teachersOfOtherClass.length && !otherClassTeachersWithoutThisOne.length;
-
-        // const coWorkerHasMoreWorkloadInOtherClass = workloadByClass[classId] < maxHourAmongClasses;
-
-        // if (
-        //   this.log.match({
-        //     day: 1,
-        //     hour: 2,
-        //     classTitle: '5ə',
-        //   })
-        //   // && this.table.teachers[willBeInOtherClass.teacherIndex].name =
-        //   && name.includes('Gülnarə')
-        // ) {
-        //   console.log({
-        //     coWorkerWorkload,
-        //     coWorkerHasMoreWorkloadInOtherClass,
-        //     lesson: this.log.lesson(teachersOfOtherClass, { justReturn: true }),
-        //   });
-        // }
-
-        // if (this.log.match({
-        //   day: 1,
-        //   hour: 2,
-        //   classTitle: '4e',
-        // })) {
-        //   console.log(found);//, this.log.lesson(foundSameSubjectWith2Teachers, { justReturn: true }));
-        // }
-
-        // if (found) {
-          // const classIndex = this.table.classes.findIndex(({ id }) => id === found);
-          // const classIndex = this.table.classIndex;
-          // const theClass = this.table.classes.find(({ id }) => id === found);
-
-        //   const coWorker = this.getCoWorker(theTeacher);
-
-        // if (this.isDivisiblePair(subjectIndex)) {
-        //   const sameSubjectInOtherClass = [];
-        //   this.table.classes
-        //     .slice(this.table.classIndex + 1)
-        //     .map(({ id }) => id)
-        //     .filter(id => {
-        //       const f = findClass(id, true);
-        //       if (Array.isArray(f)) sameSubjectInOtherClass.push(f);
-        //     });
-              
-        //   if (
-        //     this.log.match({
-        //       day: 1,
-        //       hour: 2,
-        //       classTitle: '4e',
-        //     })
-        //   ) {
-        //     const teach = this.log.lesson(teacher, { justReturn: true })
-        //     // debugger
-        //     // sameSubjectInOtherClass.map(t => this.log.lesson(t))
-        //     // window.sameSubjectInOtherClass = sameSubjectInOtherClass
-        //     // console.log(
-        //     //   'canBeInClasses :',
-        //     //   teach,
-        //     //   canBeInClasses,
-        //     //   findClass('5da63a7dfca6d418fdb15291', true),
-        //     // );
-
-        //     const foundSameSubjectWith2Teachers = sameSubjectInOtherClass.find(teachers => {
-        //       const anotherTeachersSameSubject = teachers.filter(t => (
-        //         t.subjectIndex === subjectIndex
-        //         && (
-        //           t.teacherIndex !== teacherIndex
-        //           && t.teacherIndex !== coWorker?.teacherIndex
-        //         )
-        //       ));
-
-        //       return anotherTeachersSameSubject.length === 2;
-        //     });
-
-        //     const myLog = this.log.lesson(foundSameSubjectWith2Teachers, { justReturn: true })
-
-        //     if (foundSameSubjectWith2Teachers) {
-        //       // debugger;
-        //       console.log('myLog :', myLog);
-        //       return true;
-        //     }
-        //   }
-        // }
-
         if (found) {
-          return hasMoreHours;
+          return hasMoreHours && !otherClassIsCriticalForCoWorker;
         }
 
         return true;
       }
 
-      let dontSkip = checkSkip(theTeacher);
+      return checkSkip(theTeacher);
+    });
 
-      // if (!dontSkip && this.isDivisiblePair(theTeacher.subjectIndex)) {
-      //   const coWorker = this.getCoWorker(theTeacher);
-      //   if (coWorker) dontSkip = checkSkip(coWorker);
-      // }
-
-      return dontSkip;
-    })
     if (noNeedToSkipForThisClassTeachers.length) {
       this.suitableTeachers = noNeedToSkipForThisClassTeachers
     }

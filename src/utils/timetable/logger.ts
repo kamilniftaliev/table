@@ -133,17 +133,19 @@ export default class Loggger {
     }, '').trim()
 
     let logArr = ''
-  
+    const extendedTitle = title ? `\t\t\t\t\t${title}\n` : '';
+
     if (teachersLog) {
-      logArr = `${title}\n\t\t\t\t${timeText}\n${teachersLog}`
+      logArr = `${extendedTitle}\t\t\t\t${timeText}\n${teachersLog}`
     } else if (logEmpty) {
-      logArr = `NOTHING ${title}`
+      logArr = `NOTHING ${extendedTitle}`
     }
 
     if (logArr && !justReturn) {
       logFunc(`${logArr}\n`, ...rest)
     }
-    return logArr
+
+    return logArr;
   }
 
   warning = (...text) => {

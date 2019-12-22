@@ -37,13 +37,31 @@ function getLesson() {
   //   .filterWithCoWorkerIfNeeded()
   //   .getTodayMustBe()
   //   .sortByWorkIfNeeded()
-  //   .getLessonTeachers()
+  //   // .getLessonTeachers()
   // , {
   //   day: 1,
-  //   hour: 2,
-  //   classTitle: '4e',
+  //   hour: 7,
+  //   classTitle: 7,
   //   logEmpty: true,
-  // })
+  // });
+  // log.lesson(Teachers
+  //   .sortByWorkload()
+  //   .getWithLessonsInClass()
+  //   .getWorkingNow()
+  //   .getHasntBeenYet()
+  //   .getFree()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .noNeedToSkipForThisClass()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .getTodayMustBe()
+  //   .sortByWorkIfNeeded()
+  //   // .getLessonTeachers()
+  // , {
+  //   day: 1,
+  //   hour: 7,
+  //   classTitle: 7,
+  //   logEmpty: true,
+  // });
 
   const { suitableTeachers: teachers } = Teachers
     .sortByWorkload()
