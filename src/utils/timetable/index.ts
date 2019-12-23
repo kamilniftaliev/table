@@ -41,25 +41,7 @@ function getLesson() {
   // , {
   //   day: 1,
   //   hour: 7,
-  //   classTitle: 7,
-  //   logEmpty: true,
-  // });
-  // log.lesson(Teachers
-  //   .sortByWorkload()
-  //   .getWithLessonsInClass()
-  //   .getWorkingNow()
-  //   .getHasntBeenYet()
-  //   .getFree()
-  //   .filterWithCoWorkerIfNeeded()
-  //   .noNeedToSkipForThisClass()
-  //   .filterWithCoWorkerIfNeeded()
-  //   .getTodayMustBe()
-  //   .sortByWorkIfNeeded()
-  //   // .getLessonTeachers()
-  // , {
-  //   day: 1,
-  //   hour: 7,
-  //   classTitle: 7,
+  //   classTitle: 6,
   //   logEmpty: true,
   // });
 
@@ -93,6 +75,8 @@ export function generate(defaultTable: object): object {
   table = JSON.parse(JSON.stringify(defaultTable));
   table.schoolDaysCount = schoolDaysCount
   table.schoolHoursCount = schoolHoursCount
+
+  // console.log('SHIFT table :', table);
 
   log = new Logger(table)
   if (!window.log) window.log = log

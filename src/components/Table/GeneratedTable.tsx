@@ -126,7 +126,7 @@ function getShiftFromTable(
 ) {
   return {
     ...rest,
-    classes: classes.filter(c => !c.shift || c.shift === shift),
+    classes: classes.filter(c => c.shift === shift),
     teachers: teachers.map(teacher => ({
       ...teacher,
       workhours: teacher.workhours.map(hours => shift === 1 ? hours.slice(0, 8) : hours.slice(8)),

@@ -98,19 +98,19 @@ export default class Teachers {
   }
   
   sortBySubjectDivisibility() {
-    this.suitableTeachers = this.suitableTeachers
+    this.suitableTeachers = [...this.suitableTeachers]
       .sort(({ subjectIndex }) => this.isDivisiblePair(subjectIndex) ? -1 : 1)
 
     return this
   }
   
   sortByLeftWorkload(customTeachers) {
-    const teachers = customTeachers || this.suitableTeachers
+    const teachersList = customTeachers || this.suitableTeachers
 
-    const teacherIndexes = new Set(teachers.map(t => t.teacherIndex));
+    const teacherIndexes = new Set(teachersList.map(t => t.teacherIndex));
     const workloadPerSubject = teacherIndexes.size === 1;
 
-    teachers.sort((first, second) => {
+    const teachers = [...teachersList].sort((first, second) => {
       const firstHoursCount = this.getTeacherWorkloadCountInClass(first, workloadPerSubject)
       const secondHoursCount = this.getTeacherWorkloadCountInClass(second, workloadPerSubject)
 
@@ -127,6 +127,8 @@ export default class Teachers {
   sortByWorkload() {
     this.suitableTeachers = this.table.teachers
       .sort((first, second) => first.workloadAmount - second.workloadAmount)
+
+    // console.log('this.suitableTeachers :', this.suitableTeachers);
 
     return this;
   }
@@ -154,42 +156,32 @@ export default class Teachers {
     } = {}
   ) {
     const teachers = customTeachers || this.suitableTeachers
-    const { id: theClassId } = this.table.classes[classIndex]
-    const todaysSubjectsId = this.getTodaySubjectsIdOfClass()
+    const { id: classId } = this.table.classes[classIndex]
+    // const todaysSubjectsId = this.getTodaySubjectsIdOfClass()
   
     const teachersWithLessonsInClass = teachers
       .map(({ workload, workhours }, teacherIndex) => {
-        // Find index of teacher's workload that has hours yet
-        const foundWorkloads = workload.filter(({ classId, hours }) => (classId === theClassId && hours > 0))
+        // Filter teacher's workloads that has hours in current class
+        const foundWorkloads = workload.filter(w => w.classId === classId && w.hours)
   
         // If didn't find any workload
         if (!foundWorkloads.length) return null;
-        
-        // Find a workloads with a new subject that hasn't been yet today
-        let foundWorks = foundWorkloads//.filter(foundWorkload => !todaysSubjectsId.includes(foundWorkload.subjectId))
-  
-        // If didn't find subject that hasn't been today
-        // if (!foundWorks.length) {
-        //   // If there's workload that already been today
-        //   if (foundWorkloads.length) [foundWorks] = foundWorkloads
-        //   else return null
+
+        // if (teachers[teacherIndex].name.includes('Rəna')) {
+        //   debugger
         // }
 
-        const makeTeacher = (work) => ({
+        return foundWorkloads.map(work => ({
           teacherIndex,
           subjectIndex: this.helpers.getSubjectIndexById(work.subjectId),
           workloadIndex: workload.indexOf(work),
           workhours,
-        })
-        
-        if (Array.isArray(foundWorks)) {
-          return foundWorks.map(makeTeacher)
-        } else {
-          return makeTeacher(foundWorks)
-        }
+        }));
       })
       .filter(Boolean)
-      .flat()
+      .flat();
+
+    // console.log('teachersWithLessonsInClass :', teachersWithLessonsInClass);
 
     if (customTeachers) return teachersWithLessonsInClass;
 
@@ -220,6 +212,9 @@ export default class Teachers {
       return this
     }
 
+    if (!this.table.teachers[teachers[0].teacherIndex].workload[teachers[0].workloadIndex]) {
+      console.log('teachers :', teachers);
+    }
     const { classId } = this.table.teachers[teachers[0].teacherIndex].workload[teachers[0].workloadIndex]
     const timetableHour = this.timetable[this.table.dayIndex][this.table.hourIndex];
   
@@ -380,7 +375,7 @@ export default class Teachers {
   }
 
   sortByWorkloadInOtherClasses = (teachers) => {
-    return teachers.sort((first, second) => {
+    return [...teachers].sort((first, second) => {
       const firstWorkload = this.getTeacherWorkloadInOtherClasses(first)
       const secondWorkload = this.getTeacherWorkloadInOtherClasses(second)
 
@@ -389,7 +384,7 @@ export default class Teachers {
   }
 
   sortByOverallWorkload = (teachers) => {
-    return teachers.sort((first, second) => {
+    return [...teachers].sort((first, second) => {
       const firstLeftWorkingHours = this.howManyWorkhoursFromNow(first)
       const firstOverallWorkload = this.getTeacherOverallWorkload(first)
       const firstHours = firstLeftWorkingHours - firstOverallWorkload;
@@ -444,7 +439,7 @@ export default class Teachers {
   }
   
   sortByLessWorkingDays(teachers) {
-    return teachers.sort((first, second) => {
+    return [...teachers].sort((first, second) => {
       const firstDays = this.howManyWorkDaysFromNow(first)
       const secondDays = this.howManyWorkDaysFromNow(second)
 
@@ -623,6 +618,12 @@ export default class Teachers {
   }
 
   noNeedToSkipForThisClass() {
+    let currentLessonTeachers = this.getTodayMustBe(this.suitableTeachers);
+    currentLessonTeachers = this.sortByWorkIfNeeded(currentLessonTeachers);
+    currentLessonTeachers = this.getLessonTeachers(currentLessonTeachers);
+
+    const ignoreTeachers = [];
+    
     const noNeedToSkipForThisClassTeachers = this.suitableTeachers.filter((theTeacher, index, arr) => {
       const checkSkip = (teacher) => {
         const { teacherIndex, workloadIndex, subjectIndex } = teacher;
@@ -638,6 +639,8 @@ export default class Teachers {
 
           return acc;
         }, {});
+
+        const coWorker = this.getCoWorker(teacher, arr) || {};
 
         // const maxHourAmongClasses = Math.max(...Object.values(workloadByClass));
 
@@ -656,8 +659,9 @@ export default class Teachers {
         // let otherClassTeachersWithoutThisOne = false;
         let teachersOfOtherClass = false;
         let otherClassIsCriticalForCoWorker = false;
+        let otherClassCanBeEmptyIfTake = false;
 
-        const findClass = (theClassId, sameSubjectWithCoWorker?) => {
+        const findClass = (theClassId) => {
           const theClassHours = Object.keys(this.table.maxClassHours[theClassId]).map(Number);
           if (!theClassHours.length) return;
 
@@ -667,36 +671,41 @@ export default class Teachers {
 
           const classIndex = this.table.classes.findIndex(({ id }) => id === theClassId);
           const theClass = this.table.classes[classIndex];
-          
-          if (!sameSubjectWithCoWorker) {
-            const hasntBeenYetInOtherClass = this.getHasntBeenYet([teacher], classIndex)?.length;
-
-            if (!hasntBeenYetInOtherClass) return false
-          }
 
           const classHasNoLessonNow = (
-            !this.timetable[this.table.dayIndex][this.table.hourIndex][classIndex]
-            || maxHourForTheClass <= this.table.hourIndex
+            this.timetable[this.table.dayIndex][this.table.hourIndex][classIndex]
+            || maxHourForTheClass < this.table.hourIndex
           );
 
-          if (!classHasNoLessonNow) return;
-          
+          if (classHasNoLessonNow) return;
+
           teachersOfOtherClass = this.getWithLessonsInClass(this.table.teachers, { classIndex });
           teachersOfOtherClass = this.getWorkingNow(teachersOfOtherClass);
           teachersOfOtherClass = this.getHasntBeenYet(teachersOfOtherClass, classIndex);
           teachersOfOtherClass = this.getFree(teachersOfOtherClass);
+          const coWorkerForTheClass = this.getCoWorker(teacher, teachersOfOtherClass);
+
+          let otherClassTeachersWithoutThis = teachersOfOtherClass.filter(t => (
+            t.teacherIndex !== teacherIndex
+            && t.teacherIndex !== coWorkerForTheClass?.teacherIndex
+          ));
           teachersOfOtherClass = this.getTodayMustBe(teachersOfOtherClass);
+          otherClassTeachersWithoutThis = this.getTodayMustBe(otherClassTeachersWithoutThis);
           if (teachersOfOtherClass.length > 1) {
             teachersOfOtherClass = this.filterWithCoWorkerIfNeeded(teachersOfOtherClass);
           }
-          teachersOfOtherClass = this.sortByWorkIfNeeded(teachersOfOtherClass);
-          teachersOfOtherClass = this.getLessonTeachers(teachersOfOtherClass);
-
-          if (sameSubjectWithCoWorker) {
-            return teachersOfOtherClass.filter(t => t.subjectIndex === subjectIndex);
+          if (otherClassTeachersWithoutThis.length > 1) {
+            otherClassTeachersWithoutThis = this.filterWithCoWorkerIfNeeded(otherClassTeachersWithoutThis);
           }
+          otherClassTeachersWithoutThis = this.sortByWorkIfNeeded(otherClassTeachersWithoutThis);
+          const possibleTeachersOfOtherClass = this.sortByWorkIfNeeded(teachersOfOtherClass);
 
-          const coWorkerForTheClass = this.getCoWorker(teacher, teachersOfOtherClass);
+          teachersOfOtherClass = this.getLessonTeachers(possibleTeachersOfOtherClass);
+
+          const willBeInOtherClass = teachersOfOtherClass.find(t => (
+            t.teacherIndex === teacherIndex
+            || t.teacherIndex === coWorkerForTheClass?.teacherIndex
+          ));
 
           const coWorkerLeftWorkingHours = coWorkerForTheClass && this.howManyWorkhoursFromNow(coWorkerForTheClass);
           const coWorkerOverallWorkload = coWorkerForTheClass && this.getTeacherOverallWorkload(coWorkerForTheClass);
@@ -707,18 +716,25 @@ export default class Teachers {
               && w.subjectId === this.table.subjects[teacher.subjectIndex].id
             )),
           });
-          
+
+          otherClassCanBeEmptyIfTake = (
+            !otherClassTeachersWithoutThis.length
+            && otherClassTeachersWithoutThis.filter(t => (
+              t.teacherIndex !== teacherIndex
+              && t.teacherIndex !== coWorkerForTheClass?.teacherIndex
+            )).length === 0
+          )
+
           otherClassIsCriticalForCoWorker = (
             workloadByClass[theClassId] === workloadByClass[classId]
             && coWorkerOverallWorkload === coWorkerLeftWorkingHours
             && hasMoreHoursInOtherClass
           );
 
-          const willBeInOtherClass = teachersOfOtherClass.find(t => (
-            t.teacherIndex === teacherIndex
-            || t.teacherIndex === coWorkerForTheClass?.teacherIndex
-          ));
-          
+          if (willBeInOtherClass && otherClassCanBeEmptyIfTake) {
+            ignoreTeachers.push(teacherIndex);
+          }
+
           return willBeInOtherClass && (
             workloadByClass[theClassId] > workloadByClass[classId]
             || otherClassIsCriticalForCoWorker
@@ -733,7 +749,7 @@ export default class Teachers {
           return hasMoreHours && !otherClassIsCriticalForCoWorker;
         }
 
-        return true;
+        return !ignoreTeachers.includes(teacherIndex);
       }
 
       return checkSkip(theTeacher);
