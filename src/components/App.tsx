@@ -20,9 +20,8 @@ const Table = lazy(() =>
 );
 
 export const Container = styled.div`
-  position: relative;
-  padding: 80px 20px 20px 20px;
-  min-height: 100vh;
+  // position: relative;
+  // min-height: 100vh;
 `;
 
 const isAuth = !!localStorage.getItem('token');

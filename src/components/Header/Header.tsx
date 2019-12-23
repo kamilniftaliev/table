@@ -10,9 +10,6 @@ import graph from '../../graph';
 const Container = styled.header`
   display: flex;
   justify-content: space-between;
-  position: fixed;
-  top: 0;
-  left: 0;
   padding-left: 20px;
   padding-right: 20px;
   width: 100%;

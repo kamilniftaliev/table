@@ -7,6 +7,9 @@ export default styled.table`
   text-align: center;
   border-spacing: 0;
   border-collapse: collapse;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
 `;
 
 export const Header = styled.thead`
@@ -17,13 +20,8 @@ export const Body = styled.tbody``;
 
 export const Row = styled.tr`
   &:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.08);
   }
-
-  // &:last-of-type td {
-  //   border: none;
-  // }
 `;
 
 interface CellProps {
@@ -37,6 +35,23 @@ export const TD = styled.td`
   border-bottom: 1px solid #f2f2f2;
 
   ${({ align }): string => align && `text-align: ${align};`}
+
+  ${({ highlightColumn }) =>
+    highlightColumn &&
+    `
+    position: relative;
+
+    :hover::after {
+      background-color: rgba(0, 0, 0, 0.06);
+      content: '';
+      height: 500vh;
+      left: 0;
+      position: absolute;
+      top: -200vh;
+      width: 100%;
+      z-index: -1;
+    }
+  `}
 `;
 
 export const CellTD = styled(TD)`

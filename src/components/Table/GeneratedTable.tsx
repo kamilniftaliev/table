@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-apollo';
 
@@ -8,12 +8,17 @@ import { translation, Timetable } from '../../utils';
 import { Table, Button } from '../ui';
 
 const TableContainer = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
   padding: 10px;
   overflow-x: auto;
-  max-width: 92vw;
+  max-width: 95vw;
 `;
 
 const TableWrapper = styled(Table.default)`
+  width: auto;
   border: 3px solid #000;
 `;
 
@@ -28,11 +33,19 @@ const Cell = styled(Table.CellTD)`
   }
 
   border-right: 3px solid #000;
+  transition-duration: .4s;
+  transition-delay: ${({ classIndex = 0 }) => (classIndex / 15)}s;
 `;
 
-const Head = styled(Cell).attrs(() => ({
-  as: 'th',
-}))``;
+const Container = styled.div`
+
+  ${({ highlightTeachersName }) => highlightTeachersName && `
+    ${Cell}[data-teachers-name="${highlightTeachersName}"] {
+      background-color: #576cd3;
+      color: #fff;
+    }
+  `}
+`;
 
 const Row = styled(Table.Row)`
   border-bottom: 2px solid #000;
@@ -61,6 +74,7 @@ function getTeachersName(teachers) {
 }
 
 function tableGenerator(table) {
+  const tableRef = useRef(null);
   const [timetable, setTimetable] = useState(null);
   const { classes } = table;
 
@@ -80,35 +94,36 @@ function tableGenerator(table) {
         </GenerateTimeTableButton>
       </ControlContainer>
       {timetable && (
-        <TableWrapper>
+        <TableWrapper ref={tableRef} >
           <Table.Header>
             <Row>
               {classes.map(({ id, title }, i) => (
-                <Head isStartOfDay colSpan={i === 0 ? 2 : 1} key={id}>
+                <Cell as="th" isStartOfDay colSpan={i === 0 ? 2 : 1} key={id}>
                   {title}
-                </Head>
+                </Cell>
               ))}
             </Row>
           </Table.Header>
           <Table.Body>
-            {timetable.map(day => {
-              return day.map((hourClasses, hourIndex) => {
-                return (
-                  <Row isStartOfDay={hourIndex === 0} key={hourIndex}>
-                    {hourClasses.map(
-                      ({ subjectId, teachers }, classIndex) => (
-                        <React.Fragment key={classIndex}>
-                          {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
-                          <Cell title={getTeachersName(teachers)}>
-                            {Timetable.getSubjectTitleById(subjectId) || subjectId}
-                          </Cell>
-                        </React.Fragment>
-                      ),
-                    )}
-                  </Row>
-                );
-              });
-            })}
+            {timetable.map(day => day.map((hourClasses, hourIndex) => (
+              <Row isStartOfDay={hourIndex === 0} key={hourIndex}>
+                {hourClasses.map(
+                  ({ subjectId, teachers }, classIndex) => (
+                    <React.Fragment key={classIndex}>
+                      {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
+                      <Cell
+                        highlightColumn
+                        classIndex={classIndex}
+                        data-teachers-name={getTeachersName(teachers)}
+                        title={getTeachersName(teachers)}
+                      >
+                        {Timetable.getSubjectTitleById(subjectId) || subjectId}
+                      </Cell>
+                    </React.Fragment>
+                  ),
+                )}
+              </Row>
+            )))}
           </Table.Body>
         </TableWrapper>
       )}
@@ -136,14 +151,30 @@ function getShiftFromTable(
 }
 
 function GeneratedTable(table): React.ReactElement {
+  const [highlightTeachers, setHighlightTeachers] = useState<string>('');
+
   const firstShift = getShiftFromTable(table, 1);
   const secondShift = getShiftFromTable(table, 2);
+  let highlightTimeout = null;
+
+  function highlightCells(event): void {
+    clearTimeout(highlightTimeout);
+
+    // eslint-disable-next-line prefer-destructuring
+    const teachersName = event.target?.dataset?.teachersName;
+
+    if (teachersName) {
+      highlightTimeout = setTimeout(() => setHighlightTeachers(teachersName), 1500);
+    } else if (highlightTeachers) {
+      setHighlightTeachers('');
+    }
+  }
 
   return (
-    <>
+    <Container highlightTeachersName={highlightTeachers} onMouseMove={highlightCells}>
       {tableGenerator(firstShift)}
       {tableGenerator(secondShift)}
-    </>
+    </Container>
   )
 }
 
