@@ -7,6 +7,7 @@ import graph from '../../graph';
 import { translation } from '../../utils';
 
 import { Content, Preloader } from '../ui';
+
 const GeneratedTable = lazy(() =>
   import(/* webpackChunkName: "generated-table" */ './GeneratedTable'),
 );

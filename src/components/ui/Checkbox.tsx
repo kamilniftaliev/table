@@ -12,14 +12,18 @@ const Container = styled.span`
   align-items: center;
 `;
 
-const Tick = styled.span`
+interface TickProps {
+  checked: boolean;
+}
+
+const Tick = styled.span<TickProps>`
   width: 20px;
   height: 20px;
   border-radius: 3px;
   border: 1px solid;
-  border-color: ${({ checked }) => (checked ? '#1f73b7' : '#ccc')};
-  background-color: ${({ checked }) => (checked ? '#1f73b7' : '#fff')};
-  background-image: url(${({ checked }) => (checked ? TickIcon : '')});
+  border-color: ${({ checked }): string => (checked ? '#1f73b7' : '#ccc')};
+  background-color: ${({ checked }): string => (checked ? '#1f73b7' : '#fff')};
+  background-image: url(${({ checked }): string => (checked ? TickIcon : '')});
   background-size: 77%;
   background-repeat: no-repeat;
   background-position: center;
@@ -45,7 +49,7 @@ function Component({
     <Wrapper {...props}>
       <Container>
         <input
-          onChange={e => onChange(!!e.target.checked)}
+          onChange={(e): void => onChange(!!e.target.checked)}
           type="checkbox"
           checked={checked}
           hidden

@@ -39,12 +39,13 @@ module.exports = {
     'react/jsx-props-no-spreading': 'off',
     'consistent-return': 'off',
     'react/state-in-constructor': [2, 'never'],
+    "semi": ["error", "always"],
   },
   settings: {
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
-    'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
+    // 'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
     'import/resolver': {
       typescript: {},
     },

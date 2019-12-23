@@ -1,14 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
 import Select from 'react-select';
 
 interface SelectorProps {
-  value: any;
+  [propName: string]: any;
 }
 
-// const Select = styled.select``;
-
-function Selector(props: SelectorProps) {
+function Selector(props: SelectorProps): JSX.Element {
   return <Select {...props} isClearable />;
 }
 

@@ -45,7 +45,9 @@ function renderWorkhours({
         {hours.map((hour, index) => (
           <Table.Row key={hour}>
             <TableCell align="left">
-              {translation('lesson')} {index + 1}
+              {translation('lesson')} 
+              {' '}
+              {index + 1}
             </TableCell>
             {daysOfWeek.map(day => {
               const initialValue = !!teacher.workhours[day - 1][hour - 1];
@@ -79,14 +81,22 @@ function Workhours({ teacher, tableSlug, tableId }) {
 
   return (
     <>
-      <ShiftTitle>{translation('shift')} 1</ShiftTitle>
+      <ShiftTitle>
+        {translation('shift')}
+        {' '}
+1
+      </ShiftTitle>
       {renderWorkhours({
         hours: lessonHours.slice(0, 8),
         tableId,
         teacher,
         updateWorkhour,
       })}
-      <ShiftTitle>{translation('shift')} 2</ShiftTitle>
+      <ShiftTitle>
+        {translation('shift')}
+        {' '}
+2
+      </ShiftTitle>
       {renderWorkhours({
         hours: lessonHours.slice(8),
         tableId,

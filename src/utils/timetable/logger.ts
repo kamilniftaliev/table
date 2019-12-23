@@ -1,23 +1,27 @@
-import Helpers from './helpers'
+import Helpers from './helpers';
+
+import { Workload, TableTeacher } from '../../models';
 
 export default class Loggger {
   table = null;
 
   logWarnings = false;
 
+  helpers = null;
+
   constructor(table) {
     this.table = table;
-    this.helpers = new Helpers(table)
+    this.helpers = new Helpers(table);
   }
 
-  workload = ({ classId, subjectId, hours }) => {
-    const classTitle = this.helpers.getClassTitleById(classId)
-    const subjectTitle = this.helpers.getSubjectTitleById(subjectId)
+  workload = ({ classId, subjectId, hours }: Workload): string => {
+    const classTitle = this.helpers.getClassTitleById(classId);
+    const subjectTitle = this.helpers.getSubjectTitleById(subjectId);
   
-    return `${classTitle}, ${subjectTitle}, ${hours}`
+    return `${classTitle}, ${subjectTitle}, ${hours}`;
   }
 
-  howManyWorkhoursFromNow = ({ teacherIndex, workloadIndex }) => {
+  howManyWorkhoursFromNow = ({ teacherIndex, workloadIndex }: TableTeacher): number => {
     const curDayIndex = this.table.dayIndex;
     const teacher = this.table.teachers[teacherIndex];
     const { classId } = teacher.workload[workloadIndex];
@@ -25,7 +29,7 @@ export default class Loggger {
 
     const workhours = teacher.workhours
       .slice(curDayIndex, this.table.schoolDaysCount)
-      .map((day, di) => {
+      .map((day: [boolean], di: number) => {
         const dayIndex = di + curDayIndex;
 
         let maxHourForClass = Math.max(...classHoursLimit);
@@ -38,17 +42,17 @@ export default class Loggger {
         // Start counting from the hour of each day
         // If it's today then count from current hour
         // Or else count from start of the day
-        const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0
-        return day.slice(hourStartIndex, maxHourForClass)
+        const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0;
+        return day.slice(hourStartIndex, maxHourForClass);
       });
 
     return workhours.flat().filter(Boolean).length;
   }
 
-  getTeacherOverallWorkload = ({ teacherIndex }) => {
-    const { workload } = this.table.teachers[teacherIndex]
+  getTeacherOverallWorkload = ({ teacherIndex }: TableTeacher): number => {
+    const { workload } = this.table.teachers[teacherIndex];
 
-    return workload.reduce((acc, w) => acc + w.hours, 0);
+    return workload.reduce((acc: number, w: Workload) => acc + w.hours, 0);
   }
 
   match(
@@ -57,11 +61,9 @@ export default class Loggger {
       hour,
       classTitle,
     },
-    {
-      teacherIndex,
-      workloadIndex,
-    } = {},
-  ) {
+    teacher: TableTeacher,
+  ): string | boolean {
+    const { teacherIndex, workloadIndex } = teacher;
     let { classIndex } = this.table;
 
     // If need to read class title from given teacher
@@ -73,18 +75,18 @@ export default class Loggger {
     const curDay = this.table.dayIndex + 1;
     const curHour = this.table.hourIndex + 1;
     const { title: curClassTitle } = this.table.classes[classIndex];
-    const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`
-    const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number'
-    const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number'
-    const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined'
+    const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`;
+    const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number';
+    const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number';
+    const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined';
 
-    const match = fitsDay && fitsHour && fitsClass
+    const match = fitsDay && fitsHour && fitsClass;
     
     // Time fits
     return match ? timeText : false;
   }
   
-  parseLesson = (lesson) => {
+  parseLesson = (lesson: TableTeacher): string => {
     if (!lesson) return '';
     const { teacherIndex, subjectIndex, workloadIndex } = lesson;
     const { title: subject, id: subjectId } = this.table.subjects[subjectIndex];
@@ -99,7 +101,7 @@ export default class Loggger {
   }
 
   lesson = (
-    teachers,
+    teachersList: [TableTeacher] | TableTeacher | object,
     {
       day,
       hour,
@@ -111,11 +113,12 @@ export default class Loggger {
       justReturn = false,
     } = {},
     ...rest
-  ) => {
-    const teachersIsObject = (!!teachers) && !Array.isArray(teachers);
+  ): string => {
+    const teachersIsObject = (!!teachersList) && !Array.isArray(teachersList);
+    let teachers = teachersList;
     if (teachersIsObject) {
-      if (Array.isArray(teachers.suitableTeachers)) teachers = teachers.suitableTeachers
-      else teachers = [teachers]
+      if (Array.isArray(teachersList.suitableTeachers)) teachers = teachersList.suitableTeachers;
+      else teachers = [teachersList];
     }
 
     const timeText = this.match({ day, hour, classTitle }, teachers[0]);
@@ -123,60 +126,59 @@ export default class Loggger {
     if (!timeText || !teachers) return;
     
     const teachersLog = teachers.reduce((acc, lesson) => {
-      const log = this.parseLesson(lesson)
+      const log = this.parseLesson(lesson);
   
-      const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined'
+      const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined';
   
-      const fits = fitsTeacher
+      const fits = fitsTeacher;
   
       return fits ? `${acc}\n${log}` : acc;
-    }, '').trim()
+    }, '').trim();
 
-    let logArr = ''
+    let logArr = '';
     const extendedTitle = title ? `\t\t\t\t\t${title}\n` : '';
 
     if (teachersLog) {
-      logArr = `${extendedTitle}\t\t\t\t${timeText}\n${teachersLog}`
+      logArr = `${extendedTitle}\t\t\t\t${timeText}\n${teachersLog}`;
     } else if (logEmpty) {
-      logArr = `NOTHING ${extendedTitle}`
+      logArr = `NOTHING ${extendedTitle}`;
     }
 
     if (logArr && !justReturn) {
-      logFunc(`${logArr}\n`, ...rest)
+      logFunc(`${logArr}\n`, ...rest);
     }
 
     return logArr;
   }
 
-  warning = (...text) => {
+  warning = (...text): void => {
     if (!this.logWarnings) return;
-    const { title: classTitle } = this.table.classes[this.table.classIndex]
-    console.info(text.join(','), classTitle, this.table.dayIndex + 1, this.table.hourIndex + 1)
+    const { title: classTitle } = this.table.classes[this.table.classIndex];
+    console.info(text.join(','), classTitle, this.table.dayIndex + 1, this.table.hourIndex + 1);
   }
 
   // If couldn't find a teacher that works in the class
-  teachersError = (title, teachers, ...text) => {
+  teachersError = (title: string, teachers: [TableTeacher], ...text: [string]): void => {
     if (!teachers?.length) this.warning(`Couldn"t find ${title}`, ...text);
   }
   
-  results = () => {
+  results = (): void => {
     console.log('--------- LEFT TEACHERS -------');
-    const resultTable = JSON.parse(JSON.stringify(this.table))
+    const resultTable = JSON.parse(JSON.stringify(this.table));
     let totalLeftHours = 0;
     resultTable.teachers.forEach(({ workload, name }) => {
-      const leftHours = workload.filter(({ hours }) => hours)
+      const leftHours = workload.filter(({ hours }) => hours);
   
       leftHours.forEach(({ subjectId, classId, hours }) => {
-        const subjectTitle = this.helpers.getSubjectTitleById(subjectId)
-        const classTitle = this.helpers.getClassTitleById(classId)
+        const subjectTitle = this.helpers.getSubjectTitleById(subjectId);
+        const classTitle = this.helpers.getClassTitleById(classId);
   
         if (subjectTitle) {
           totalLeftHours += hours;
           console.log(name, subjectTitle, classTitle, hours);
         }
-      })
-  
-    })
+      });
+    });
 
     console.log('TOTAL LEFT HOURS :', totalLeftHours);
     console.log('------- END LEFT TEACHERS END ------- ');

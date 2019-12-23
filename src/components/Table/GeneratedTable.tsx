@@ -66,9 +66,9 @@ const ControlContainer = styled.div`
 const GenerateTimeTableButton = styled(Button.default)``;
 
 function getTeachersName(teachers) {
-  if (!teachers?.length) return ''
+  if (!teachers?.length) return '';
 
-  if (teachers.length === 1) return teachers[0].name
+  if (teachers.length === 1) return teachers[0].name;
 
   return `${teachers[0].name} və ${teachers[1].name}`;
 }
@@ -94,7 +94,7 @@ function tableGenerator(table) {
         </GenerateTimeTableButton>
       </ControlContainer>
       {timetable && (
-        <TableWrapper ref={tableRef} >
+        <TableWrapper ref={tableRef}>
           <Table.Header>
             <Row>
               {classes.map(({ id, title }, i) => (
@@ -147,7 +147,7 @@ function getShiftFromTable(
       workhours: teacher.workhours.map(hours => shift === 1 ? hours.slice(0, 8) : hours.slice(8)),
       workload: teacher.workload.filter(w => classes.find(c => c.id === w.classId)?.shift === shift)
     })),
-  }
+  };
 }
 
 function GeneratedTable(table): React.ReactElement {
@@ -175,7 +175,7 @@ function GeneratedTable(table): React.ReactElement {
       {tableGenerator(firstShift)}
       {tableGenerator(secondShift)}
     </Container>
-  )
+  );
 }
 
 export default React.memo(GeneratedTable);

@@ -3,21 +3,15 @@ import { useMutation } from 'react-apollo';
 
 import { Modal } from '../../ui';
 import { Input, InputLabel } from '../../Tables/EditModal';
-import { Checkbox } from '../Subjects/EditModal';
+import { Class } from '../../../models';
 
 import { translation } from '../../../utils';
 import graph from '../../../graph';
 
-export interface ClassProps {
-  id: string;
-  title?: string;
-  shift?: number;
-}
-
 interface Props {
   tableId: string;
-  class: ClassProps;
-  onClose: React.Dispatch<React.SetStateAction<ClassProps>>;
+  class: Class;
+  onClose: React.Dispatch<React.SetStateAction<Class>>;
 }
 
 function EditModal({

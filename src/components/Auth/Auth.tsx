@@ -45,7 +45,7 @@ const Title = styled.h2`
 
 function setToken({ signIn: { token } }): void {
   localStorage.setItem('token', token);
-  window.location.href = '/'
+  window.location.href = '/';
 }
 
 function Auth(): React.ReactFragment {
@@ -92,4 +92,4 @@ function Auth(): React.ReactFragment {
   );
 }
 
-export default React.memo(Auth)
+export default React.memo(Auth);

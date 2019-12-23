@@ -8,30 +8,30 @@ import { Preloader, Button, Modal, Content, Table } from '../ui';
 import { translation } from '../../utils';
 import graph from '../../graph';
 
-import TrashCan from '../../images/icons/trash.svg'
-import DuplicateIcon from '../../images/icons/duplicate.svg'
-import EditIcon from '../../images/icons/edit.svg'
+import TrashCan from '../../images/icons/trash.svg';
+import DuplicateIcon from '../../images/icons/duplicate.svg';
+import EditIcon from '../../images/icons/edit.svg';
 
 const TitleCell = styled(Table.Cell)`
   max-width: 280px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-`
+`;
 
-const refetchQueries = [{ query: graph.GetUser }]
+const refetchQueries = [{ query: graph.GetUser }];
 
 function Tables(): React.ReactElement {
-  const [deletingTable, setDeletingTable] = useState(null)
-  const [editingTable, setEditingTable] = useState<TableProps>(null)
+  const [deletingTable, setDeletingTable] = useState(null);
+  const [editingTable, setEditingTable] = useState<TableProps>(null);
 
   const { data, loading } = useQuery(graph.GetUser);
-  const [deleteTableRequest] = useMutation(graph.DeleteTable)
-  const [duplicateTableRequest] = useMutation(graph.DuplicateTable)
+  const [deleteTableRequest] = useMutation(graph.DeleteTable);
+  const [duplicateTableRequest] = useMutation(graph.DuplicateTable);
   
   if (loading) return <Preloader isCentered />;
 
-  const { user } = data
+  const { user } = data;
 
   function deleteTable(): void {
     deleteTableRequest({
@@ -39,16 +39,16 @@ function Tables(): React.ReactElement {
         id: deletingTable.id
       },
       refetchQueries,
-    })    
+    });    
 
-    setDeletingTable(null)
+    setDeletingTable(null);
   }
 
   function duplicateTable(id): void {
     duplicateTableRequest({
       variables: { id },
       refetchQueries,
-    })
+    });
   }
 
   return (
@@ -68,7 +68,7 @@ function Tables(): React.ReactElement {
         </Table.Header>
         <Table.Body>
           {user?.tables.map(({ id, slug, title, created, subjectsCount, teachersCount, classesCount, lastModified }, index: number) => {
-            const link = `/cedvel/${slug}`
+            const link = `/cedvel/${slug}`;
             return (
               <Table.Row key={id}>
                 <Table.Cell link={link}>{index + 1}</Table.Cell>
@@ -84,7 +84,7 @@ function Tables(): React.ReactElement {
                   <Button.Icon onClick={(): void => setDeletingTable({ id, title })} src={TrashCan} />
                 </Table.Cell>
               </Table.Row>
-            )
+            );
           })}
         </Table.Body>
       </Table.default>

@@ -1,31 +1,33 @@
-import Logger from './logger'
-import Helpers from './helpers'
-import TeachersClass from './teachers'
+import Logger from './logger';
+import Helpers from './helpers';
+import TeachersClass from './teachers';
 
-const schoolDaysCount = 5
-const schoolHoursCount = 7
+import { Table, Lesson, ClassHours } from '../../models';
 
-let maxClassHours = {}
-let log = null
-let helpers = null
-let Teachers = null
-let table = null
-let timetable = []
-let dayIndex
-let hourIndex
-let classIndex
+const schoolDaysCount = 5;
+const schoolHoursCount = 7;
+
+let maxClassHours: ClassHours = {};
+let log = null;
+let helpers = null;
+let Teachers = null;
+let table = null;
+let timetable = [];
+let dayIndex: number;
+let hourIndex: number;
+let classIndex: number;
 
 const emptyLesson = {
   subjectId: null,
   teachers: [],
-}
+};
 
 const notFoundLesson = {
   subjectId: '----',
   teachers: [],
-}
+};
 
-function getLesson() {
+function getLesson(): Lesson {
   // log.lesson(Teachers
   //   .sortByWorkload()
   //   .getWithLessonsInClass()
@@ -45,8 +47,7 @@ function getLesson() {
   //   logEmpty: true,
   // });
 
-  const { suitableTeachers: teachers } = Teachers
-    .sortByWorkload()
+  const { suitableTeachers: teachers } = Teachers.sortByWorkload()
     .getWithLessonsInClass()
     .getWorkingNow()
     .getHasntBeenYet()
@@ -56,34 +57,34 @@ function getLesson() {
     .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
     .sortByWorkIfNeeded()
-    .getLessonTeachers()
+    .getLessonTeachers();
 
-  if (!teachers.filter(Boolean).length) return null
+  if (!teachers.filter(Boolean).length) return null;
 
-  Teachers.decreaseWorkload(teachers)
+  Teachers.decreaseWorkload(teachers);
 
   const lesson = {
     subjectId: table.subjects[teachers[0].subjectIndex].id,
     teachers: teachers.map(({ teacherIndex }) => table.teachers[teacherIndex]),
-  }
+  };
 
-  return lesson
+  return lesson;
 }
 
-export function generate(defaultTable: object): object {
+export function generate(defaultTable: Table): object {
   // The very init
   table = JSON.parse(JSON.stringify(defaultTable));
-  table.schoolDaysCount = schoolDaysCount
-  table.schoolHoursCount = schoolHoursCount
+  table.schoolDaysCount = schoolDaysCount;
+  table.schoolHoursCount = schoolHoursCount;
 
   // console.log('SHIFT table :', table);
 
-  log = new Logger(table)
-  if (!window.log) window.log = log
-  helpers = new Helpers(table)
-  Teachers = new TeachersClass(table)
+  log = new Logger(table);
+  if (!window.log) window.log = log;
+  helpers = new Helpers(table);
+  Teachers = new TeachersClass(table);
   if (!window.T) window.T = Teachers;
-  maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount)
+  maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
   table.maxClassHours = maxClassHours;
 
   // console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
@@ -92,84 +93,58 @@ export function generate(defaultTable: object): object {
   Teachers.timetable = timetable;
 
   // Loop through school days
-  Array(schoolDaysCount).fill(null).forEach((d, curDayIndex) => {
-    // Init the day
-    dayIndex = curDayIndex
-    table.dayIndex = dayIndex
-    timetable[dayIndex] = []
-    
-    // Loop through school hours
-    Array(schoolHoursCount).fill(null).forEach((h, curHourIndex) => {
-      // Init the hour
-      hourIndex = curHourIndex
-      const hour = hourIndex + 1
-      table.hourIndex = hourIndex
-      timetable[dayIndex][hourIndex] = []
+  Array(schoolDaysCount)
+    .fill(null)
+    .forEach((d, curDayIndex) => {
+      // Init the day
+      dayIndex = curDayIndex;
+      table.dayIndex = dayIndex;
+      timetable[dayIndex] = [];
 
-      const findLesson = ({ id: classId }, curClassIndex) => {
-        // Init the hour of the class
-        classIndex = curClassIndex
-        table.classIndex = classIndex
+      // Loop through school hours
+      Array(schoolHoursCount)
+        .fill(null)
+        .forEach((h, curHourIndex) => {
+          // Init the hour
+          hourIndex = curHourIndex;
+          const hour = hourIndex + 1;
+          table.hourIndex = hourIndex;
+          timetable[dayIndex][hourIndex] = [];
 
-        timetable[dayIndex][hourIndex][classIndex] = emptyLesson
+          // Loop through all classes and get a lesson for the hour
+          table.classes.forEach(
+            ({ id: classId }, curClassIndex: number): void => {
+              // Init the hour of the class
+              classIndex = curClassIndex;
+              table.classIndex = classIndex;
 
-        if (!helpers.decreaseClassHour(maxClassHours, classId, hour)) return
+              timetable[dayIndex][hourIndex][classIndex] = emptyLesson;
 
-        const lesson = getLesson()
+              if (!helpers.decreaseClassHour(maxClassHours, classId, hour))
+                return;
 
-        // If no teachers found, put a placeholder for now
-        if (!lesson) {
-          const stillLeftLessons = Teachers.classHasLeftLessons()
-          if (stillLeftLessons) timetable[dayIndex][hourIndex][classIndex] = notFoundLesson
-          return
-        }
+              const lesson = getLesson();
 
-        // Building a lesson's actual data
-        timetable[dayIndex][hourIndex][classIndex] = lesson
-      }
+              // If no teachers found, put a placeholder for now
+              if (!lesson) {
+                const stillLeftLessons = Teachers.classHasLeftLessons();
+                if (stillLeftLessons)
+                  timetable[dayIndex][hourIndex][classIndex] = notFoundLesson;
+                return;
+              }
 
-      // Loop through all classes and get a lesson for the hour
-      table.classes.forEach(findLesson)
-
-      // Switch lessons between classes
-      // So that maybe it can fill empty lessons
-      // table.classes.forEach(({ id: classId, title }, curClassIndex) => {
-      //   if (timetable[dayIndex][hourIndex][curClassIndex] === notFoundLesson) {
-      //     // Find replacable lesson for absence lesson
-      //     const replacableClassIndex = timetable[dayIndex][hourIndex].findIndex(({ teachers }) => {
-      //       // Find replacable teacher
-      //       return teachers.find(({ workload, workhours }) => {
-      //         const hasWorkInClass = workload.find(w => w.classId === classId)
-      //         if (!hasWorkInClass) return false;
-
-      //         const canWorkNow = workhours[dayIndex][hourIndex]
-      //         return canWorkNow
-      //       })
-      //     })
-
-      //     if (!~replacableClassIndex) return;
-
-      //     timetable[dayIndex][hourIndex][curClassIndex] = timetable[dayIndex][hourIndex][replacableClassIndex]
-      //     timetable[dayIndex][hourIndex][replacableClassIndex] = null;
-
-      //     findLesson({ id: classId }, replacableClassIndex)
-
-      //     // console.log(dayIndex + 1, hourIndex + 1, title, timetable[dayIndex][hourIndex][replacableClassIndex]);
-          
-      //     if (timetable[dayIndex][hourIndex][replacableClassIndex] === notFoundLesson) {
-      //       // timetable[dayIndex][hourIndex][replacableClassIndex] = timetable[dayIndex][hourIndex][curClassIndex]
-      //       // timetable[dayIndex][hourIndex][curClassIndex] = notFoundLesson
-      //     }
-      //   }
-      // })
-    })
-  });
+              // Building a lesson's actual data
+              timetable[dayIndex][hourIndex][classIndex] = lesson;
+            },
+          );
+        });
+    });
 
   // log.results()
-  return timetable
+  return timetable;
 }
 
 export default {
   generate,
-  getSubjectTitleById: id => helpers.getSubjectTitleById(id),
-}
+  getSubjectTitleById: (id): string => helpers.getSubjectTitleById(id),
+};

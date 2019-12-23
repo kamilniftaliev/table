@@ -4,6 +4,7 @@ import { useMutation } from 'react-apollo';
 
 import { Modal, Checkbox as DefaultCheckbox } from '../../ui';
 import { Input, InputLabel } from '../../Tables/EditModal';
+import { Subject } from '../../../models';
 
 import { translation } from '../../../utils';
 import graph from '../../../graph';
@@ -13,15 +14,10 @@ export const Checkbox = styled(DefaultCheckbox)`
   margin-top: 20px;
 `;
 
-export interface SubjectProps {
-  id: string;
-  title?: string;
-}
-
 interface Props {
   tableId: string;
-  subject: SubjectProps;
-  onClose: React.Dispatch<React.SetStateAction<SubjectProps>>;
+  subject: Subject;
+  onClose: React.Dispatch<React.SetStateAction<Subject>>;
 }
 
 function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {

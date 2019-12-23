@@ -8,8 +8,8 @@ import { translation } from '../../../utils';
 import EditModal, { SubjectProps } from './EditModal';
 import { Table, Button, Modal, Preloader } from '../../ui';
 
-import TrashCan from '../../../images/icons/trash.svg'
-import EditIcon from '../../../images/icons/edit.svg'
+import TrashCan from '../../../images/icons/trash.svg';
+import EditIcon from '../../../images/icons/edit.svg';
 
 interface Props {
   timetable: any;
@@ -23,11 +23,11 @@ export const TableRow = styled(Table.Row)`
 
 function Subjects(table: Props): React.ReactElement {
   const { id: tableId } = table;
-  const [editingSubject, setEditingSubject] = useState<SubjectProps>(null)
-  const [deletingSubject, setDeletingSubject] = useState<SubjectProps>(null)
+  const [editingSubject, setEditingSubject] = useState<SubjectProps>(null);
+  const [deletingSubject, setDeletingSubject] = useState<SubjectProps>(null);
 
   const { data, loading } = useQuery(graph.GetSubjects, { variables: { tableId } });
-  const [deleteSubjectRequest] = useMutation(graph.DeleteSubject)
+  const [deleteSubjectRequest] = useMutation(graph.DeleteSubject);
 
   useEffect(() => {
     document.title = translation('subjects');
@@ -36,7 +36,7 @@ function Subjects(table: Props): React.ReactElement {
     };
   }, []);
 
-  if (loading) return <Preloader isCentered />
+  if (loading) return <Preloader isCentered />;
 
   function deleteSubject(): void {
     deleteSubjectRequest({
@@ -48,12 +48,12 @@ function Subjects(table: Props): React.ReactElement {
         { query: graph.GetSubjects, variables: { tableId } },
         { query: graph.GetUser },
       ],
-    })    
+    });    
 
-    setDeletingSubject(null)
+    setDeletingSubject(null);
   }
 
-  const { subjects } = data
+  const { subjects } = data;
 
   return (
     <>
@@ -69,7 +69,7 @@ function Subjects(table: Props): React.ReactElement {
           <Table.Body>
             {subjects.map(
               ({ id, title }: SubjectProps, index: number) => {
-                const updateFn = (): void => setEditingSubject({ id, title })
+                const updateFn = (): void => setEditingSubject({ id, title });
 
                 return (
                   <TableRow key={id}>
@@ -80,7 +80,7 @@ function Subjects(table: Props): React.ReactElement {
                       <Button.Icon onClick={(): void => setDeletingSubject({ id, title })} src={TrashCan} />
                     </Table.Cell>
                   </TableRow>
-                )
+                );
               }
             )}
           </Table.Body>

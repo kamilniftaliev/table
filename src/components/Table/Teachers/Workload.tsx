@@ -4,6 +4,12 @@ import { useMutation } from 'react-apollo';
 
 import { Table, Selector } from '../../ui';
 
+import {
+  Table as TableProps,
+  Teacher,
+  Workload as WorkloadModel,
+} from '../../../models';
+
 import { translation } from '../../../utils';
 import graph from '../../../graph';
 
@@ -19,7 +25,18 @@ const SubjectTitleCell = styled(TableCell).attrs(() => ({
   padding-left: 10px;
 `;
 
-function Workload({ teacher, tableSlug, tableId, classes, subjects }) {
+interface Props extends TableProps {
+  tableId: string;
+  teacher: Teacher;
+}
+
+function Workload({
+  teacher,
+  tableSlug,
+  tableId,
+  classes,
+  subjects,
+}: Props): React.ReactElement {
   const [workload, updateWorkload] = useWorkload(
     teacher.workload,
     tableSlug,
@@ -47,7 +64,7 @@ function Workload({ teacher, tableSlug, tableId, classes, subjects }) {
               return (
                 <TableCell key={classId}>
                   <HoursSelector
-                    onChange={hours =>
+                    onChange={(hours: number): void =>
                       updateWorkload({
                         variables: {
                           tableId,
@@ -57,8 +74,7 @@ function Workload({ teacher, tableSlug, tableId, classes, subjects }) {
                           hours,
                           prevHours: defaultHours || 0,
                         },
-                      })
-                    }
+                      })}
                     value={defaultHours || ''}
                   />
                 </TableCell>
@@ -76,7 +92,16 @@ const hoursOptions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(num => ({
   label: num,
 }));
 
-function HoursSelector({ value, onChange, ...props }) {
+interface HourSelectorProp {
+  value: number;
+  onChange: (hours: number) => void;
+}
+
+function HoursSelector({
+  value,
+  onChange,
+  ...props
+}: HourSelectorProp): React.ReactElement {
   return (
     <Selector
       value={{
@@ -84,35 +109,49 @@ function HoursSelector({ value, onChange, ...props }) {
         label: value,
       }}
       styles={{
-        dropdownIndicator: () => ({ display: 'none' }),
-        clearIndicator: () => ({ display: 'none' }),
-        indicatorSeparator: () => ({ display: 'none' }),
-        input: () => ({
+        dropdownIndicator: (): object => ({ display: 'none' }),
+        clearIndicator: (): object => ({ display: 'none' }),
+        indicatorSeparator: (): object => ({ display: 'none' }),
+        input: (): object => ({
           position: 'absolute',
           top: 0,
           left: 0,
           color: 'transparent',
         }),
-        valueContainer: () => ({ width: 50 }),
-        container: provided => ({ ...provided, width: 50, margin: 'auto' }),
-        control: provided => ({
+        valueContainer: (): object => ({ width: 50 }),
+        container: (provided: object): object => ({
+          ...provided,
+          width: 50,
+          margin: 'auto',
+        }),
+        control: (provided: object): object => ({
           ...provided,
           cursor: 'pointer',
           minHeight: '30px',
           width: 50,
           borderColor: '#f9f7f7',
         }),
-        option: provided => ({ ...provided, cursor: 'pointer' }),
-        singleValue: provided => ({ ...provided, width: '100%' }),
+        option: (provided: object): object => ({
+          ...provided,
+          cursor: 'pointer',
+        }),
+        singleValue: (provided: object): object => ({
+          ...provided,
+          width: '100%',
+        }),
       }}
-      onChange={({ value: hours }) => onChange(hours)}
+      onChange={({ value: hours }): void => onChange(hours)}
       options={hoursOptions}
       {...props}
     />
   );
 }
 
-function useWorkload(initialWorkload, tableSlug, teacherId) {
+function useWorkload(
+  initialWorkload: [WorkloadModel],
+  tableSlug: string,
+  teacherId: string,
+): [[WorkloadModel], any] {
   const [updateWorkload] = useMutation(graph.UpdateWorkload, {
     update(cache, { data: { updateWorkload: response } }) {
       if (cache.readQuery) {
@@ -121,15 +160,17 @@ function useWorkload(initialWorkload, tableSlug, teacherId) {
           variables: { slug: tableSlug },
         });
 
-        const teacherIndex = table.teachers.findIndex(t => t.id === teacherId);
+        const teacherIndex = table.teachers.findIndex(
+          (t: Teacher) => t.id === teacherId,
+        );
 
         const workIndex = table.teachers[teacherIndex].workload.findIndex(
-          w =>
+          (w: WorkloadModel) =>
             w.subjectId === response.subjectId &&
             w.classId === response.classId,
         );
 
-        if (workIndex != -1) {
+        if (workIndex !== -1) {
           table.teachers[teacherIndex].workload[workIndex] = response;
         } else {
           table.teachers[teacherIndex].workload.push(response);

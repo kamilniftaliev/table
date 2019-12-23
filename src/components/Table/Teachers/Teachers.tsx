@@ -9,8 +9,8 @@ import EditModal, { TeacherProps } from './EditModal';
 import { TableRow } from '../Subjects/Subjects';
 import { Table, Button, Modal, Preloader } from '../../ui';
 
-import TrashCan from '../../../images/icons/trash.svg'
-import EditIcon from '../../../images/icons/edit.svg'
+import TrashCan from '../../../images/icons/trash.svg';
+import EditIcon from '../../../images/icons/edit.svg';
 
 interface Props {
   timetable: any;
@@ -32,7 +32,7 @@ function Teachers(table: Props): React.ReactElement {
     };
   }, []);
 
-  if (loading) return <Preloader isCentered />
+  if (loading) return <Preloader isCentered />;
 
   function deleteTeacher(): void {
     deleteTeacherRequest({
@@ -44,12 +44,12 @@ function Teachers(table: Props): React.ReactElement {
         { query: graph.GetTeachers, variables: { tableId } },
         { query: graph.GetUser },
       ],
-    })    
+    });    
 
-    setDeletingTeacher(null)
+    setDeletingTeacher(null);
   }
 
-  const { teachers } = data
+  const { teachers } = data;
 
   return (
     <>
@@ -66,18 +66,22 @@ function Teachers(table: Props): React.ReactElement {
           <Table.Body>
             {teachers.map(
               ({ id, name, workloadAmount }: TeacherProps, index: number) => {
-                const link = `muellimler/${id}`
+                const link = `muellimler/${id}`;
                 return (
                   <TableRow key={id}>
                     <Table.Cell link={link}>{index + 1}</Table.Cell>
                     <Table.Cell align="left" link={link}>{name}</Table.Cell>
-                    <Table.Cell link={link}>{workloadAmount} {translation('hour')}</Table.Cell>
+                    <Table.Cell link={link}>
+                      {workloadAmount} 
+                      {' '}
+                      {translation('hour')}
+                    </Table.Cell>
                     <Table.Cell>
                       <Button.Icon onClick={(): void => setEditingTeacher({ id, name })} src={EditIcon} />
                       <Button.Icon onClick={(): void => setDeletingTeacher({ id, name })} src={TrashCan} />
                     </Table.Cell>
                   </TableRow>
-                )
+                );
               }
             )}
           </Table.Body>

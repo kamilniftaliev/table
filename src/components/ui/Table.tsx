@@ -20,7 +20,7 @@ export const Body = styled.tbody``;
 
 export const Row = styled.tr`
   &:hover {
-    background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgba(0, 0, 0, 0.02);
   }
 `;
 
@@ -30,13 +30,17 @@ interface CellProps {
   children: [Element] | Element | string | number;
 }
 
-export const TD = styled.td`
+interface TdProps {
+  highlightColumn: boolean;
+}
+
+export const TD = styled.td<TdProps>`
   padding: 0;
   border-bottom: 1px solid #f2f2f2;
 
   ${({ align }): string => align && `text-align: ${align};`}
 
-  ${({ highlightColumn }) =>
+  ${({ highlightColumn }): string =>
     highlightColumn &&
     `
     position: relative;
@@ -74,7 +78,7 @@ const Text = styled.span<TextProps>`
   color: #000;
 `;
 
-export const Cell = ({ link, children, ...props }: CellProps) => {
+export const Cell = ({ link, children, ...props }: CellProps): JSX.Element => {
   return (
     <CellTD {...props}>
       <Text as={link ? Link : 'span'} to={link}>

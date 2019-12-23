@@ -44,7 +44,7 @@ const InfoContainer = styled.div`
 const NameLabel = styled.label`
   margin-bottom: 10px;
   font-weight: 400;
-`
+`;
 
 const NameInput = styled(Input)`
   display: block;
@@ -72,11 +72,11 @@ function Teacher({
   const [tab, setTab] = useState<string>('workhours');
 
   useEffect(() => {
-    document.title = name
+    document.title = name;
     return (): void => {
-      document.title = 'Table.az'
+      document.title = 'Table.az';
     };
-  }, [id, name])
+  }, [id, name]);
 
   if (!teacher) return null;
 
@@ -157,7 +157,7 @@ function useName(initialName, teacherId, tableId) {
     }, 1000);
   }
 
-  return [name, updateName]
+  return [name, updateName];
 }
 
 export default React.memo(Teacher);

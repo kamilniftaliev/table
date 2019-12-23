@@ -24,6 +24,11 @@ export const Container = styled.div`
   // min-height: 100vh;
 `;
 
+export const ContentContainer = styled.div`
+  padding: 20px;
+  background-color: #f5f9fa;
+`;
+
 const isAuth = !!localStorage.getItem('token');
 
 const App: FC = (): JSX.Element => {
@@ -34,10 +39,12 @@ const App: FC = (): JSX.Element => {
           <Container>
             <Suspense fallback={<Preloader withDomain isCentered />}>
               {isAuth && <Header />}
-              <Switch>
-                <Route path="/" exact component={isAuth ? Tables : Auth} />
-                <Route path="/cedvel/:slug" component={Table} />
-              </Switch>
+              <ContentContainer>
+                <Switch>
+                  <Route path="/" exact component={isAuth ? Tables : Auth} />
+                  <Route path="/cedvel/:slug" component={Table} />
+                </Switch>
+              </ContentContainer>
             </Suspense>
           </Container>
         </ErrorHandler>

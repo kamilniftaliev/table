@@ -9,8 +9,8 @@ import EditModal, { ClassProps } from './EditModal';
 import { TableRow } from '../Subjects/Subjects';
 import { Table, Button, Modal, Preloader } from '../../ui';
 
-import TrashCan from '../../../images/icons/trash.svg'
-import EditIcon from '../../../images/icons/edit.svg'
+import TrashCan from '../../../images/icons/trash.svg';
+import EditIcon from '../../../images/icons/edit.svg';
 
 interface Props {
   timetable: any;
@@ -20,11 +20,11 @@ interface Props {
 
 function Classes(table: Props): React.ReactElement {
   const { id: tableId } = table;
-  const [editingClass, setEditingClass] = useState<ClassProps>(null)
-  const [deletingClass, setDeletingClass] = useState<ClassProps>(null)
+  const [editingClass, setEditingClass] = useState<ClassProps>(null);
+  const [deletingClass, setDeletingClass] = useState<ClassProps>(null);
 
   const { data, loading } = useQuery(graph.GetClasses, { variables: { tableId } });
-  const [deleteClassRequest] = useMutation(graph.DeleteClass)
+  const [deleteClassRequest] = useMutation(graph.DeleteClass);
 
   useEffect(() => {
     document.title = translation('classes');
@@ -33,7 +33,7 @@ function Classes(table: Props): React.ReactElement {
     };
   }, []);
 
-  if (loading) return <Preloader isCentered />
+  if (loading) return <Preloader isCentered />;
 
   function deleteClass(): void {
     deleteClassRequest({
@@ -45,12 +45,12 @@ function Classes(table: Props): React.ReactElement {
         { query: graph.GetClasses, variables: { tableId } },
         { query: graph.GetUser },
       ],
-    })    
+    });    
 
-    setDeletingClass(null)
+    setDeletingClass(null);
   }
 
-  const { classes } = data
+  const { classes } = data;
 
   return (
     <>
@@ -67,7 +67,7 @@ function Classes(table: Props): React.ReactElement {
           <Table.Body>
             {classes.map(
               ({ id, title, shift }: ClassProps, index: number) => {
-                const updateFn = (): void => setEditingClass({ id, title })
+                const updateFn = (): void => setEditingClass({ id, title });
 
                 return (
                   <TableRow key={id}>
@@ -79,7 +79,7 @@ function Classes(table: Props): React.ReactElement {
                       <Button.Icon onClick={(): void => setDeletingClass({ id, title })} src={TrashCan} />
                     </Table.Cell>
                   </TableRow>
-                )
+                );
               }
             )}
           </Table.Body>
