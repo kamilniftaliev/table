@@ -1,29 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { useQuery, useMutation } from 'react-apollo';
 
 import graph from '../../../graph';
 import { translation } from '../../../utils';
 
-import EditModal, { ClassProps } from './EditModal';
+import EditModal from './EditModal';
 import { TableRow } from '../Subjects/Subjects';
 import { Table, Button, Modal, Preloader } from '../../ui';
+import { Class, Teacher } from '../../../models';
 
 import TrashCan from '../../../images/icons/trash.svg';
 import EditIcon from '../../../images/icons/edit.svg';
 
 interface Props {
   timetable: any;
-  teachers: any;
-  classes: any;
+  teachers: [Teacher];
+  classes: [Class];
+  id: string;
 }
 
 function Classes(table: Props): React.ReactElement {
   const { id: tableId } = table;
-  const [editingClass, setEditingClass] = useState<ClassProps>(null);
-  const [deletingClass, setDeletingClass] = useState<ClassProps>(null);
+  const [editingClass, setEditingClass] = useState<Class>(null);
+  const [deletingClass, setDeletingClass] = useState<Class>(null);
 
-  const { data, loading } = useQuery(graph.GetClasses, { variables: { tableId } });
+  const { data, loading } = useQuery(graph.GetClasses, {
+    variables: { tableId },
+  });
   const [deleteClassRequest] = useMutation(graph.DeleteClass);
 
   useEffect(() => {
@@ -45,7 +48,7 @@ function Classes(table: Props): React.ReactElement {
         { query: graph.GetClasses, variables: { tableId } },
         { query: graph.GetUser },
       ],
-    });    
+    });
 
     setDeletingClass(null);
   }
@@ -65,23 +68,26 @@ function Classes(table: Props): React.ReactElement {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {classes.map(
-              ({ id, title, shift }: ClassProps, index: number) => {
-                const updateFn = (): void => setEditingClass({ id, title });
+            {classes.map(({ id, title, shift }: Class, index: number) => {
+              const updateFn = (): void => setEditingClass({ id, title });
 
-                return (
-                  <TableRow key={id}>
-                    <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
-                    <Table.Cell align="left" onClick={updateFn}>{title}</Table.Cell>
-                    <Table.Cell onClick={updateFn}>{shift}</Table.Cell>
-                    <Table.Cell>
-                      <Button.Icon onClick={updateFn} src={EditIcon} />
-                      <Button.Icon onClick={(): void => setDeletingClass({ id, title })} src={TrashCan} />
-                    </Table.Cell>
-                  </TableRow>
-                );
-              }
-            )}
+              return (
+                <TableRow key={id}>
+                  <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
+                  <Table.Cell align="left" onClick={updateFn}>
+                    {title}
+                  </Table.Cell>
+                  <Table.Cell onClick={updateFn}>{shift}</Table.Cell>
+                  <Table.Cell>
+                    <Button.Icon onClick={updateFn} src={EditIcon} />
+                    <Button.Icon
+                      onClick={(): void => setDeletingClass({ id, title })}
+                      src={TrashCan}
+                    />
+                  </Table.Cell>
+                </TableRow>
+              );
+            })}
           </Table.Body>
         </Table.default>
       ) : null}

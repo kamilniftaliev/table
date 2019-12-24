@@ -6,6 +6,7 @@ import { Table, Checkbox } from '../../ui';
 
 import { translation } from '../../../utils';
 import graph from '../../../graph';
+import { Teacher } from '../../../models';
 
 const TableCell = styled(Table.TD)`
   padding: 10px;
@@ -25,12 +26,19 @@ const lessonHours = Array(lessonsCount)
   .fill(null)
   .map((a, i) => i + 1);
 
+interface RenderWorkhoursProps {
+  hours: [number?];
+  tableId: string;
+  teacher: Teacher;
+  updateWorkhour: (value: object) => void;
+}
+
 function renderWorkhours({
   hours,
   tableId,
   teacher,
   updateWorkhour,
-}): React.ReactElement {
+}: RenderWorkhoursProps): React.ReactElement {
   return (
     <Table.default>
       <Table.Header>
@@ -45,14 +53,13 @@ function renderWorkhours({
         {hours.map((hour, index) => (
           <Table.Row key={hour}>
             <TableCell align="left">
-              {translation('lesson')} 
-              {' '}
-              {index + 1}
+              {translation('lesson')}
+              {` ${index + 1}`}
             </TableCell>
             {daysOfWeek.map(day => {
               const initialValue = !!teacher.workhours[day - 1][hour - 1];
 
-              const updater = value =>
+              const updater = (value): void =>
                 updateWorkhour({
                   variables: {
                     tableId,
@@ -64,7 +71,10 @@ function renderWorkhours({
                 });
 
               return (
-                <TableCell onClick={() => updater(!initialValue)} key={day}>
+                <TableCell
+                  onClick={(): void => updater(!initialValue)}
+                  key={day}
+                >
                   <Checkbox checked={initialValue} onChange={updater} />
                 </TableCell>
               );
@@ -76,27 +86,25 @@ function renderWorkhours({
   );
 }
 
-function Workhours({ teacher, tableSlug, tableId }) {
+interface Props {
+  teacher: Teacher;
+  tableSlug: string;
+  tableId: string;
+}
+
+function Workhours({ teacher, tableSlug, tableId }: Props): React.ReactElement {
   const updateWorkhour = useWorkhours(tableSlug, teacher.id);
 
   return (
     <>
-      <ShiftTitle>
-        {translation('shift')}
-        {' '}
-1
-      </ShiftTitle>
+      <ShiftTitle>{`${translation('shift')} 1`}</ShiftTitle>
       {renderWorkhours({
         hours: lessonHours.slice(0, 8),
         tableId,
         teacher,
         updateWorkhour,
       })}
-      <ShiftTitle>
-        {translation('shift')}
-        {' '}
-2
-      </ShiftTitle>
+      <ShiftTitle>{`${translation('shift')} 2`}</ShiftTitle>
       {renderWorkhours({
         hours: lessonHours.slice(8),
         tableId,
@@ -107,7 +115,10 @@ function Workhours({ teacher, tableSlug, tableId }) {
   );
 }
 
-function useWorkhours(tableSlug, teacherId) {
+function useWorkhours(
+  tableSlug: string,
+  teacherId: string,
+): RenderWorkhoursProps['updateWorkhour'] {
   const [inProgress, setInProgress] = useState<boolean>(false);
   const [updateWorkhour] = useMutation(graph.UpdateWorkhour, {
     update(

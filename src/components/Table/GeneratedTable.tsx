@@ -1,28 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, Fragment, HTMLAttributes, useMemo } from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-apollo';
+// import { useQuery } from 'react-apollo';
 
-import graph from '../../graph';
+// import graph from '../../graph';
 import { translation, Timetable } from '../../utils';
-
-import { Table, Button } from '../ui';
+import { Table as TableType, Lesson } from '../../models';
+import { Table } from '../ui';
 
 const TableContainer = styled.section`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
   padding: 10px;
   overflow-x: auto;
   max-width: 95vw;
 `;
 
 const TableWrapper = styled(Table.default)`
-  width: auto;
   border: 3px solid #000;
 `;
 
-const Cell = styled(Table.CellTD)`
+interface CellProps extends React.TdHTMLAttributes<number> {
+  classIndex: number;
+  lessonNotFound?: boolean;
+}
+
+const Cell = styled<CellProps>(Table.CellTD)`
   padding: 5px;
   min-width: 120px;
   white-space: nowrap;
@@ -32,98 +32,88 @@ const Cell = styled(Table.CellTD)`
     width: 20px;
   }
 
+  ${({ lessonNotFound }): string =>
+    lessonNotFound &&
+    `
+    background-color: #ff6f6f;
+    color: transparent;
+  `}
+
   border-right: 3px solid #000;
-  transition-duration: .4s;
-  transition-delay: ${({ classIndex = 0 }) => (classIndex / 15)}s;
+  transition-duration: 0.4s;
+  transition-delay: ${({ classIndex = 0 }): number => classIndex / 15}s;
 `;
 
-const Container = styled.div`
+interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
+  highlightTeachersName: string;
+}
 
-  ${({ highlightTeachersName }) => highlightTeachersName && `
+const Container = styled.div<ContainerProps>`
+  ${({ highlightTeachersName }) =>
+    highlightTeachersName &&
+    `
     ${Cell}[data-teachers-name="${highlightTeachersName}"] {
-      background-color: #576cd3;
+      background-color: #0b4da4db;
       color: #fff;
     }
   `}
 `;
 
-const Row = styled(Table.Row)`
+interface RowProps extends React.HTMLProps {
+  isStartOfDay: boolean;
+}
+
+const Row = styled<RowProps>(Table.Row)`
   border-bottom: 2px solid #000;
 
-  ${({ isStartOfDay }) =>
+  ${({ isStartOfDay }): string =>
     isStartOfDay &&
     `
     border-top: 3px solid #000;
   `}
 `;
 
-const ControlContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-`;
-
-const GenerateTimeTableButton = styled(Button.default)``;
-
-function getTeachersName(teachers) {
-  if (!teachers?.length) return '';
-
-  if (teachers.length === 1) return teachers[0].name;
-
-  return `${teachers[0].name} və ${teachers[1].name}`;
-}
-
-function tableGenerator(table) {
-  const tableRef = useRef(null);
-  const [timetable, setTimetable] = useState(null);
-  const { classes } = table;
-
-  // if (timetable) console.table('timetable :', timetable);
-
-  function generateTimeTable() {
-    if (!timetable) setTimetable(Timetable.generate(table));
-  }
-
-  generateTimeTable();
-
+function tableGenerator(timetable): React.ReactElement {
   return (
-    <TableContainer>
-      <ControlContainer>
-        <GenerateTimeTableButton onClick={generateTimeTable}>
-          {translation('generateTimeTable')}
-        </GenerateTimeTableButton>
-      </ControlContainer>
+    <TableContainer key={timetable[0][0].length}>
       {timetable && (
-        <TableWrapper ref={tableRef}>
+        <TableWrapper>
           <Table.Header>
             <Row>
-              {classes.map(({ id, title }, i) => (
+              {timetable[0][0].map(({ id, classTitle }, i: number) => (
                 <Cell as="th" isStartOfDay colSpan={i === 0 ? 2 : 1} key={id}>
-                  {title}
+                  {classTitle}
                 </Cell>
               ))}
             </Row>
           </Table.Header>
           <Table.Body>
-            {timetable.map(day => day.map((hourClasses, hourIndex) => (
-              <Row isStartOfDay={hourIndex === 0} key={hourIndex}>
-                {hourClasses.map(
-                  ({ subjectId, teachers }, classIndex) => (
-                    <React.Fragment key={classIndex}>
-                      {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
-                      <Cell
-                        highlightColumn
-                        classIndex={classIndex}
-                        data-teachers-name={getTeachersName(teachers)}
-                        title={getTeachersName(teachers)}
-                      >
-                        {Timetable.getSubjectTitleById(subjectId) || subjectId}
-                      </Cell>
-                    </React.Fragment>
-                  ),
-                )}
-              </Row>
-            )))}
+            {timetable.map(day =>
+              day.map((hourClasses: Lesson[], hourIndex: number) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <Row isStartOfDay={hourIndex === 0} key={hourIndex}>
+                  {hourClasses.map(
+                    (
+                      { id, subjectTitle, teachersName },
+                      classIndex: number,
+                    ) => (
+                      <Fragment key={id}>
+                        {classIndex === 0 && <Cell>{hourIndex + 1}</Cell>}
+                        <Cell
+                          highlightColumn
+                          classIndex={classIndex}
+                          data-teachers-name={teachersName}
+                          title={teachersName}
+                          lessonNotFound={subjectTitle === '-'}
+                        >
+                          {subjectTitle}
+                        </Cell>
+                      </Fragment>
+                    ),
+                  )}
+                </Row>
+              )),
+            )}
           </Table.Body>
         </TableWrapper>
       )}
@@ -131,49 +121,37 @@ function tableGenerator(table) {
   );
 }
 
-function getShiftFromTable(
-  {
-    classes,
-    teachers,
-    ...rest
-  },
-  shift,
-) {
-  return {
-    ...rest,
-    classes: classes.filter(c => c.shift === shift),
-    teachers: teachers.map(teacher => ({
-      ...teacher,
-      workhours: teacher.workhours.map(hours => shift === 1 ? hours.slice(0, 8) : hours.slice(8)),
-      workload: teacher.workload.filter(w => classes.find(c => c.id === w.classId)?.shift === shift)
-    })),
-  };
-}
+const shifts = 2;
 
-function GeneratedTable(table): React.ReactElement {
+function GeneratedTable(table: TableType): React.ReactElement {
   const [highlightTeachers, setHighlightTeachers] = useState<string>('');
 
-  const firstShift = getShiftFromTable(table, 1);
-  const secondShift = getShiftFromTable(table, 2);
   let highlightTimeout = null;
 
-  function highlightCells(event): void {
+  function highlightCells(event: MouseEvent<HTMLDivElement, MouseEvent>): void {
     clearTimeout(highlightTimeout);
 
     // eslint-disable-next-line prefer-destructuring
     const teachersName = event.target?.dataset?.teachersName;
 
     if (teachersName) {
-      highlightTimeout = setTimeout(() => setHighlightTeachers(teachersName), 1500);
+      highlightTimeout = setTimeout(
+        () => setHighlightTeachers(teachersName),
+        1500,
+      );
     } else if (highlightTeachers) {
       setHighlightTeachers('');
     }
   }
 
+  const timetable = useMemo(() => Timetable(table, shifts), [table]);
+
   return (
-    <Container highlightTeachersName={highlightTeachers} onMouseMove={highlightCells}>
-      {tableGenerator(firstShift)}
-      {tableGenerator(secondShift)}
+    <Container
+      highlightTeachersName={highlightTeachers}
+      onMouseMove={highlightCells}
+    >
+      {timetable.map(tableGenerator)}
     </Container>
   );
 }

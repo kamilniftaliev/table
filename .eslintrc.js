@@ -36,16 +36,18 @@ module.exports = {
     '@typescript-eslint/indent': [2, 2],
     'no-console': 'off',
     '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
     'react/jsx-props-no-spreading': 'off',
     'consistent-return': 'off',
     'react/state-in-constructor': [2, 'never'],
-    "semi": ["error", "always"],
+    'semi': ['error', 'always'],
+    'import/extensions': 'off',
   },
   settings: {
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
-    // 'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
+    'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
     'import/resolver': {
       typescript: {},
     },

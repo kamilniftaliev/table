@@ -7,8 +7,9 @@ export interface Class {
 export interface Table {
   id: string;
   title: string;
-  classes: [Class];
-  subjects: [Subject];
+  classes: Class[];
+  subjects: Subject[];
+  teachers: Teacher[];
   tableSlug: string;
 }
 
@@ -19,20 +20,22 @@ export interface Subject {
 
 export interface Workload {
   hours: number;
-  subjectId: string;
-  classId: string;
+  subjectId: Subject['id'];
+  classId: Class['id'];
 }
 
 export interface Teacher {
   id: string;
   name: string;
-  workload: Workload;
+  workload: Workload[];
+  workhours: boolean[][];
 }
 
 export interface Lesson {
-  // id: string;
-  subjectId: string;
-  teachers: [Teacher];
+  id?: string;
+  classTitle: Class['title'];
+  subjectTitle: Subject['title'];
+  teachersName: string;
 }
 
 export interface ClassHour {
@@ -51,3 +54,5 @@ export interface TableTeacher {
   subjectIndex: number;
   workloadIndex: number;
 }
+
+// export type Timetable []

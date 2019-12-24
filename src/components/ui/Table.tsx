@@ -3,13 +3,15 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 export default styled.table`
-  width: 100%;
+  width: auto;
   text-align: center;
   border-spacing: 0;
   border-collapse: collapse;
   overflow: hidden;
   position: relative;
   z-index: 0;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 export const Header = styled.thead`
@@ -20,7 +22,7 @@ export const Body = styled.tbody``;
 
 export const Row = styled.tr`
   &:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(0, 0, 0, 0.03);
   }
 `;
 
@@ -31,7 +33,7 @@ interface CellProps {
 }
 
 interface TdProps {
-  highlightColumn: boolean;
+  highlightColumn?: boolean;
 }
 
 export const TD = styled.td<TdProps>`
@@ -46,7 +48,7 @@ export const TD = styled.td<TdProps>`
     position: relative;
 
     :hover::after {
-      background-color: rgba(0, 0, 0, 0.06);
+      background-color: rgba(0, 0, 0, 0.05);
       content: '';
       height: 500vh;
       left: 0;

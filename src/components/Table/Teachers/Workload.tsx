@@ -62,7 +62,7 @@ function Workload({
                 ? workload[subjectId][classId]
                 : 0;
               return (
-                <TableCell key={classId}>
+                <TableCell highlightColumn key={classId}>
                   <HoursSelector
                     onChange={(hours: number): void =>
                       updateWorkload({
@@ -74,7 +74,8 @@ function Workload({
                           hours,
                           prevHours: defaultHours || 0,
                         },
-                      })}
+                      })
+                    }
                     value={defaultHours || ''}
                   />
                 </TableCell>

@@ -10,8 +10,8 @@ import graph from '../../../graph';
 const Workload = lazy(() =>
   import(/* webpackChunkName: "workload" */ './Workload'),
 );
-const WorkHours = lazy(() =>
-  import(/* webpackChunkName: "workhours" */ './WorkHours'),
+const Workhours = lazy(() =>
+  import(/* webpackChunkName: "workhours" */ './Workhours'),
 );
 
 const Container = styled.div`
@@ -90,10 +90,7 @@ function Teacher({
         <NameInput value={name} onChange={e => setName(e.target.value)} />
       </InfoContainer>
       <NavContainer>
-        <WorkloadTitle
-          isActive={isWorkload}
-          onClick={() => setTab('workload')}
-        >
+        <WorkloadTitle isActive={isWorkload} onClick={() => setTab('workload')}>
           {translation('workloadTitle')}
         </WorkloadTitle>
         <WorkloadTitle
@@ -116,7 +113,7 @@ function Teacher({
           )}
 
           {isWorkhours && (
-            <WorkHours
+            <Workhours
               teacher={teacher}
               tableId={tableId}
               tableSlug={tableSlug}
