@@ -35,13 +35,15 @@ query GetTable($slug: String!) {
     id
     title
     created
-    subjects {
-      id
-      title
-    }
+    # subjects {
+    #   id
+    #   title
+    # }
     classes {
       id
-      title
+      number
+      letter
+      sector
       shift
     }
     teachers {

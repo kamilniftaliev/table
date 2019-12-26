@@ -65,7 +65,6 @@ function getLesson(): Lesson {
 
   const lesson = {
     subjectTitle: table.subjects[teachers[0].subjectIndex].title,  
-    classTitle: table.classes[table.classIndex].title,
     teachersName: teachers.map(({ teacherIndex }) => table.teachers[teacherIndex].name).join(' və '),
   };
 
@@ -134,7 +133,7 @@ export default function(defaultTable: Table, shiftsCount: number): object {
 
             // Loop through all classes and get a lesson for the hour
             table.classes.forEach(
-              ({ id: classId, title: classTitle }, curClassIndex: number): void => {
+              ({ id: classId }, curClassIndex: number): void => {
                 // Init the hour of the class
                 classIndex = curClassIndex;
                 table.classIndex = classIndex;
@@ -156,7 +155,7 @@ export default function(defaultTable: Table, shiftsCount: number): object {
                 timetable[dayIndex][hourIndex][classIndex] = {
                   ...lesson,
                   id: lessonId,
-                  classTitle,
+                  classTitle: helpers.getClassTitleById(classId),
                 };
               },
             );

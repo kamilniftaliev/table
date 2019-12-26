@@ -1,15 +1,45 @@
-mutation CreateClass($tableId: ID!, $title: String!, $shift: Int!) {
-  createClass(title: $title, tableId: $tableId, shift: $shift) {
+mutation CreateClass(
+  $tableId: ID!
+  $number: Int!
+  $sector: String!
+  $letter: String!
+  $shift: Int!
+) {
+  createClass(
+    number: $number
+    sector: $sector
+    letter: $letter
+    tableId: $tableId
+    shift: $shift
+  ) {
     id
-    title
+    number
+    sector
+    letter
+    tableId
     shift
   }
 }
 
-mutation UpdateClass($tableId: ID!, $title: String!, $id: ID!, $shift: Int!) {
-  updateClass(title: $title, id: $id, tableId: $tableId, shift: $shift) {
+mutation UpdateClass(
+  $tableId: ID!
+  $number: Int!
+  $sector: String!
+  $letter: String!
+  $shift: Int!
+) {
+  updateClass(
+    number: $number
+    sector: $sector
+    letter: $letter
+    tableId: $tableId
+    shift: $shift
+  ) {
     id
-    title
+    number
+    sector
+    letter
+    tableId
     shift
   }
 }
@@ -23,7 +53,9 @@ mutation DeleteClass($id: ID!, $tableId: ID!) {
 query GetClasses($tableId: ID!) {
   classes(tableId: $tableId) {
     id
-    title
     shift
+    number
+    letter
+    sector
   }
 }

@@ -49,7 +49,7 @@ interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const Container = styled.div<ContainerProps>`
-  ${({ highlightTeachersName }) =>
+  ${({ highlightTeachersName }): string =>
     highlightTeachersName &&
     `
     ${Cell}[data-teachers-name="${highlightTeachersName}"] {

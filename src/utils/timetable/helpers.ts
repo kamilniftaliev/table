@@ -7,22 +7,29 @@ export default class Helpers {
     this.table = table;
   }
 
-  public getSubjectIndexById(id: string): number {
+  public getSubjectIndexById(id: Subject['id']): number {
     return this.table.subjects.findIndex(s => s.id === id);
   }
   
-  public getSubjectById(id: string): Subject {
+  public getSubjectById(id: Subject['id']): Subject {
     return this.table.subjects.find((s: Subject) => s.id === id);
   }
 
-  public getSubjectTitleById(id: string): string {
-    return this.table.subjects.find((s: Subject) => s.id === id)?.title;
+  public getSubjectTitleById(id: Subject['id']): Subject['title'] {
+    return this.table.subjects.find((s: Subject) => s.id === id)?.title || '';
   }
 
-  public getClassTitleById(id: string): string {
-    return this.table.classes.find((s: Class) => s.id === id)?.title;
+  public getClassTitleById(id: Class['id']): Class['title'] {
+    const theClass = this.table.classes.find((s: Class) => s.id === id);
+
+    return `${theClass.number}${theClass.letter}`;
   }
   
+  public getClassTitleFromTeacher({ teacherIndex, workloadIndex }): Class['title'] {
+    const { classId } = this.table.teachers[teacherIndex].workload[workloadIndex];
+    return this.getClassTitleById(classId);
+  }
+
   public getClassIndexFromTeacher({ teacherIndex, workloadIndex }): number {
     const { classId } = this.table.teachers[teacherIndex].workload[workloadIndex];
     return this.table.classes.findIndex((s: Class) => s.id === classId);
@@ -90,7 +97,11 @@ export default class Helpers {
     }, {});
   }
 
-  public decreaseClassHour = (maxClassHours: object, classId: string, curHour: number): boolean => {
+  public decreaseClassHour = (
+    maxClassHours: object,
+    classId: string,
+    curHour: number
+  ): boolean => {
     const classHours = maxClassHours[classId];
     const maxHoursProp = Math.max(...Object.keys(classHours).map(Number));
     const classHourLimit = classHours[maxHoursProp];
