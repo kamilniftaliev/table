@@ -11,6 +11,7 @@ export interface Table {
   subjects: Subject[];
   teachers: Teacher[];
   tableSlug: string;
+  shifts: number;
 }
 
 export interface Subject {

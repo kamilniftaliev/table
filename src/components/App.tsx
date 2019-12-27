@@ -19,12 +19,8 @@ const Table = lazy(() =>
   import(/* webpackChunkName: "table" */ './Table/Table'),
 );
 
-export const Container = styled.div`
-  // position: relative;
-  // min-height: 100vh;
-`;
-
 export const ContentContainer = styled.div`
+  min-height: 100vh;
   padding: 20px;
   background-color: #f5f9fa;
 `;
@@ -36,7 +32,7 @@ const App: FC = (): JSX.Element => {
     <GraphQL>
       <Router>
         <ErrorHandler>
-          <Container>
+          <div>
             <Suspense fallback={<Preloader withDomain isCentered />}>
               {isAuth && <Header />}
               <ContentContainer>
@@ -46,7 +42,7 @@ const App: FC = (): JSX.Element => {
                 </Switch>
               </ContentContainer>
             </Suspense>
-          </Container>
+          </div>
         </ErrorHandler>
       </Router>
       <CSS.global />

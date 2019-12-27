@@ -2,7 +2,7 @@ import Logger from './logger';
 import Helpers from './helpers';
 import TeachersClass from './teachers';
 
-import { Table, Lesson, ClassHours, Workload } from '../../models';
+import { Table, Lesson, ClassHours, Workload, Subject } from '../../models';
 
 const schoolDaysCount = 5;
 const schoolHoursCount = 7;
@@ -64,7 +64,7 @@ function getLesson(): Lesson {
   Teachers.decreaseWorkload(teachers);
 
   const lesson = {
-    subjectTitle: table.subjects[teachers[0].subjectIndex].title,  
+    subjectTitle: table.subjects[teachers[0].subjectIndex].title?.ru,  
     teachersName: teachers.map(({ teacherIndex }) => table.teachers[teacherIndex].name).join(' və '),
   };
 
@@ -90,20 +90,23 @@ function getShiftFromTable(
   }));
 }
 
-export default function(defaultTable: Table, shiftsCount: number): object {
-  return Array(shiftsCount).fill(null).map((s, i) => {
+export default function(defaultTable: Table, subjects: Subject[]): object {
+  return Array(defaultTable.shifts).fill(null).map((s, shiftIndex) => {
+    const shift = shiftIndex + 1;
+
     // The very init
-    table = getShiftFromTable(defaultTable, i + 1);
+    table = getShiftFromTable(defaultTable, shift);
     table.schoolDaysCount = schoolDaysCount;
     table.schoolHoursCount = schoolHoursCount;
+    table.subjects = subjects;
 
     // console.log('SHIFT table :', table);
 
     log = new Logger(table);
-    if (!window.log) window.log = log;
+    // if (!window.log) window.log = log;
     helpers = new Helpers(table);
     Teachers = new TeachersClass(table);
-    if (!window.T) window.T = Teachers;
+    // if (!window.T) window.T = Teachers;
     maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
     table.maxClassHours = maxClassHours;
 

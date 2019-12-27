@@ -1,11 +1,9 @@
-import React, { useState, Fragment, HTMLAttributes, useMemo } from 'react';
+import React, { Fragment } from 'react';
 import styled from 'styled-components';
-// import { useQuery } from 'react-apollo';
 
-// import graph from '../../graph';
-import { translation, Timetable } from '../../utils';
-import { Table as TableType, Lesson } from '../../models';
-import { Table } from '../ui';
+import { translation } from '../../../utils';
+import { Table as TableType, Lesson } from '../../../models';
+import { Table } from '../../ui';
 
 const TableContainer = styled.section`
   padding: 10px;
@@ -22,7 +20,7 @@ interface CellProps extends React.TdHTMLAttributes<number> {
   lessonNotFound?: boolean;
 }
 
-const Cell = styled<CellProps>(Table.CellTD)`
+export const Cell = styled<CellProps>(Table.CellTD)`
   padding: 5px;
   min-width: 120px;
   white-space: nowrap;
@@ -44,21 +42,6 @@ const Cell = styled<CellProps>(Table.CellTD)`
   transition-delay: ${({ classIndex = 0 }): number => classIndex / 15}s;
 `;
 
-interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
-  highlightTeachersName: string;
-}
-
-const Container = styled.div<ContainerProps>`
-  ${({ highlightTeachersName }): string =>
-    highlightTeachersName &&
-    `
-    ${Cell}[data-teachers-name="${highlightTeachersName}"] {
-      background-color: #0b4da4db;
-      color: #fff;
-    }
-  `}
-`;
-
 interface RowProps extends React.HTMLProps {
   isStartOfDay: boolean;
 }
@@ -73,9 +56,14 @@ const Row = styled<RowProps>(Table.Row)`
   `}
 `;
 
-function tableGenerator(timetable): React.ReactElement {
+interface Props {
+  timetable: TableType;
+}
+
+function Timetable({ timetable }: Props): React.ReactElement {
+  console.log('RENDERED timetable :', timetable);
   return (
-    <TableContainer key={timetable[0][0].length}>
+    <TableContainer>
       {timetable && (
         <TableWrapper>
           <Table.Header>
@@ -121,39 +109,4 @@ function tableGenerator(timetable): React.ReactElement {
   );
 }
 
-const shifts = 2;
-
-function GeneratedTable(table: TableType): React.ReactElement {
-  const [highlightTeachers, setHighlightTeachers] = useState<string>('');
-
-  let highlightTimeout = null;
-
-  function highlightCells(event: MouseEvent<HTMLDivElement, MouseEvent>): void {
-    clearTimeout(highlightTimeout);
-
-    // eslint-disable-next-line prefer-destructuring
-    const teachersName = event.target?.dataset?.teachersName;
-
-    if (teachersName) {
-      highlightTimeout = setTimeout(
-        () => setHighlightTeachers(teachersName),
-        1500,
-      );
-    } else if (highlightTeachers) {
-      setHighlightTeachers('');
-    }
-  }
-
-  const timetable = useMemo(() => Timetable(table, shifts), [table]);
-
-  return (
-    <Container
-      highlightTeachersName={highlightTeachers}
-      onMouseMove={highlightCells}
-    >
-      {timetable.map(tableGenerator)}
-    </Container>
-  );
-}
-
-export default React.memo(GeneratedTable);
+export default React.memo(Timetable);

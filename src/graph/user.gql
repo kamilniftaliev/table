@@ -11,10 +11,6 @@ query GetUser {
       id
       slug
       created
-      subjectsCount
-      # subjects {
-      #   id
-      # }
       teachersCount
       teachers {
         id

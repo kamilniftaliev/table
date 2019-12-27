@@ -8,8 +8,8 @@ import { translation } from '../../utils';
 
 import { Content, Preloader } from '../ui';
 
-const GeneratedTable = lazy(() =>
-  import(/* webpackChunkName: "generated-table" */ './GeneratedTable'),
+const Timetable = lazy(() =>
+  import(/* webpackChunkName: "generated-table" */ './Timetable'),
 );
 const Teachers = lazy(() =>
   import(/* webpackChunkName: "teachers" */ './Teachers/Teachers'),
@@ -83,13 +83,15 @@ function Table({
   if (loading) return <Preloader isCentered />;
 
   const { table } = data;
+  table.shifts = 2;
   table.classes.sort((first, second) => {
-    const firstClassNum = parseInt(first.title, 10);
-    const secondClassNum = parseInt(second.title, 10);
+    const numbers = first.number - second.number;
 
-    return firstClassNum - secondClassNum;
+    if (numbers !== 0) return numbers;
+
+    // Index in az letters
+    return first.letter - second.letter;
   });
-  // table.classes = table.classes.filter(({ title }) => parseInt(title, 10) > 5);
   console.log('INIT table :', table);
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;
@@ -115,7 +117,7 @@ function Table({
             <Route
               path={mainPath}
               exact
-              component={() => <GeneratedTable {...table} />}
+              component={() => <Timetable table={table} />}
             />
             <Route
               path={teachersPath}

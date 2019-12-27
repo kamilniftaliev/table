@@ -18,9 +18,11 @@ mutation DeleteSubject($id: ID!, $tableId: ID!) {
   }
 }
 
-# query GetSubjects($tableId: ID!) {
-#   subjects(tableId: $tableId) {
-#     id
-#     title
-#   }
-# }
+query GetSubjects {
+  subjects {
+    id
+    title {
+      ru
+    }
+  }
+}

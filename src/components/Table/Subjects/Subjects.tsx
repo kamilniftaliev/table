@@ -26,7 +26,7 @@ function Subjects(table: Props): React.ReactElement {
   const [editingSubject, setEditingSubject] = useState<SubjectProps>(null);
   const [deletingSubject, setDeletingSubject] = useState<SubjectProps>(null);
 
-  const { data, loading } = useQuery(graph.GetSubjects, { variables: { tableId } });
+  const { data, loading } = useQuery(graph.GetSubjects);
   const [deleteSubjectRequest] = useMutation(graph.DeleteSubject);
 
   useEffect(() => {
@@ -44,11 +44,8 @@ function Subjects(table: Props): React.ReactElement {
         id: deletingSubject.id,
         tableId,
       },
-      refetchQueries: [
-        { query: graph.GetSubjects, variables: { tableId } },
-        { query: graph.GetUser },
-      ],
-    });    
+      refetchQueries: [{ query: graph.GetSubjects }, { query: graph.GetUser }],
+    });
 
     setDeletingSubject(null);
   }
@@ -62,38 +59,46 @@ function Subjects(table: Props): React.ReactElement {
           <Table.Header>
             <Table.Row>
               <Table.Head>№</Table.Head>
-              <Table.Head align="left">{translation('subjectTitle')}</Table.Head>
+              <Table.Head align="left">
+                {translation('subjectTitle')}
+              </Table.Head>
               <Table.Head>{translation('actions')}</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {subjects.map(
-              ({ id, title }: SubjectProps, index: number) => {
-                const updateFn = (): void => setEditingSubject({ id, title });
+            {subjects.map(({ id, title }: SubjectProps, index: number) => {
+              const updateFn = (): void => setEditingSubject({ id, title });
 
-                return (
-                  <TableRow key={id}>
-                    <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
-                    <Table.Cell align="left" onClick={updateFn}>{title}</Table.Cell>
-                    <Table.Cell>
-                      <Button.Icon onClick={updateFn} src={EditIcon} />
-                      <Button.Icon onClick={(): void => setDeletingSubject({ id, title })} src={TrashCan} />
-                    </Table.Cell>
-                  </TableRow>
-                );
-              }
-            )}
+              return (
+                <TableRow key={id}>
+                  <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
+                  <Table.Cell align="left" onClick={updateFn}>
+                    {title}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Button.Icon onClick={updateFn} src={EditIcon} />
+                    <Button.Icon
+                      onClick={(): void => setDeletingSubject({ id, title })}
+                      src={TrashCan}
+                    />
+                  </Table.Cell>
+                </TableRow>
+              );
+            })}
           </Table.Body>
         </Table.default>
       ) : null}
-      
+
       <Button.Add onClick={(): void => setEditingSubject({ id: 'new' })}>
         {translation('addNewSubject')}
       </Button.Add>
 
       {deletingSubject && (
         <Modal.Confirm
-          text={translation('pleaseConfirmSubjectDelete', deletingSubject.title)}
+          text={translation(
+            'pleaseConfirmSubjectDelete',
+            deletingSubject.title,
+          )}
           onClose={(): void => setDeletingSubject(null)}
           onConfirm={(): void => deleteSubject()}
         />
