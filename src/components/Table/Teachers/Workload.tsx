@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { useMutation } from 'react-apollo';
+import { useMutation, useQuery } from 'react-apollo';
 
-import { Table, Selector } from '../../ui';
+import { Table, Selector, Button, Modal } from '../../ui';
 
 import {
   Table as TableProps,
   Teacher,
   Workload as WorkloadModel,
+  Class,
 } from '../../../models';
 
 import { translation } from '../../../utils';
 import graph from '../../../graph';
+
+const Container = styled.div``;
 
 const TableCell = styled(Table.TD)`
   padding: 5px;
@@ -25,9 +28,22 @@ const SubjectTitleCell = styled(TableCell).attrs(() => ({
   padding-left: 10px;
 `;
 
+const Title = styled.p`
+  font-size: 20px;
+  font-weight: 400;
+  margin-top: 0;
+  text-align: center;
+`;
+
+const AddWorkloadModal = styled(Modal.default)`
+  width: 300px;
+  padding: 50px 70px;
+`;
+
 interface Props extends TableProps {
   tableId: string;
   teacher: Teacher;
+  classes: Class[];
 }
 
 function Workload({
@@ -35,56 +51,151 @@ function Workload({
   tableSlug,
   tableId,
   classes,
-  subjects,
 }: Props): React.ReactElement {
+  const [newWorkload, setNewWorkload] = useState<WorkloadModel>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const { data, loading: loadingSubjects } = useQuery(graph.GetSubjects);
   const [workload, updateWorkload] = useWorkload(
     teacher.workload,
     tableSlug,
     teacher.id,
   );
+  const teacherClasses = useMemo(
+    () =>
+      classes.filter(c =>
+        teacher.workload.find(w => c.id === w.classId && w.hours),
+      ),
+    [],
+  );
+
+  const teacherSubjects = useMemo(
+    () =>
+      data?.subjects.filter(s =>
+        teacher.workload.find(w => s.id === w.subjectId && w.hours),
+      ),
+    [loadingSubjects],
+  );
+
+  if (loadingSubjects) return null;
 
   return (
-    <Table.default>
-      <Table.Header>
-        <Table.Row>
-          <Table.Head>{translation('classes')}</Table.Head>
-          {classes.map(({ id, title }) => (
-            <Table.Head key={id}>{title}</Table.Head>
-          ))}
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {subjects.map(({ id: subjectId, title }) => (
-          <Table.Row key={subjectId}>
-            <SubjectTitleCell align="left">{title}</SubjectTitleCell>
-            {classes.map(({ id: classId }) => {
-              const defaultHours = workload[subjectId]
-                ? workload[subjectId][classId]
-                : 0;
-              return (
-                <TableCell highlightColumn key={classId}>
-                  <HoursSelector
-                    onChange={(hours: number): void =>
-                      updateWorkload({
-                        variables: {
-                          tableId,
-                          teacherId: teacher.id,
-                          subjectId,
-                          classId,
-                          hours,
-                          prevHours: defaultHours || 0,
-                        },
-                      })
-                    }
-                    value={defaultHours || ''}
-                  />
-                </TableCell>
-              );
-            })}
+    <Container>
+      <Table.default>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head>{translation('classes')}</Table.Head>
+            {teacherClasses.map(({ id, number, letter }) => (
+              <Table.Head key={id}>
+                {number}
+                {letter}
+              </Table.Head>
+            ))}
           </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.default>
+        </Table.Header>
+        <Table.Body>
+          {teacherSubjects.map(({ id: subjectId, title }) => (
+            <Table.Row key={subjectId}>
+              <SubjectTitleCell align="left">{title.ru}</SubjectTitleCell>
+              {teacherClasses.map(({ id: classId }) => {
+                const defaultHours = workload[subjectId]
+                  ? workload[subjectId][classId]
+                  : 0;
+                return (
+                  <TableCell key={classId}>
+                    <HoursSelector
+                      onChange={(hours: number): void =>
+                        updateWorkload({
+                          variables: {
+                            tableId,
+                            teacherId: teacher.id,
+                            subjectId,
+                            classId,
+                            hours,
+                          },
+                        })
+                      }
+                      value={defaultHours || ''}
+                    />
+                  </TableCell>
+                );
+              })}
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.default>
+      <Button.Add onClick={(): void => setShowModal(true)}>
+        {translation('addNewWorkload')}
+      </Button.Add>
+      {showModal && (
+        <AddWorkloadModal
+          onClose={(): void => setShowModal(false)}
+          steps={[
+            (nextStep): React.ReactElement => (
+              <>
+                <Title>{translation('selectSubject')}</Title>
+                <Selector
+                  key="0"
+                  placeholder={translation('selectSubject')}
+                  options={data.subjects.map(s => ({
+                    value: s.id,
+                    label: s.title.ru,
+                  }))}
+                  onChange={({ value: subjectId }): void => {
+                    setNewWorkload({
+                      ...newWorkload,
+                      subjectId,
+                    });
+                    nextStep();
+                  }}
+                />
+              </>
+            ),
+            (nextStep): React.ReactElement => (
+              <>
+                <Title>{translation('selectClass')}</Title>
+                <Selector
+                  key="1"
+                  placeholder={translation('selectClass')}
+                  options={classes.map(c => ({
+                    value: c.id,
+                    label: `${c.number}${c.letter}`,
+                  }))}
+                  onChange={({ value: classId }): void => {
+                    setNewWorkload({
+                      ...newWorkload,
+                      classId,
+                    });
+                    nextStep();
+                  }}
+                />
+              </>
+            ),
+            (nextStep): React.ReactElement => (
+              <>
+                <Title>{translation('selectHours')}</Title>
+                <Selector
+                  key="2"
+                  placeholder={translation('selectHours')}
+                  options={hoursOptions}
+                  onChange={({ value: hours }): void => {
+                    setNewWorkload(null);
+                    updateWorkload({
+                      variables: {
+                        ...newWorkload,
+                        tableId,
+                        teacherId: teacher.id,
+                        hours,
+                      },
+                    });
+                    nextStep();
+                  }}
+                />
+              </>
+            ),
+          ]}
+        />
+      )}
+    </Container>
   );
 }
 
@@ -149,7 +260,7 @@ function HoursSelector({
 }
 
 function useWorkload(
-  initialWorkload: [WorkloadModel],
+  initialWorkload: WorkloadModel[],
   tableSlug: string,
   teacherId: string,
 ): [[WorkloadModel], any] {

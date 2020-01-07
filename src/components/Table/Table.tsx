@@ -78,7 +78,24 @@ function Table({
     params: { slug },
   },
 }: Props): React.ReactElement {
-  const { data, loading } = useQuery(graph.GetTable, { variables: { slug } });
+  const { data, loading } = useQuery(graph.GetTable, {
+    variables: { slug },
+    onCompleted: ({ table }) => {
+      table.teachers.forEach(teacher => {
+        const workloadAmount = teacher.workload.reduce(
+          (acc, { hours }) => acc + hours,
+          0,
+        );
+
+        const workhoursAmount = teacher.workhours
+          .flat()
+          .reduce((acc, works) => (works ? acc + 1 : acc), 0);
+
+        teacher.workloadAmount = workloadAmount;
+        teacher.workhoursAmount = workhoursAmount;
+      });
+    },
+  });
 
   if (loading) return <Preloader isCentered />;
 
@@ -108,7 +125,6 @@ function Table({
           </Tab>
           <Tab to={teachersPath}>{translation('teachers')}</Tab>
           <Tab to={classesPath}>{translation('classes')}</Tab>
-          <Tab to={subjectsPath}>{translation('subjects')}</Tab>
         </Tabs>
       </Header>
       <Container>
@@ -122,7 +138,9 @@ function Table({
             <Route
               path={teachersPath}
               exact
-              component={() => <Teachers {...table} />}
+              component={() => (
+                <Teachers id={table.id} teachers={table.teachers} />
+              )}
             />
             <Route
               path={teacherPath}

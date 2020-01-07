@@ -54,4 +54,17 @@ export default {
   generateTimeTable: 'Обновить таблицу',
 
   shift: 'Смена',
+
+  addNewWorkload: 'Добавить рабочие часы',
+  selectSubject: 'Выберите предмет',
+  selectClass: 'Выберите класс',
+  selectHours: 'Выберите количество часов',
+  selectSector: 'Выберите сектор класса',
+
+  az: 'Азербайджанский',
+  ru: 'Русский',
+
+  class: 'Класс',
+  letter: 'Буква',
+  sector: 'Сектор',
 };

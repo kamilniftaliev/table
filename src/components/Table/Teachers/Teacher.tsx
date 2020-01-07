@@ -25,13 +25,17 @@ const NavContainer = styled.div`
   margin-top: 20px;
 `;
 
-const WorkloadTitle = styled.span`
+interface WorkloadTitle {
+  isActive?: string;
+}
+
+const WorkloadTitle = styled.span<WorkloadTitleProps>`
   font-size: 22px;
   font-weight: 400;
   margin-right: 15px;
   cursor: pointer;
 
-  ${({ isActive }) => isActive && 'color: blue;'}
+  ${({ isActive }): string => isActive && 'color: blue;'}
 `;
 
 const InfoContainer = styled.div`
@@ -69,7 +73,7 @@ function Teacher({
 }: Props): React.ReactElement {
   const teacher = teachers.find(t => t.id === id);
   const [name, setName] = useName(teacher?.name, id, tableId);
-  const [tab, setTab] = useState<string>('workhours');
+  const [tab, setTab] = useState<string>('workload');
 
   useEffect(() => {
     document.title = name;
@@ -138,7 +142,7 @@ function useName(initialName, teacherId, tableId) {
 
     if (!regExp.test(newName) || newName.length > 30) return;
 
-    const newSlug = text.generateSlug(newName);
+    const slug = text.generateSlug(newName);
     setName(newName);
     clearTimeout(nameUpdateTimeout);
 
@@ -148,7 +152,7 @@ function useName(initialName, teacherId, tableId) {
           name: newName,
           id: teacherId,
           tableId,
-          slug: newSlug,
+          slug,
         },
       });
     }, 1000);

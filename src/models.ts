@@ -1,6 +1,8 @@
 export interface Class {
   id: string;
-  title: string;
+  number: number;
+  letter: string;
+  sector: string;
   shift: number;
 }
 
@@ -14,9 +16,13 @@ export interface Table {
   shifts: number;
 }
 
+export interface SubjectTitle {
+  ru: string;
+}
+
 export interface Subject {
   id: string;
-  title: string;
+  title: SubjectTitle;
 }
 
 export interface Workload {
@@ -30,13 +36,15 @@ export interface Teacher {
   name: string;
   workload: Workload[];
   workhours: boolean[][];
+  workloadAmount: number;
+  workhoursAmount: number;
 }
 
 export interface Lesson {
   id?: string;
-  classTitle: Class['title'];
+  classTitle: string;
   subjectTitle: Subject['title'];
-  teachersName: string;
+  teachersName: Teacher['name'];
 }
 
 export interface ClassHour {

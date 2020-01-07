@@ -9,9 +9,10 @@ import graph from '../../../graph';
 
 export interface TeacherProps {
   id: string;
-  name?: string;
-  slug?: string;
-  workloadAmount?: number;
+  name: string;
+  slug: string;
+  workloadAmount: number;
+  workhoursAmount: number;
 }
 
 interface Props {

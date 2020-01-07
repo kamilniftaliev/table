@@ -61,4 +61,17 @@ export default {
   generateTimeTable: 'Cədvəli yenilə',
 
   shift: 'Növbə',
+
+  addNewWorkload: 'Dərs yükü əlavə et',
+  selectSubject: 'Fənni seçin',
+  selectClass: 'Sinfi seçin',
+  selectHours: 'Saat sayını seçin',
+  selectSector: 'Sinfin bölməsini seçin',
+
+  az: 'Azərbaycan',
+  ru: 'Rus',
+
+  letter: 'Hərf',
+  class: 'Sinif',
+  sector: 'Bölmə',
 };

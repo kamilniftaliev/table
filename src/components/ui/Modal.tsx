@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
-import Button from "./Button";
+import Button from './Button';
 
 import CloseIcon from '../../images/icons/close.svg';
 import { translation, dom } from '../../utils';
@@ -21,8 +21,9 @@ const Overlay = styled.div`
 `;
 
 const Window = styled.form`
+  min-width: 200px;
   position: relative;
-  padding: 20px 30px;
+  padding: 30px 50px;
   border-radius: 3px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
   background-color: #fff;
@@ -55,7 +56,8 @@ const theme = {
 
 const ModalButton = styled(props => <Button {...dom.getTagProps(props)} />)`
   color: ${({ color = 'red' }): string => theme[color].color};
-  background-color: ${({ color = 'red' }): string => theme[color].backgroundColor};
+  background-color: ${({ color = 'red' }): string =>
+    theme[color].backgroundColor};
   margin-left: 15px;
   border: 1px solid ${({ color = 'red' }): string => theme[color].borderColor};
 
@@ -94,36 +96,50 @@ interface ButtonProps {
 
 interface ModalProps {
   children?: JSX.Element[] | JSX.Element;
-  onClose: () => void
+  onClose: () => void;
   buttons?: ButtonProps[];
+  steps: ((
+    nextStep?: ModalProps['onClose'],
+    prevStep?: ModalProps['onClose'],
+  ) => ReactElement)[];
+  className: string;
 }
 
 interface ConfirmProps extends ModalProps {
   text: string;
-  onConfirm: () => void
+  onConfirm: () => void;
 }
 
 export default function Modal({
   children,
   onClose,
   buttons,
-}: ModalProps): React.ReactElement {
+  steps,
+  className,
+}: ModalProps): ReactElement {
+  const [step, setStep] = useState<number>(0);
   function onOverlayClick(e): void {
-    if (e.target === e.currentTarget) onClose(null);
+    if (e.target === e.currentTarget) onClose();
   }
+
+  const prevStep = (): void => setStep(step - 1);
+  const nextStep = (): void => {
+    if (steps.length === step + 1) {
+      onClose();
+    } else {
+      setStep(step + 1);
+    }
+  };
 
   return createPortal(
     <Overlay onClick={onOverlayClick}>
-      <Window>
+      <Window className={className}>
         <Close onClick={onClose} />
-        {children}
+        {steps ? steps[step](nextStep, prevStep) : children}
         {buttons?.length && (
           <ButtonsContainer>
             {buttons.map(({ text, ...props }) => (
-              <ModalButton
-                key={text}
-                {...props}
-              >
+              <ModalButton key={text} {...props}>
                 {text}
               </ModalButton>
             ))}
@@ -135,7 +151,11 @@ export default function Modal({
   );
 }
 
-export function Confirm({ text, onClose, onConfirm }: ConfirmProps): React.ReactElement {
+export function Confirm({
+  text,
+  onClose,
+  onConfirm,
+}: ConfirmProps): ReactElement {
   return (
     <Modal
       onClose={onClose}
@@ -151,7 +171,7 @@ export function Confirm({ text, onClose, onConfirm }: ConfirmProps): React.React
           onClick: onClose,
           text: translation('no'),
           color: 'white',
-        }
+        },
       ]}
     >
       <ConfirmText>{text}</ConfirmText>

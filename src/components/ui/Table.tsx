@@ -2,12 +2,15 @@ import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-export default styled.table`
-  width: auto;
+interface TableProps {
+  autoWidth?: boolean;
+}
+
+export default styled.table<TableProps>`
+  width: ${({ autoWidth }): string => (autoWidth ? 'auto' : '100%')};
   text-align: center;
   border-spacing: 0;
   border-collapse: collapse;
-  overflow: hidden;
   position: relative;
   z-index: 0;
   margin-left: auto;

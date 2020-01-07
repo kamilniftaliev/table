@@ -61,7 +61,6 @@ interface Props {
 }
 
 function Timetable({ timetable }: Props): React.ReactElement {
-  console.log('RENDERED timetable :', timetable);
   return (
     <TableContainer>
       {timetable && (

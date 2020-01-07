@@ -23,16 +23,32 @@ const Container = styled.div<ContainerProps>`
   `}
 `;
 
+const TimetableContainer = styled.div``;
+
 const timetableGenerator = new TimetableWorker();
 
 let highlightTimeout = null;
 
-function TableContainer({ table }: Props): React.ReactElement {
+interface TimetableFilters {
+  shift: number;
+}
+
+const initialFilters: TimetableFilters = {
+  shift: 1,
+};
+
+function applyFilters(timetables, { shift }: TimetableFilters) {
+  const shiftTimetable = timetables[shift - 1];
+
+  return shiftTimetable;
+}
+
+function TableContainer({ table }): React.ReactElement {
   const { data, loading: loadingSubjects } = useQuery(graph.GetSubjects);
   const [highlightTeachers, setHighlightTeachers] = useState<string>('');
-  const [timetable, setTimetable] = useState([]);
+  const [timetables, setTimetables] = useState([]);
+  const [filter, setFilter] = useState(initialFilters);
   const highlightCells = useCallback(teachersName => {
-    // if (!loadingSubjects) timetableGenerator.postMessage([table, data?.subjects]);
     clearTimeout(highlightTimeout);
 
     if (teachersName && teachersName !== highlightTeachers) {
@@ -45,13 +61,15 @@ function TableContainer({ table }: Props): React.ReactElement {
     }
   }, []);
 
-  timetableGenerator.onmessage = (e): void => setTimetable(e.data);
+  timetableGenerator.onmessage = (e): void => setTimetables(e.data);
 
-  if (!timetable.length && data?.subjects) {
-    timetableGenerator.postMessage([table, data.subjects]);
+  if (!timetables.length || loadingSubjects) {
+    if (!loadingSubjects)
+      timetableGenerator.postMessage([table, data.subjects]);
     return <Preloader isCentered />;
   }
 
+  const timetable = applyFilters(timetables, filter);
   console.log('timetable :', timetable);
 
   return (
@@ -59,8 +77,9 @@ function TableContainer({ table }: Props): React.ReactElement {
       highlightTeachersName={highlightTeachers}
       onMouseMove={(e): void => highlightCells(e.target?.dataset?.teachersName)}
     >
-      {timetable &&
-        timetable.map(t => <Timetable key={t[0][0].length} timetable={t} />)}
+      <TimetableContainer>
+        <Timetable key={timetable[0][0].length} timetable={timetable} />
+      </TimetableContainer>
     </Container>
   );
 }

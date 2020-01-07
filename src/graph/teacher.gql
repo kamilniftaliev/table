@@ -1,5 +1,5 @@
 mutation CreateTeacher($tableId: ID!, $name: String!, $slug: String!) {
-  createTeacher(name: $name, tableId: $tableId, slug: $slug) {
+  createTeacher(tableId: $tableId, name: $name, slug: $slug) {
     id
     name
     slug
@@ -7,13 +7,14 @@ mutation CreateTeacher($tableId: ID!, $name: String!, $slug: String!) {
 }
 
 mutation UpdateTeacher(
+  $id: ID!
   $tableId: ID!
   $name: String!
-  $id: ID!
   $slug: String!
 ) {
-  updateTeacher(name: $name, id: $id, tableId: $tableId, slug: $slug) {
+  updateTeacher(id: $id, tableId: $tableId, name: $name, slug: $slug) {
     id
+    tableId
     name
     slug
   }
@@ -31,7 +32,6 @@ mutation UpdateWorkload(
   $subjectId: ID!
   $classId: ID!
   $hours: Int!
-  $prevHours: Int!
 ) {
   updateWorkload(
     tableId: $tableId
@@ -39,7 +39,6 @@ mutation UpdateWorkload(
     subjectId: $subjectId
     classId: $classId
     hours: $hours
-    prevHours: $prevHours
   ) {
     subjectId
     classId
@@ -71,7 +70,7 @@ query GetTeachers($tableId: ID!) {
   teachers(tableId: $tableId) {
     id
     name
-    workloadAmount
+    # workloadAmount
     workload {
       subjectId
       classId
