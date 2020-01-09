@@ -7,7 +7,7 @@ import { translation } from '../../../utils';
 
 import EditModal from './EditModal';
 import { TableRow } from '../Subjects/Subjects';
-import { Table, Button, Modal, Selector } from '../../ui';
+import { Table, Button, Modal, Selector as DefaultSelector } from '../../ui';
 import { Class, Teacher } from '../../../models';
 
 import TrashCan from '../../../images/icons/trash.svg';
@@ -32,6 +32,17 @@ const ClassesContainer = styled.div`
   & > div {
     flex-basis: 45%;
   }
+`;
+
+const Selector = styled(DefaultSelector).attrs(() => ({
+  isClearable: false,
+}))`
+  margin-bottom: 20px;
+`;
+
+const CreateClassButton = styled(Button.Add)`
+  margin-top: 20px;
+  margin-bottom: 0;
 `;
 
 interface Props {
@@ -117,12 +128,33 @@ function Classes({
   classes,
   subjects, // @TODO How many subjects in a class
   teachers, // @TODO how many teachers have workload in a class
+  slug,
   id: tableId,
 }: Props): React.ReactElement {
   const [modalClass, setModalClass] = useState<Class>(null);
   const [deletingClass, setDeletingClass] = useState<Class>(null);
 
-  const [deleteClassRequest] = useMutation(graph.DeleteClass);
+  const [deleteClassRequest] = useMutation(graph.DeleteClass, {
+    update(cache, { data: { deleteClass: classId } }) {
+      console.log('cache :', cache.readQuery({ query: graph.GetTable }));
+      if (cache.readQuery) {
+        // const data = cache.readQuery({
+        //   query: graph.GetTable,
+        //   variables: { slug },
+        // });
+        // console.log('data :', data);
+        // cache.writeQuery({
+        //   query: graph.GetTable,
+        //   data: {
+        //     table: {
+        //       ...table,
+        //       classes: table.classes.filter(c => c.id !== classId),
+        //     },
+        //   },
+        // });
+      }
+    },
+  });
   const [createClassRequest] = useMutation(graph.CreateClass);
   const [updateClassRequest] = useMutation(graph.UpdateClass);
 
@@ -142,24 +174,33 @@ function Classes({
     });
 
     setDeletingClass(null);
-  }, [modalClass]);
+  }, [deletingClass]);
 
   const createClass = useCallback(() => {
-    const variables = {
-      ...modalClass,
-      tableId,
+    const data = {
+      variables: {
+        ...modalClass,
+        tableId,
+      },
     };
 
-    console.log('variables :', variables);
-
     if (modalClass.id === 'new') {
-      createClassRequest({ variables });
+      createClassRequest(data);
     } else {
-      updateClassRequest({ variables });
+      updateClassRequest(data);
     }
 
-    setDeletingClass(null);
+    setModalClass(null);
   }, [modalClass]);
+
+  const isModalReady =
+    modalClass &&
+    modalClass.sector &&
+    modalClass.shift &&
+    modalClass.letter &&
+    modalClass.number;
+
+  console.log('modalClass :', modalClass);
 
   return (
     <>
@@ -174,29 +215,28 @@ function Classes({
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {classes.map(
-              ({ id, number, letter, shift }: Class, index: number) => {
-                const title = `${number}${letter}`;
-                const updateFn = (): void => setModalClass({ id, title });
+            {classes.map((theClass: Class, index: number) => {
+              const { id, number, letter, shift } = theClass;
+              const updateFn = (): void => setModalClass(theClass);
 
-                return (
-                  <TableRow key={id}>
-                    <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
-                    <Table.Cell align="left" onClick={updateFn}>
-                      {title}
-                    </Table.Cell>
-                    <Table.Cell onClick={updateFn}>{shift}</Table.Cell>
-                    <Table.Cell>
-                      <Button.Icon onClick={updateFn} src={EditIcon} />
-                      <Button.Icon
-                        onClick={(): void => setDeletingClass({ id, title })}
-                        src={TrashCan}
-                      />
-                    </Table.Cell>
-                  </TableRow>
-                );
-              },
-            )}
+              return (
+                <TableRow key={id}>
+                  <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
+                  <Table.Cell align="left" onClick={updateFn}>
+                    {number}
+                    {letter}
+                  </Table.Cell>
+                  <Table.Cell onClick={updateFn}>{shift}</Table.Cell>
+                  <Table.Cell>
+                    <Button.Icon onClick={updateFn} src={EditIcon} />
+                    <Button.Icon
+                      onClick={(): void => setDeletingClass(theClass)}
+                      src={TrashCan}
+                    />
+                  </Table.Cell>
+                </TableRow>
+              );
+            })}
           </Table.Body>
         </Table.default>
       ) : null}
@@ -206,85 +246,81 @@ function Classes({
 
       {deletingClass && (
         <Modal.Confirm
-          text={translation('pleaseConfirmClassDelete', deletingClass.title)}
+          text={translation(
+            'pleaseConfirmClassDelete',
+            `${deletingClass.number}${deletingClass.letter}`,
+          )}
           onClose={(): void => setDeletingClass(null)}
-          onConfirm={(): void => deleteClass()}
+          onConfirm={deleteClass}
         />
       )}
 
       {modalClass && (
-        <EditClassModal
-          onClose={(): void => setModalClass(null)}
-          steps={[
-            (nextStep): React.ReactElement => (
-              <>
-                <Title>{translation('selectClass')}</Title>
-                <ClassesContainer>
-                  <Selector
-                    key="0"
-                    placeholder={translation('class')}
-                    options={classesList}
-                    onChange={({ value: number }): void => {
-                      setModalClass({
-                        ...modalClass,
-                        number,
-                      });
-                    }}
-                  />
-                  <Selector
-                    key="1"
-                    placeholder={translation('letter')}
-                    options={letters}
-                    onChange={({ value: letter }): void => {
-                      setModalClass({
-                        ...modalClass,
-                        letter,
-                      });
-                      nextStep();
-                    }}
-                  />
-                </ClassesContainer>
-              </>
-            ),
-            (nextStep): React.ReactElement => (
-              <>
-                <Title>{translation('shift')}</Title>
-                <Selector
-                  key="2"
-                  placeholder={translation('shift')}
-                  options={shifts}
-                  onChange={({ value: shift }): void => {
-                    setModalClass({
-                      ...modalClass,
-                      shift,
-                    });
-                    nextStep();
-                  }}
-                />
-              </>
-            ),
-            (nextStep): React.ReactElement => (
-              <>
-                <Title>{translation('selectSector')}</Title>
-                <Selector
-                  key="3"
-                  placeholder={translation('sector')}
-                  options={sectors}
-                  onChange={({ value: sector }): void => {
-                    setModalClass({
-                      ...modalClass,
-                      sector,
-                    });
-                    setTimeout(() => {
-                      createClass();
-                      nextStep();
-                    }, 500);
-                  }}
-                />
-              </>
-            ),
-          ]}
-        />
+        <EditClassModal onClose={(): void => setModalClass(null)}>
+          <Title>{translation('classInfo')}</Title>
+          <ClassesContainer>
+            <Selector
+              placeholder={translation('class')}
+              options={classesList}
+              value={modalClass.number}
+              onChange={(option): void => {
+                setModalClass({
+                  ...modalClass,
+                  number: option?.value,
+                });
+              }}
+            />
+            <Selector
+              placeholder={translation('letter')}
+              options={letters}
+              value={modalClass.letter}
+              onChange={(option): void => {
+                setModalClass({
+                  ...modalClass,
+                  letter: option?.value,
+                });
+              }}
+            />
+          </ClassesContainer>
+          <Selector
+            placeholder={translation('shift')}
+            options={shifts}
+            value={modalClass.shift}
+            onChange={(option): void => {
+              setModalClass({
+                ...modalClass,
+                shift: option?.value,
+              });
+            }}
+          />
+          <Selector
+            placeholder={translation('sector')}
+            options={sectors}
+            value={modalClass.sector}
+            onChange={(option): void => {
+              setModalClass({
+                ...modalClass,
+                sector: option?.value,
+              });
+            }}
+          />
+          <ClassesContainer>
+            <CreateClassButton disabled={!isModalReady} onClick={createClass}>
+              {translation('save')}
+            </CreateClassButton>
+            {modalClass.id !== 'new' && (
+              <CreateClassButton
+                color="red"
+                onClick={(): void => {
+                  setModalClass(null);
+                  setDeletingClass(modalClass);
+                }}
+              >
+                {translation('delete')}
+              </CreateClassButton>
+            )}
+          </ClassesContainer>
+        </EditClassModal>
       )}
     </>
   );

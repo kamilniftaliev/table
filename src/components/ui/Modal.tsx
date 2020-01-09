@@ -161,7 +161,10 @@ export function Confirm({
       onClose={onClose}
       buttons={[
         {
-          onClick: onConfirm,
+          onClick: e => {
+            e.preventDefault();
+            onConfirm(e);
+          },
           text: translation('yes'),
           color: 'red',
           type: 'submit',

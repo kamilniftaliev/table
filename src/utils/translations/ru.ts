@@ -21,6 +21,8 @@ export default {
   no: 'Нет',
   yes: 'Да',
   create: 'Создать',
+  delete: 'Удалить',
+  save: 'Сохранить',
   edit: 'Изменить',
   actions: 'Действия',
 
@@ -67,4 +69,6 @@ export default {
   class: 'Класс',
   letter: 'Буква',
   sector: 'Сектор',
+
+  classInfo: 'Данные класса',
 };

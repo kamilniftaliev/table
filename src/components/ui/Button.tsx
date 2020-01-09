@@ -1,10 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const getButtonColor = ({ color }): string => {
+const getButtonColor = ({ color, disabled }): string => {
+  if (disabled) return '#a6a6a6';
+
   switch (color) {
     case 'green':
       return '#30be4f';
+
+    case 'red':
+      return '#cb1e1e';
+
+    case 'gray':
+      return '#a6a6a6';
 
     default:
       return '#0c75ff';
@@ -20,9 +28,13 @@ const Element = styled.button`
   cursor: pointer;
   font-weight: 400;
 
-  &:hover {
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
-  }
+  ${({ disabled }): string =>
+    !disabled &&
+    `
+      &:hover {
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+      }
+  `}
 `;
 
 function Component(props: React.ButtonHTMLAttributes<{}>): React.ReactElement {

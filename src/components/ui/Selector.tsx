@@ -6,7 +6,13 @@ interface SelectorProps {
 }
 
 function Selector(props: SelectorProps): JSX.Element {
-  return <Select {...props} isClearable />;
+  let { value } = props;
+
+  if (Array.isArray(props.options) && typeof value !== 'object') {
+    value = props.options.find(option => option.value === value);
+  }
+
+  return <Select isClearable {...props} value={value} />;
 }
 
 export default React.memo(Selector);

@@ -1,16 +1,16 @@
 mutation CreateClass(
   $tableId: ID!
+  $shift: Int!
   $number: Int!
   $sector: String!
   $letter: String!
-  $shift: Int!
 ) {
   createClass(
+    tableId: $tableId
+    shift: $shift
     number: $number
     sector: $sector
     letter: $letter
-    tableId: $tableId
-    shift: $shift
   ) {
     id
     number
@@ -22,18 +22,20 @@ mutation CreateClass(
 }
 
 mutation UpdateClass(
+  $id: ID!
   $tableId: ID!
+  $shift: Int!
   $number: Int!
   $sector: String!
   $letter: String!
-  $shift: Int!
 ) {
   updateClass(
+    id: $id
+    tableId: $tableId
+    shift: $shift
     number: $number
     sector: $sector
     letter: $letter
-    tableId: $tableId
-    shift: $shift
   ) {
     id
     number
@@ -45,9 +47,7 @@ mutation UpdateClass(
 }
 
 mutation DeleteClass($id: ID!, $tableId: ID!) {
-  deleteClass(id: $id, tableId: $tableId) {
-    id
-  }
+  deleteClass(id: $id, tableId: $tableId)
 }
 
 query GetClasses($tableId: ID!) {

@@ -19,6 +19,8 @@ export default {
   no: 'Xeyr',
   yes: 'Bəli',
   create: 'Yarat',
+  delete: 'Sil',
+  save: 'Yaddaşa sal',
   edit: 'Dəyiş',
   actions: 'Əməliyyatlar',
   
@@ -74,4 +76,6 @@ export default {
   letter: 'Hərf',
   class: 'Sinif',
   sector: 'Bölmə',
+
+  classInfo: 'Sinfin məlumatları',
 };
