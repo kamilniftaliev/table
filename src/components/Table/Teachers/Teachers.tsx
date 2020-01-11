@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { useQuery, useMutation } from 'react-apollo';
+import { useMutation } from 'react-apollo';
 
 import graph from '../../../graph';
 import { translation } from '../../../utils';
 
-import EditModal, { TeacherProps } from './EditModal';
+import NewTeacherModal from './NewTeacherModal';
 import { TableRow } from '../Subjects/Subjects';
-import { Table, Button, Modal, Preloader } from '../../ui';
+import { Table, Button, Modal } from '../../ui';
 import { Table as TableType, Teacher } from '../../../models';
 
 import TrashCan from '../../../images/icons/trash.svg';
-import EditIcon from '../../../images/icons/edit.svg';
 
 interface Props {
   id: TableType['id'];
   teachers: Teacher[];
+  slug: string;
 }
 
-function Teachers({ id: tableId, teachers }: Props): React.ReactElement {
-  const [editingTeacher, setEditingTeacher] = useState<TeacherProps>(null);
-  const [deletingTeacher, setDeletingTeacher] = useState<TeacherProps>(null);
+function Teachers({ id: tableId, teachers, slug }: Props): React.ReactElement {
+  const [showNewTeacherModal, setShowNewTeacherModal] = useState<boolean>(null);
+  const [deletingTeacherIndex, setDeletingTeacherIndex] = useState<number>(
+    null,
+  );
 
   const [deleteTeacherRequest] = useMutation(graph.DeleteTeacher);
 
@@ -34,12 +35,30 @@ function Teachers({ id: tableId, teachers }: Props): React.ReactElement {
   function deleteTeacher(): void {
     deleteTeacherRequest({
       variables: {
-        id: deletingTeacher.id,
+        id: teachers[deletingTeacherIndex].id,
         tableId,
+      },
+      update(cache, { data: { deleteTeacher: teacherId } }) {
+        const { table } = cache.readQuery({
+          query: graph.GetTable,
+          variables: { slug },
+        });
+
+        console.log('teacherId :', teacherId);
+
+        cache.writeQuery({
+          query: graph.GetTable,
+          data: {
+            table: {
+              ...table,
+              teachers: teachers.filter(t => t.id !== teacherId),
+            },
+          },
+        });
       },
     });
 
-    setDeletingTeacher(null);
+    setDeletingTeacherIndex(null);
   }
 
   return (
@@ -50,6 +69,8 @@ function Teachers({ id: tableId, teachers }: Props): React.ReactElement {
             <Table.Row>
               <Table.Head>№</Table.Head>
               <Table.Head align="left">{translation('teacherName')}</Table.Head>
+              <Table.Head>{translation('subjects')}</Table.Head>
+              <Table.Head>{translation('classes')}</Table.Head>
               <Table.Head>{translation('workloadTitle')}</Table.Head>
               <Table.Head>{translation('workhoursTitle')}</Table.Head>
               <Table.Head>{translation('actions')}</Table.Head>
@@ -58,8 +79,15 @@ function Teachers({ id: tableId, teachers }: Props): React.ReactElement {
           <Table.Body>
             {teachers.map(
               (
-                { id, name, workloadAmount, workhoursAmount }: Teacher,
-                index: number,
+                {
+                  id,
+                  name,
+                  workloadAmount = 0,
+                  workhoursAmount = 0,
+                  classes = 0,
+                  subjects = 0,
+                },
+                index,
               ) => {
                 const link = `muellimler/${id}`;
                 return (
@@ -69,18 +97,20 @@ function Teachers({ id: tableId, teachers }: Props): React.ReactElement {
                       {name}
                     </Table.Cell>
                     <Table.Cell link={link}>
-                      {`${workloadAmount} ${translation('hour')}`}
+                      {translation('subjectCount', subjects)}
                     </Table.Cell>
                     <Table.Cell link={link}>
-                      {`${workhoursAmount} ${translation('hour')}`}
+                      {translation('classCount', classes)}
+                    </Table.Cell>
+                    <Table.Cell link={link}>
+                      {translation('hour', workloadAmount)}
+                    </Table.Cell>
+                    <Table.Cell link={link}>
+                      {translation('hour', workhoursAmount)}
                     </Table.Cell>
                     <Table.Cell>
                       <Button.Icon
-                        onClick={(): void => setEditingTeacher({ id, name })}
-                        src={EditIcon}
-                      />
-                      <Button.Icon
-                        onClick={(): void => setDeletingTeacher({ id, name })}
+                        onClick={(): void => setDeletingTeacherIndex(index)}
                         src={TrashCan}
                       />
                     </Table.Cell>
@@ -92,23 +122,26 @@ function Teachers({ id: tableId, teachers }: Props): React.ReactElement {
         </Table.default>
       ) : null}
 
-      <Button.Add onClick={(): void => setEditingTeacher({ id: 'new' })}>
+      <Button.Add onClick={(): void => setShowNewTeacherModal(true)}>
         {translation('addNewTeacher')}
       </Button.Add>
 
-      {deletingTeacher && (
+      {deletingTeacherIndex && (
         <Modal.Confirm
-          text={translation('pleaseConfirmTeacherDelete', deletingTeacher.name)}
-          onClose={(): void => setDeletingTeacher(null)}
+          text={translation(
+            'pleaseConfirmTeacherDelete',
+            teachers[deletingTeacherIndex].name,
+          )}
+          onClose={(): void => setDeletingTeacherIndex(null)}
           onConfirm={(): void => deleteTeacher()}
         />
       )}
 
-      {editingTeacher && (
-        <EditModal
+      {showNewTeacherModal && (
+        <NewTeacherModal
+          tableSlug={slug}
           tableId={tableId}
-          teacher={editingTeacher}
-          onClose={setEditingTeacher}
+          onClose={setShowNewTeacherModal}
         />
       )}
     </>

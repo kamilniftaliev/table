@@ -53,6 +53,7 @@ mutation DeleteClass($id: ID!, $tableId: ID!) {
 query GetClasses($tableId: ID!) {
   classes(tableId: $tableId) {
     id
+    tableId
     shift
     number
     letter

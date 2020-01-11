@@ -21,9 +21,7 @@ mutation UpdateTeacher(
 }
 
 mutation DeleteTeacher($id: ID!, $tableId: ID!) {
-  deleteTeacher(id: $id, tableId: $tableId) {
-    id
-  }
+  deleteTeacher(id: $id, tableId: $tableId)
 }
 
 mutation UpdateWorkload(
@@ -70,7 +68,6 @@ query GetTeachers($tableId: ID!) {
   teachers(tableId: $tableId) {
     id
     name
-    # workloadAmount
     workload {
       subjectId
       classId

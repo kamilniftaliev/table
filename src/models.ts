@@ -4,10 +4,15 @@ export interface Class {
   letter: string;
   sector: string;
   shift: number;
+
+  teachers: number;
+  subjects: number;
+  lessons: number;
 }
 
 export interface Table {
   id: string;
+  slug: string;
   title: string;
   classes: Class[];
   subjects: Subject[];
@@ -38,6 +43,8 @@ export interface Teacher {
   workhours: boolean[][];
   workloadAmount: number;
   workhoursAmount: number;
+  subjects?: number;
+  classes?: number;
 }
 
 export interface Lesson {

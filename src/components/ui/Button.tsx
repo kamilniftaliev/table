@@ -9,7 +9,7 @@ const getButtonColor = ({ color, disabled }): string => {
       return '#30be4f';
 
     case 'red':
-      return '#cb1e1e';
+      return '#fe2323';
 
     case 'gray':
       return '#a6a6a6';
@@ -50,7 +50,7 @@ export const Icon = styled.img.attrs(() => ({
 `;
 
 export const Add = styled(Component).attrs(() => ({
-  color: 'green',
+  color: 'blue',
 }))`
   display: block;
   margin: 100px auto;

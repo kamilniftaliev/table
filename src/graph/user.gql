@@ -12,13 +12,7 @@ query GetUser {
       slug
       created
       teachersCount
-      teachers {
-        id
-      }
       classesCount
-      classes {
-        id
-      }
       lastModified
       title
     }

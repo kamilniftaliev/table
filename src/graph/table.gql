@@ -37,7 +37,9 @@ query GetTable($slug: String!) {
     created
     # subjects {
     #   id
-    #   title
+    #   title {
+    #     ru
+    #   }
     # }
     classes {
       id

@@ -73,7 +73,6 @@ function Teacher({
 }: Props): React.ReactElement {
   const teacher = teachers.find(t => t.id === id);
   const [name, setName] = useName(teacher?.name, id, tableId);
-  const [tab, setTab] = useState<string>('workload');
 
   useEffect(() => {
     document.title = name;
@@ -84,49 +83,26 @@ function Teacher({
 
   if (!teacher) return null;
 
-  const isWorkload = tab === 'workload';
-  const isWorkhours = tab === 'workhours';
-
   return (
     <Container>
       <InfoContainer>
         <NameLabel>{translation('teacherName')}</NameLabel>
         <NameInput value={name} onChange={e => setName(e.target.value)} />
       </InfoContainer>
-      <NavContainer>
-        <WorkloadTitle isActive={isWorkload} onClick={() => setTab('workload')}>
-          {translation('workloadTitle')}
-        </WorkloadTitle>
-        <WorkloadTitle
-          isActive={isWorkhours}
-          onClick={() => setTab('workhours')}
-        >
-          {translation('workhoursTitle')}
-        </WorkloadTitle>
-      </NavContainer>
-      <>
-        <Suspense fallback={<Preloader isCentered />}>
-          {isWorkload && (
-            <Workload
-              teacher={teacher}
-              tableId={tableId}
-              tableSlug={tableSlug}
-              classes={classes}
-              subjects={subjects}
-            />
-          )}
-
-          {isWorkhours && (
-            <Workhours
-              teacher={teacher}
-              tableId={tableId}
-              tableSlug={tableSlug}
-              classes={classes}
-              subjects={subjects}
-            />
-          )}
-        </Suspense>
-      </>
+      <Workload
+        teacher={teacher}
+        tableId={tableId}
+        tableSlug={tableSlug}
+        classes={classes}
+        subjects={subjects}
+      />
+      <Workhours
+        teacher={teacher}
+        tableId={tableId}
+        tableSlug={tableSlug}
+        classes={classes}
+        subjects={subjects}
+      />
     </Container>
   );
 }

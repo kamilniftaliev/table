@@ -28,7 +28,7 @@ function Tables(): React.ReactElement {
   const { data, loading } = useQuery(graph.GetUser);
   const [deleteTableRequest] = useMutation(graph.DeleteTable);
   const [duplicateTableRequest] = useMutation(graph.DuplicateTable);
-  
+
   if (loading) return <Preloader isCentered />;
 
   const { user } = data;
@@ -36,10 +36,10 @@ function Tables(): React.ReactElement {
   function deleteTable(): void {
     deleteTableRequest({
       variables: {
-        id: deletingTable.id
+        id: deletingTable.id,
       },
-      refetchQueries,
-    });    
+      // refetchQueries,
+    });
 
     setDeletingTable(null);
   }
@@ -47,7 +47,7 @@ function Tables(): React.ReactElement {
   function duplicateTable(id): void {
     duplicateTableRequest({
       variables: { id },
-      refetchQueries,
+      // refetchQueries,
     });
   }
 
@@ -60,32 +60,55 @@ function Tables(): React.ReactElement {
             <Table.Head align="left">{translation('tableName')}</Table.Head>
             <Table.Head>{translation('classes')}</Table.Head>
             <Table.Head>{translation('teachers')}</Table.Head>
-            <Table.Head>{translation('subjects')}</Table.Head>
             <Table.Head>{translation('lastModified')}</Table.Head>
             <Table.Head>{translation('created')}</Table.Head>
             <Table.Head>{translation('actions')}</Table.Head>
           </tr>
         </Table.Header>
         <Table.Body>
-          {user?.tables.map(({ id, slug, title, created, subjectsCount, teachersCount, classesCount, lastModified }, index: number) => {
-            const link = `/cedvel/${slug}`;
-            return (
-              <Table.Row key={id}>
-                <Table.Cell link={link}>{index + 1}</Table.Cell>
-                <TitleCell link={link} align="left">{title}</TitleCell>
-                <Table.Cell link={link}>{classesCount}</Table.Cell>
-                <Table.Cell link={link}>{teachersCount}</Table.Cell>
-                <Table.Cell link={link}>{subjectsCount}</Table.Cell>
-                <Table.Cell link={link}>{lastModified}</Table.Cell>
-                <Table.Cell link={link}>{created}</Table.Cell>
-                <Table.Cell>
-                  <Button.Icon onClick={(): void => setEditingTable({ id, title })} src={EditIcon} />
-                  <Button.Icon onClick={(): void => duplicateTable(id)} src={DuplicateIcon} />
-                  <Button.Icon onClick={(): void => setDeletingTable({ id, title })} src={TrashCan} />
-                </Table.Cell>
-              </Table.Row>
-            );
-          })}
+          {user?.tables.map(
+            (
+              {
+                id,
+                slug,
+                title,
+                created,
+                subjectsCount,
+                teachersCount,
+                classesCount,
+                lastModified,
+              },
+              index: number,
+            ) => {
+              const link = `/cedvel/${slug}`;
+              return (
+                <Table.Row key={id}>
+                  <Table.Cell link={link}>{index + 1}</Table.Cell>
+                  <TitleCell link={link} align="left">
+                    {title}
+                  </TitleCell>
+                  <Table.Cell link={link}>{classesCount}</Table.Cell>
+                  <Table.Cell link={link}>{teachersCount}</Table.Cell>
+                  <Table.Cell link={link}>{lastModified}</Table.Cell>
+                  <Table.Cell link={link}>{created}</Table.Cell>
+                  <Table.Cell>
+                    <Button.Icon
+                      onClick={(): void => setEditingTable({ id, title })}
+                      src={EditIcon}
+                    />
+                    <Button.Icon
+                      onClick={(): void => duplicateTable(id)}
+                      src={DuplicateIcon}
+                    />
+                    <Button.Icon
+                      onClick={(): void => setDeletingTable({ id, title })}
+                      src={TrashCan}
+                    />
+                  </Table.Cell>
+                </Table.Row>
+              );
+            },
+          )}
         </Table.Body>
       </Table.default>
       <Button.Add onClick={(): void => setEditingTable({ id: 'new' })}>
@@ -99,10 +122,7 @@ function Tables(): React.ReactElement {
         />
       )}
       {editingTable && (
-        <EditModal
-          table={editingTable}
-          onClose={setEditingTable}
-        />
+        <EditModal table={editingTable} onClose={setEditingTable} />
       )}
     </Content>
   );

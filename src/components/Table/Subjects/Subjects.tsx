@@ -44,7 +44,7 @@ function Subjects(table: Props): React.ReactElement {
         id: deletingSubject.id,
         tableId,
       },
-      refetchQueries: [{ query: graph.GetSubjects }, { query: graph.GetUser }],
+      // refetchQueries: [{ query: graph.GetSubjects }, { query: graph.GetUser }],
     });
 
     setDeletingSubject(null);

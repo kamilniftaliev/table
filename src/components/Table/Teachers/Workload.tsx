@@ -40,6 +40,10 @@ const AddWorkloadModal = styled(Modal.default)`
   padding: 50px 70px;
 `;
 
+const SectionTitle = styled.p`
+  text-align: center;
+`;
+
 interface Props extends TableProps {
   tableId: string;
   teacher: Teacher;
@@ -80,6 +84,7 @@ function Workload({
 
   return (
     <Container>
+      <SectionTitle>{translation('workloadTitle')}</SectionTitle>
       <Table.default>
         <Table.Header>
           <Table.Row>

@@ -8,6 +8,10 @@ import { translation } from '../../../utils';
 import graph from '../../../graph';
 import { Teacher } from '../../../models';
 
+const Container = styled.div`
+  display: grid;
+`;
+
 const TableCell = styled(Table.TD)`
   padding: 10px;
 `;
@@ -18,6 +22,10 @@ const ShiftTitle = styled.p`
   text-align: center;
   font-size: 22px;
   font-weight: 400;
+`;
+
+const SectionTitle = styled.p`
+  text-align: center;
 `;
 
 const daysOfWeek = [1, 2, 3, 4, 5, 6, 7];
@@ -34,55 +42,59 @@ interface RenderWorkhoursProps {
 }
 
 function renderWorkhours({
+  shift,
   hours,
   tableId,
   teacher,
   updateWorkhour,
 }: RenderWorkhoursProps): React.ReactElement {
   return (
-    <Table.default>
-      <Table.Header>
-        <Table.Row>
-          <Table.Head>{translation('days')}</Table.Head>
-          {daysOfWeek.map(day => (
-            <Table.Head key={day}>{day}</Table.Head>
-          ))}
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {hours.map((hour, index) => (
-          <Table.Row key={hour}>
-            <TableCell align="left">
-              {translation('lesson')}
-              {` ${index + 1}`}
-            </TableCell>
-            {daysOfWeek.map(day => {
-              const initialValue = !!teacher.workhours[day - 1][hour - 1];
-
-              const updater = (value): void =>
-                updateWorkhour({
-                  variables: {
-                    tableId,
-                    teacherId: teacher.id,
-                    day: `${day - 1}`,
-                    hour: `${hour - 1}`,
-                    value,
-                  },
-                });
-
-              return (
-                <TableCell
-                  onClick={(): void => updater(!initialValue)}
-                  key={day}
-                >
-                  <Checkbox checked={initialValue} onChange={updater} />
-                </TableCell>
-              );
-            })}
+    <div>
+      <ShiftTitle>{translation(`shift${shift}`)}</ShiftTitle>
+      <Table.default>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head>{translation('days')}</Table.Head>
+            {daysOfWeek.map(day => (
+              <Table.Head key={day}>{day}</Table.Head>
+            ))}
           </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.default>
+        </Table.Header>
+        <Table.Body>
+          {hours.map((hour, index) => (
+            <Table.Row key={hour}>
+              <TableCell align="left">
+                {translation('lesson')}
+                {` ${index + 1}`}
+              </TableCell>
+              {daysOfWeek.map(day => {
+                const initialValue = !!teacher.workhours[day - 1][hour - 1];
+
+                const updater = (value): void =>
+                  updateWorkhour({
+                    variables: {
+                      tableId,
+                      teacherId: teacher.id,
+                      day: `${day - 1}`,
+                      hour: `${hour - 1}`,
+                      value,
+                    },
+                  });
+
+                return (
+                  <TableCell
+                    onClick={(): void => updater(!initialValue)}
+                    key={day}
+                  >
+                    <Checkbox checked={initialValue} onChange={updater} />
+                  </TableCell>
+                );
+              })}
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.default>
+    </div>
   );
 }
 
@@ -96,22 +108,23 @@ function Workhours({ teacher, tableSlug, tableId }: Props): React.ReactElement {
   const updateWorkhour = useWorkhours(tableSlug, teacher.id);
 
   return (
-    <>
-      <ShiftTitle>{`${translation('shift')} 1`}</ShiftTitle>
+    <Container>
+      <SectionTitle>{translation('workhoursTitle')}</SectionTitle>
       {renderWorkhours({
         hours: lessonHours.slice(0, 8),
+        shift: 1,
         tableId,
         teacher,
         updateWorkhour,
       })}
-      <ShiftTitle>{`${translation('shift')} 2`}</ShiftTitle>
       {renderWorkhours({
         hours: lessonHours.slice(8),
+        shift: 2,
         tableId,
         teacher,
         updateWorkhour,
       })}
-    </>
+    </Container>
   );
 }
 
@@ -129,22 +142,20 @@ function useWorkhours(
         },
       },
     ) {
-      if (cache.readQuery) {
-        const { table } = cache.readQuery({
-          query: graph.GetTable,
-          variables: { slug: tableSlug },
-        });
+      const { table } = cache.readQuery({
+        query: graph.GetTable,
+        variables: { slug: tableSlug },
+      });
 
-        const teacherIndex = table.teachers.findIndex(t => t.id === teacherId);
+      const teacherIndex = table.teachers.findIndex(t => t.id === teacherId);
 
-        table.teachers[teacherIndex].workhours[day][hour] = value;
+      table.teachers[teacherIndex].workhours[day][hour] = value;
 
-        cache.writeQuery({
-          query: graph.GetTable,
-          data: { table },
-        });
-        setInProgress(false);
-      }
+      cache.writeQuery({
+        query: graph.GetTable,
+        data: { table },
+      });
+      setInProgress(false);
     },
   });
 

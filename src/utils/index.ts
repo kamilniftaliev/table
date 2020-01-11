@@ -4,5 +4,6 @@ import translation from './translations';
 import * as Auth from './auth';
 import * as text from './text';
 import * as dom from './dom';
+import * as constants from './constants';
 
-export { Cookies, dateOptions, translation, Auth, text, dom };
+export { Cookies, dateOptions, translation, Auth, text, dom, constants };

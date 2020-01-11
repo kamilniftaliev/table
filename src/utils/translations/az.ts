@@ -9,8 +9,23 @@ export default {
   tables: 'Cədvəllər',
   table: 'Cədvəl',
   teachers: 'Müəllimlər',
+  teacherCount: (count: number): string => {
+    if (count === 0) return 'müəllim yoxdur';
+
+    return `${count} müəllim`;
+  },
   classes: 'Sinflər',
+  classCount: (count: number): string => {
+    if (count === 0) return 'sinif yoxdur';
+
+    return `${count} sinif`;
+  },
   subjects: 'Fənnlər',
+  subjectsCount: (count: number): string => {
+    if (count === 0) return 'fənn yoxdur';
+
+    return `${count} fənn`;
+  },
 
   tableName: 'Cədvəlin adı',
   lastModified: 'Son düzəliş',
@@ -36,15 +51,13 @@ export default {
   exampleSubjectPlaceholder: 'Nümunə: "Riyaziyyat"',
   isDivisibleByGroups: 'Qruplara bölünür',
   subjectTitle: 'Fənnin Adı',
-  pleaseConfirmSubjectDelete: (title: string): string =>
-    `Əminsiz ki, "${title}" fənnini silmək istəyirsiz?`,
 
   addNewTeacher: 'Yeni müəllim əlavə et',
   newTeacher: 'Yeni müəllim',
   exampleTeacherPlaceholder: 'Nümunə: "Kamil Niftəliyev"',
   teacherName: 'Müəllimin Adı',
   pleaseConfirmTeacherDelete: (title: string): string =>
-    `Əminsiz ki, "${title}" fənnini silmək istəyirsiz?`,
+    `Əminsiz ki, "${title}" silmək istəyirsiz?`,
   
   addNewClass: 'Yeni sinif yarat',
   newClass: 'Yeni sinif',
@@ -59,6 +72,8 @@ export default {
   workhoursTitle: 'İş saatları',
   lesson: 'Dərs',
   days: 'Günlər',
+
+  lessonHours: 'Dərs saatı',
 
   generateTimeTable: 'Cədvəli yenilə',
 
@@ -78,4 +93,7 @@ export default {
   sector: 'Bölmə',
 
   classInfo: 'Sinfin məlumatları',
+
+  shift1: '1-ci növbə',
+  shift2: '2-ci növbə',
 };

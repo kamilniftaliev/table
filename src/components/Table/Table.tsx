@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import React, { lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-apollo';
@@ -7,6 +8,7 @@ import graph from '../../graph';
 import { translation } from '../../utils';
 
 import { Content, Preloader } from '../ui';
+import { Table as TableType } from '../../models';
 
 const Timetable = lazy(() =>
   import(/* webpackChunkName: "generated-table" */ './Timetable'),
@@ -73,31 +75,97 @@ const Container = styled.section`
   flex-direction: column;
 `;
 
+interface OnCompleteProps {
+  table: TableType;
+}
+
 function Table({
   match: {
     params: { slug },
   },
 }: Props): React.ReactElement {
+  const { data: subjectsData, loading: loadingSubjects } = useQuery(
+    graph.GetSubjects,
+  );
   const { data, loading } = useQuery(graph.GetTable, {
     variables: { slug },
-    onCompleted: ({ table }) => {
+    onCompleted: ({ table }: OnCompleteProps) => {
       table.teachers.forEach(teacher => {
-        const workloadAmount = teacher.workload.reduce(
-          (acc, { hours }) => acc + hours,
-          0,
-        );
+        const stats = teacher.workload
+          .filter(({ hours }) => hours)
+          .reduce(
+            ({ subjects, classes }, { hours, subjectId, classId }) => ({
+              subjects: {
+                ...subjects,
+                [subjectId]: (subjects[subjectId] || 0) + hours,
+              },
+              classes: {
+                ...classes,
+                [classId]: (classes[classId] || 0) + hours,
+              },
+            }),
+            {
+              subjects: [],
+              classes: [],
+            },
+          );
 
         const workhoursAmount = teacher.workhours
           .flat()
           .reduce((acc, works) => (works ? acc + 1 : acc), 0);
 
-        teacher.workloadAmount = workloadAmount;
+        const subjects = Object.values(stats.subjects);
+
+        teacher.subjects = subjects.length;
+        teacher.classes = Object.keys(stats.classes).length;
         teacher.workhoursAmount = workhoursAmount;
+        teacher.workloadAmount = subjects.reduce(
+          (acc: number, hours: number) => acc + hours,
+          0,
+        );
+      });
+
+      table.classes.forEach(theClass => {
+        let teachersCount = 0;
+        const classSubjects = Object.values(
+          table.teachers.reduce((acc, { id, workload }) => {
+            const classWorkload = workload.filter(
+              w => w.classId === theClass.id && w.hours,
+            );
+
+            if (!classWorkload.length) return acc;
+
+            const subjectHours = classWorkload.reduce((prevHours, w) => {
+              const subjectTitle = subjectsData?.subjects.find(
+                s => s.id === w.subjectId,
+              )?.title.ru;
+
+              return {
+                ...prevHours,
+                [subjectTitle]: w.hours,
+              };
+            }, {});
+
+            teachersCount += 1;
+
+            return {
+              ...acc,
+              ...subjectHours,
+            };
+          }, {}),
+        );
+
+        theClass.teachers = teachersCount;
+        theClass.subjects = classSubjects.length;
+        theClass.lessons = classSubjects.reduce(
+          (acc: number, hours: number) => acc + hours,
+          0,
+        );
       });
     },
   });
 
-  if (loading) return <Preloader isCentered />;
+  if (loading || loadingSubjects) return <Preloader isCentered />;
 
   const { table } = data;
   table.shifts = 2;
@@ -139,7 +207,7 @@ function Table({
               path={teachersPath}
               exact
               component={() => (
-                <Teachers id={table.id} teachers={table.teachers} />
+                <Teachers slug={slug} id={table.id} teachers={table.teachers} />
               )}
             />
             <Route
@@ -163,7 +231,13 @@ function Table({
             <Route
               path={classesPath}
               exact
-              component={() => <Classes {...table} />}
+              component={() => (
+                <Classes
+                  tableId={table.id}
+                  slug={slug}
+                  classes={table.classes}
+                />
+              )}
             />
             <Route
               path={subjectsPath}

@@ -60,7 +60,7 @@ export default function EditModal({
     if (isNewTable) {
       createTableRequest({
         variables: { title: saveTitle, slug },
-        refetchQueries,
+        // refetchQueries,
       });
     } else {
       updateTableRequest({

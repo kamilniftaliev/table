@@ -32,7 +32,7 @@ export const Row = styled.tr`
 interface CellProps {
   align?: string;
   link?: string;
-  children: [Element] | Element | string | number;
+  children: React.ReactElement[] | string | number;
 }
 
 interface TdProps {
@@ -83,7 +83,11 @@ const Text = styled.span<TextProps>`
   color: #000;
 `;
 
-export const Cell = ({ link, children, ...props }: CellProps): JSX.Element => {
+export const Cell = ({
+  link,
+  children,
+  ...props
+}: CellProps): React.ReactElement => {
   return (
     <CellTD {...props}>
       <Text as={link ? Link : 'span'} to={link}>

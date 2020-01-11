@@ -44,10 +44,10 @@ function EditModal({ tableId, subject, onClose }: Props): React.ReactElement {
     if (isNewSubject) {
       createSubjectRequest({
         variables: { title: saveTitle, tableId },
-        refetchQueries: [
-          { query: graph.GetSubjects },
-          { query: graph.GetUser },
-        ],
+        // refetchQueries: [
+        //   { query: graph.GetSubjects },
+        //   { query: graph.GetUser },
+        // ],
       });
     } else {
       updateSubjectRequest({

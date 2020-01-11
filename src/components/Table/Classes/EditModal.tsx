@@ -1,98 +1,191 @@
-import React, { useState } from 'react';
-import { useMutation } from 'react-apollo';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useMutation } from 'react-apollo';
+import styled from 'styled-components';
 
-import { Modal } from '../../ui';
-import { Input, InputLabel } from '../../Tables/EditModal';
+import { Button, Modal, Selector as DefaultSelector } from '../../ui';
 import { Class } from '../../../models';
 
-import { translation } from '../../../utils';
+import { translation, constants } from '../../../utils';
 import graph from '../../../graph';
 
+const EditClassModal = styled(Modal.default)`
+  width: 300px;
+  padding: 50px 70px;
+`;
+
+const Title = styled.p`
+  font-size: 20px;
+  font-weight: 400;
+  margin-top: 0;
+  text-align: center;
+`;
+
+const ClassesContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  & > div {
+    flex-basis: 45%;
+  }
+`;
+
+const Selector = styled(DefaultSelector).attrs(() => ({
+  isClearable: false,
+}))`
+  margin-bottom: 20px;
+`;
+
+const ActionButtonsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 50px;
+`;
+
+const CreateClassButton = styled(Button.Add)`
+  margin: 0;
+`;
+
+const letters = constants.letters.map(letter => ({
+  value: letter,
+  label: letter,
+}));
+
 interface Props {
-  tableId: string;
-  class: Class;
-  onClose: React.Dispatch<React.SetStateAction<Class>>;
+  slug: string;
+  classIndex: number;
+  onClose: () => void;
+  onDeleteClick: React.Dispatch<React.SetStateAction<Class>>;
 }
 
 function EditModal({
-  tableId,
-  class: { id, title: classTitle, shift: initialShift = 1 },
+  classIndex,
+  slug,
   onClose,
+  onDeleteClick,
 }: Props): React.ReactElement {
-  const isNewClass = id === 'new';
-  const [title, setTitle] = useState<string>(classTitle || '');
-  const [shift, setShift] = useState<number>(initialShift);
-  const [createClassRequest] = useMutation(graph.CreateClass);
+  const { data, loading: loadingTable } = useQuery(graph.GetTable, {
+    variables: { slug },
+  });
+
+  const isNewClass = classIndex === -1;
+  const theClass = isNewClass ? {} : data?.table.classes[classIndex];
+
+  const [modalClass, setModalClass] = useState<Class>(theClass);
+
   const [updateClassRequest] = useMutation(graph.UpdateClass);
+  const [createClassRequest] = useMutation(graph.CreateClass, {
+    update(cache, { data: { createClass: newClass } }) {
+      const { table } = cache.readQuery({
+        query: graph.GetTable,
+        variables: { slug },
+      });
 
-  function updateTitle(inputTitle): void {
-    const newTitle = inputTitle.trimStart().replace(/\s+/g, ' ');
+      cache.writeQuery({
+        query: graph.GetTable,
+        data: {
+          table: {
+            ...table,
+            classes: [...table.classes, newClass],
+          },
+        },
+      });
+    },
+  });
 
-    if (newTitle.length > 30) return;
-
-    setTitle(newTitle);
-  }
-
-  function updateClass(e: React.MouseEvent): void {
-    e.preventDefault();
-
-    const saveTitle = title.trim();
-
-    if (!saveTitle) return;
+  const createClass = useCallback(() => {
+    const query = {
+      variables: {
+        ...modalClass,
+        tableId: data?.table.id,
+      },
+    };
 
     if (isNewClass) {
-      createClassRequest({
-        variables: { title: saveTitle, shift, tableId },
-        refetchQueries: [
-          { query: graph.GetClasses, variables: { tableId } },
-          { query: graph.GetUser },
-        ],
-      });
+      createClassRequest(query);
     } else {
-      updateClassRequest({
-        variables: { title: saveTitle, shift, id, tableId },
-      });
+      updateClassRequest(query);
     }
 
-    onClose(null);
-  }
+    onClose();
+  }, [modalClass]);
+
+  if (loadingTable) return null;
+
+  const isModalFilled =
+    modalClass &&
+    modalClass.sector &&
+    modalClass.shift &&
+    modalClass.letter &&
+    modalClass.number;
 
   return (
-    <Modal.default
-      onClose={(): void => onClose(null)}
-      buttons={[
-        {
-          color: 'green',
-          text: translation(isNewClass ? 'create' : 'edit'),
-          onClick: updateClass,
-          type: 'submit',
-        },
-      ]}
-    >
-      <InputLabel>
-        {isNewClass ? translation('newClass') : classTitle}
-      </InputLabel>
-      <Input
-        onChange={(e): void => updateTitle(e.target.value)}
-        value={title}
-        autoFocus
-        placeholder={translation('exampleClassPlaceholder')}
-      />
-      {/* <Checkbox
-        onChange={(value: boolean): void => setShift(value)}
-        checked={shift}
-        label={translation('shiftByGroups')}
-      /> */}
-      <br />
-      <br />
-      <Input
-        onChange={(e): void => setShift(e.target.value)}
-        value={shift}
-        autoFocus
-        type="number"
+    <EditClassModal onClose={onClose}>
+      <Title>{translation('classInfo')}</Title>
+      <ClassesContainer>
+        <Selector
+          placeholder={translation('class')}
+          options={constants.classes}
+          value={modalClass.number}
+          onChange={(option): void => {
+            setModalClass({
+              ...modalClass,
+              number: option?.value,
+            });
+          }}
+        />
+        <Selector
+          placeholder={translation('letter')}
+          options={letters}
+          value={modalClass.letter}
+          onChange={(option): void => {
+            setModalClass({
+              ...modalClass,
+              letter: option?.value,
+            });
+          }}
+        />
+      </ClassesContainer>
+      <Selector
         placeholder={translation('shift')}
+        options={constants.shifts}
+        value={modalClass.shift}
+        useSwitcherForOptionsCount={3}
+        onChange={(option): void => {
+          setModalClass({
+            ...modalClass,
+            shift: option?.value,
+          });
+        }}
       />
-    </Modal.default>
+      <Selector
+        placeholder={translation('sector')}
+        options={constants.sectors}
+        value={modalClass.sector}
+        useSwitcherForOptionsCount={3}
+        onChange={(option): void => {
+          setModalClass({
+            ...modalClass,
+            sector: option?.value,
+          });
+        }}
+      />
+      <ActionButtonsContainer>
+        <CreateClassButton disabled={!isModalFilled} onClick={createClass}>
+          {translation('save')}
+        </CreateClassButton>
+        {!isNewClass && (
+          <CreateClassButton
+            color="red"
+            onClick={(): void => {
+              onClose();
+              onDeleteClick(modalClass);
+            }}
+          >
+            {translation('delete')}
+          </CreateClassButton>
+        )}
+      </ActionButtonsContainer>
+    </EditClassModal>
   );
 }
 
