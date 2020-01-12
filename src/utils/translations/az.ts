@@ -21,7 +21,7 @@ export default {
     return `${count} sinif`;
   },
   subjects: 'Fənnlər',
-  subjectsCount: (count: number): string => {
+  subjectCount: (count: number): string => {
     if (count === 0) return 'fənn yoxdur';
 
     return `${count} fənn`;
@@ -54,7 +54,7 @@ export default {
 
   addNewTeacher: 'Yeni müəllim əlavə et',
   newTeacher: 'Yeni müəllim',
-  exampleTeacherPlaceholder: 'Nümunə: "Kamil Niftəliyev"',
+  exampleTeacherPlaceholder: 'Nümunə: "Aysel Məmmədova"',
   teacherName: 'Müəllimin Adı',
   pleaseConfirmTeacherDelete: (title: string): string =>
     `Əminsiz ki, "${title}" silmək istəyirsiz?`,
@@ -67,7 +67,11 @@ export default {
     `Əminsiz ki, "${title}" sinfini silmək istəyirsiz?`,
 
   workloadTitle: 'Dərs yükü',
-  hour: 'saat',
+  hour: (count: number): string => {
+    if (count === 0) return 'Dərs yoxdur';
+
+    return `${count} saat`;
+  },
 
   workhoursTitle: 'İş saatları',
   lesson: 'Dərs',
@@ -96,4 +100,18 @@ export default {
 
   shift1: '1-ci növbə',
   shift2: '2-ci növbə',
+
+  weekDay: (day = 1, short?: false): string => {
+    const days = [
+      ['B.e.', 'Bazar ertəsi'],
+      ['Ç.a.', 'Çərşənbə axşamı'],
+      ['Ç.', 'Çərşənbə'],
+      ['C.a.', 'Cümə axşamı'],
+      ['C.', 'Cümə'],
+      ['Ş.', 'Şənbə'],
+      ['B.', 'Bazar'],
+    ];
+
+    return days[day - 1][short ? 0 : 1];
+  }
 };

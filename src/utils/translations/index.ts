@@ -10,7 +10,7 @@ const langs = {
 
 export default (key, ...args): string => {
   let lang: string = Cookies.get('lang');
-  if (!lang) lang = 'ru';
+  if (!lang) lang = 'az';
 
   const translation = langs[lang][key];
 

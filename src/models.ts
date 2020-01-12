@@ -15,7 +15,6 @@ export interface Table {
   slug: string;
   title: string;
   classes: Class[];
-  subjects: Subject[];
   teachers: Teacher[];
   tableSlug: string;
   shifts: number;

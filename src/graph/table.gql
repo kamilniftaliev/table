@@ -47,18 +47,26 @@ query GetTable($slug: String!) {
       letter
       sector
       shift
+
+      teachers
+      subjects
+      lessons
     }
     teachers {
       id
       name
       slug
-      # workloadAmount
       workload {
         subjectId
         classId
         hours
       }
       workhours
+
+      subjects
+      classes
+      workhoursAmount
+      workloadAmount
     }
     lastModified
   }

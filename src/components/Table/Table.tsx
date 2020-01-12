@@ -5,7 +5,7 @@ import { useQuery } from 'react-apollo';
 import { NavLink, Route, Switch } from 'react-router-dom';
 
 import graph from '../../graph';
-import { translation } from '../../utils';
+import { translation, setTableStats } from '../../utils';
 
 import { Content, Preloader } from '../ui';
 import { Table as TableType } from '../../models';
@@ -16,19 +16,12 @@ const Timetable = lazy(() =>
 const Teachers = lazy(() =>
   import(/* webpackChunkName: "teachers" */ './Teachers/Teachers'),
 );
-// import Teachers from './Teachers/Teachers';
 const Teacher = lazy(() =>
   import(/* webpackChunkName: "teacher" */ './Teachers/Teacher'),
 );
-// import Teacher from './Teachers/Teacher';
 const Classes = lazy(() =>
   import(/* webpackChunkName: "classes" */ './Classes/Classes'),
 );
-// import Classes from './Classes/Classes';
-const Subjects = lazy(() =>
-  import(/* webpackChunkName: "subjects" */ './Subjects/Subjects'),
-);
-// import Subjects from './Subjects/Subjects';
 
 interface Props {
   match: { params: { slug: string } };
@@ -75,10 +68,6 @@ const Container = styled.section`
   flex-direction: column;
 `;
 
-interface OnCompleteProps {
-  table: TableType;
-}
-
 function Table({
   match: {
     params: { slug },
@@ -87,102 +76,24 @@ function Table({
   const { data: subjectsData, loading: loadingSubjects } = useQuery(
     graph.GetSubjects,
   );
-  const { data, loading } = useQuery(graph.GetTable, {
+  const { data, loading, updateQuery } = useQuery(graph.GetTable, {
     variables: { slug },
-    onCompleted: ({ table }: OnCompleteProps) => {
-      table.teachers.forEach(teacher => {
-        const stats = teacher.workload
-          .filter(({ hours }) => hours)
-          .reduce(
-            ({ subjects, classes }, { hours, subjectId, classId }) => ({
-              subjects: {
-                ...subjects,
-                [subjectId]: (subjects[subjectId] || 0) + hours,
-              },
-              classes: {
-                ...classes,
-                [classId]: (classes[classId] || 0) + hours,
-              },
-            }),
-            {
-              subjects: [],
-              classes: [],
-            },
-          );
-
-        const workhoursAmount = teacher.workhours
-          .flat()
-          .reduce((acc, works) => (works ? acc + 1 : acc), 0);
-
-        const subjects = Object.values(stats.subjects);
-
-        teacher.subjects = subjects.length;
-        teacher.classes = Object.keys(stats.classes).length;
-        teacher.workhoursAmount = workhoursAmount;
-        teacher.workloadAmount = subjects.reduce(
-          (acc: number, hours: number) => acc + hours,
-          0,
-        );
-      });
-
-      table.classes.forEach(theClass => {
-        let teachersCount = 0;
-        const classSubjects = Object.values(
-          table.teachers.reduce((acc, { id, workload }) => {
-            const classWorkload = workload.filter(
-              w => w.classId === theClass.id && w.hours,
-            );
-
-            if (!classWorkload.length) return acc;
-
-            const subjectHours = classWorkload.reduce((prevHours, w) => {
-              const subjectTitle = subjectsData?.subjects.find(
-                s => s.id === w.subjectId,
-              )?.title.ru;
-
-              return {
-                ...prevHours,
-                [subjectTitle]: w.hours,
-              };
-            }, {});
-
-            teachersCount += 1;
-
-            return {
-              ...acc,
-              ...subjectHours,
-            };
-          }, {}),
-        );
-
-        theClass.teachers = teachersCount;
-        theClass.subjects = classSubjects.length;
-        theClass.lessons = classSubjects.reduce(
-          (acc: number, hours: number) => acc + hours,
-          0,
-        );
-      });
-    },
+    onCompleted: () =>
+      updateQuery(response => ({
+        table: setTableStats(response.table, subjectsData?.subjects),
+      })),
   });
 
   if (loading || loadingSubjects) return <Preloader isCentered />;
 
   const { table } = data;
+
   table.shifts = 2;
-  table.classes.sort((first, second) => {
-    const numbers = first.number - second.number;
-
-    if (numbers !== 0) return numbers;
-
-    // Index in az letters
-    return first.letter - second.letter;
-  });
   console.log('INIT table :', table);
   const mainPath = `/cedvel/${slug}`;
   const teachersPath = `${mainPath}/muellimler`;
   const teacherPath = `${teachersPath}/:id`;
   const classesPath = `${mainPath}/sinfler`;
-  const subjectsPath = `${mainPath}/fennler`;
 
   return (
     <Content>
@@ -201,12 +112,12 @@ function Table({
             <Route
               path={mainPath}
               exact
-              component={() => <Timetable table={table} />}
+              component={(): React.ReactElement => <Timetable table={table} />}
             />
             <Route
               path={teachersPath}
               exact
-              component={() => (
+              component={(): React.ReactElement => (
                 <Teachers slug={slug} id={table.id} teachers={table.teachers} />
               )}
             />
@@ -217,32 +128,18 @@ function Table({
                 match: {
                   params: { id },
                 },
-              }) => (
-                <Teacher
-                  tableId={table.id}
-                  id={id}
-                  tableSlug={slug}
-                  teachers={table.teachers}
-                  classes={table.classes}
-                  subjects={table.subjects}
-                />
-              )}
+              }): React.ReactElement => <Teacher id={id} tableSlug={slug} />}
             />
             <Route
               path={classesPath}
               exact
-              component={() => (
+              component={(): React.ReactElement => (
                 <Classes
                   tableId={table.id}
                   slug={slug}
                   classes={table.classes}
                 />
               )}
-            />
-            <Route
-              path={subjectsPath}
-              exact
-              component={() => <Subjects {...table} />}
             />
           </Switch>
         </Suspense>

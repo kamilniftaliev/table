@@ -1,9 +1,15 @@
-import React, { lazy, Suspense, useState, useEffect } from 'react';
+import React, { lazy, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useMutation } from 'react-apollo';
+import { useQuery, useMutation } from 'react-apollo';
 
 import { translation, text } from '../../../utils';
-import { Preloader, Input } from '../../ui';
+import {
+  Class,
+  Teacher as TeacherType,
+  Table as TableType,
+  Subject,
+} from '../../../models';
+import { Input } from '../../ui';
 
 import graph from '../../../graph';
 
@@ -15,27 +21,11 @@ const Workhours = lazy(() =>
 );
 
 const Container = styled.div`
-  padding: 20px;
-`;
-
-const NavContainer = styled.div`
   display: flex;
-  justify-content: center;
-  padding: 10px;
-  margin-top: 20px;
-`;
-
-interface WorkloadTitle {
-  isActive?: string;
-}
-
-const WorkloadTitle = styled.span<WorkloadTitleProps>`
-  font-size: 22px;
-  font-weight: 400;
-  margin-right: 15px;
-  cursor: pointer;
-
-  ${({ isActive }): string => isActive && 'color: blue;'}
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
 `;
 
 const InfoContainer = styled.div`
@@ -48,31 +38,28 @@ const InfoContainer = styled.div`
 const NameLabel = styled.label`
   margin-bottom: 10px;
   font-weight: 400;
+  font-size: 22px;
 `;
 
 const NameInput = styled(Input)`
   display: block;
-  margin: 0 auto;
+  margin: 0 auto 20px;
   width: 300px;
 `;
 
 interface Props {
-  tableId: string;
-  slug: string;
+  tableSlug: TableType['slug'];
+  id: TableType['id'];
 }
 
 let nameUpdateTimeout = null;
 
-function Teacher({
-  classes,
-  subjects,
-  teachers,
-  tableId,
-  tableSlug,
-  id,
-}: Props): React.ReactElement {
-  const teacher = teachers.find(t => t.id === id);
-  const [name, setName] = useName(teacher?.name, id, tableId);
+function Teacher({ tableSlug, id }: Props): React.ReactElement {
+  const { data, loading } = useQuery(graph.GetTable, {
+    variables: { slug: tableSlug },
+  });
+  const teacher = data?.table.teachers.find(t => t.id === id);
+  const [name, setName] = useName(teacher?.name, id, data?.table.id);
 
   useEffect(() => {
     document.title = name;
@@ -81,7 +68,7 @@ function Teacher({
     };
   }, [id, name]);
 
-  if (!teacher) return null;
+  if (!teacher || loading) return null;
 
   return (
     <Container>
@@ -89,29 +76,21 @@ function Teacher({
         <NameLabel>{translation('teacherName')}</NameLabel>
         <NameInput value={name} onChange={e => setName(e.target.value)} />
       </InfoContainer>
-      <Workload
-        teacher={teacher}
-        tableId={tableId}
-        tableSlug={tableSlug}
-        classes={classes}
-        subjects={subjects}
-      />
-      <Workhours
-        teacher={teacher}
-        tableId={tableId}
-        tableSlug={tableSlug}
-        classes={classes}
-        subjects={subjects}
-      />
+      <Workload tableSlug={tableSlug} teacherId={id} />
+      <Workhours tableSlug={tableSlug} teacherId={id} />
     </Container>
   );
 }
 
-function useName(initialName, teacherId, tableId) {
+function useName(
+  initialName: TeacherType['name'],
+  teacherId: TeacherType['id'],
+  tableId: TableType['id'],
+): [string, (inputName: string) => void] {
   const [name, setName] = useState<string>(initialName || '');
   const [updateTeacherRequest] = useMutation(graph.UpdateTeacher);
 
-  function updateName(inputName): void {
+  function updateName(inputName: string): void {
     const newName = inputName.trimStart().replace(/\s+/g, ' ');
 
     const regExp = /^[a-zа-яöüşiİıIğəç0-9\s]*$/gi;

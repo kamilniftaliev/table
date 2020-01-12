@@ -47,6 +47,12 @@ export const Icon = styled.img.attrs(() => ({
   width: 20px;
   margin-left: 10px;
   opacity: 0.4;
+
+  ${({ onClick }): string =>
+    onClick &&
+    `
+    cursor: pointer;
+  `}
 `;
 
 export const Add = styled(Component).attrs(() => ({

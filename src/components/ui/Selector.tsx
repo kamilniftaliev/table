@@ -22,7 +22,11 @@ const SwitchTitle = styled.span`
   font-size: 18px;
 `;
 
-interface SwitchButtonProps extends React.LiHTMLAttributes<string> {
+interface SwitchButtonProps
+  extends React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLLIElement>,
+    HTMLLIElement
+  > {
   isSelected?: boolean;
 }
 
@@ -60,19 +64,30 @@ const SwitchButton = styled.li<SwitchButtonProps>`
 
 interface Option {
   value: string | number;
-  label: string;
+  label: string | number;
 }
 
 interface SelectorProps {
   options: Option[];
-  useSwitcherForOptionsCount: number;
-  placeholder: string;
+  useSwitcherForOptionsCount?: number;
+  placeholder?: string;
+  passOption?: false;
   [propName: string]: any;
 }
 
 function Selector(props: SelectorProps): JSX.Element {
   let { value } = props;
-  const { options, useSwitcherForOptionsCount, onChange, placeholder } = props;
+  const {
+    options,
+    useSwitcherForOptionsCount,
+    onChange,
+    placeholder,
+    passOption,
+  } = props;
+
+  const changeCallback = passOption
+    ? onChange
+    : (option: Option): void => onChange(option.value);
 
   if (options.length <= useSwitcherForOptionsCount) {
     return (
@@ -82,7 +97,7 @@ function Selector(props: SelectorProps): JSX.Element {
           {options.map(option => (
             <SwitchButton
               key={option.value}
-              onClick={(): void => onChange(option)}
+              onClick={(): void => changeCallback(option)}
               isSelected={option.value === value}
             >
               {option.label}
@@ -97,7 +112,9 @@ function Selector(props: SelectorProps): JSX.Element {
     value = options.find(option => option.value === value);
   }
 
-  return <Select isClearable {...props} value={value} />;
+  return (
+    <Select isClearable {...props} onChange={changeCallback} value={value} />
+  );
 }
 
 export default React.memo(Selector);

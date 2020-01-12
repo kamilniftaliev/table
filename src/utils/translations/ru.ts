@@ -59,12 +59,12 @@ export default {
 
   addNewTeacher: 'Добавить нового учителя',
   newTeacher: 'Новый учитель',
-  exampleTeacherPlaceholder: 'Пример: "Камиль Нифталиев"',
+  exampleTeacherPlaceholder: 'Пример: "Айсель Мамедова"',
   teacherName: 'Имя учителя',
   pleaseConfirmTeacherDelete: (title: string): string =>
     `Вы уверены что хотите удалить "${title}"?`,
 
-  addNewClass: 'Добавить класс',
+  addNewClass: 'Добавить новый класс',
   newClass: 'Новый класс',
   exampleClassPlaceholder: 'Пример: "9кл"',
   classTitle: 'Название класса',
@@ -105,4 +105,18 @@ export default {
 
   shift1: '1-ая смена',
   shift2: '2-ая смена',
+
+  weekDay: (day = 1, short?: false): string => {
+    const days = [
+      ['Пн.', 'Понедельник'],
+      ['Вт.', 'Вторник'],
+      ['Ср.', 'Среда'],
+      ['Чт.', 'Четверг'],
+      ['Пт.', 'Пятница'],
+      ['Сб.', 'Суббота'],
+      ['Вс.', 'Воскресенье'],
+    ];
+
+    return days[day - 1][short ? 0 : 1];
+  }
 };

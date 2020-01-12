@@ -36,7 +36,7 @@ const Text = styled.span`
 interface Props {
   label?: string;
   checked?: boolean;
-  onChange: (value: boolean) => void;
+  onChange?: (value: boolean) => void;
 }
 
 function Component({
@@ -49,7 +49,7 @@ function Component({
     <Wrapper {...props}>
       <Container>
         <input
-          onChange={(e): void => onChange(!!e.target.checked)}
+          onChange={(e): void => onChange && onChange(!!e.target.checked)}
           type="checkbox"
           checked={checked}
           hidden
@@ -61,6 +61,4 @@ function Component({
   );
 }
 
-const Button = React.memo(Component);
-
-export default Button;
+export default React.memo(Component);

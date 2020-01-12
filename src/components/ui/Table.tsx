@@ -2,12 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-interface TableProps {
-  autoWidth?: boolean;
-}
-
-export default styled.table<TableProps>`
-  width: ${({ autoWidth }): string => (autoWidth ? 'auto' : '100%')};
+export default styled.table`
+  width: 100%;
   text-align: center;
   border-spacing: 0;
   border-collapse: collapse;
@@ -22,18 +18,6 @@ export const Header = styled.thead`
 `;
 
 export const Body = styled.tbody``;
-
-export const Row = styled.tr`
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.03);
-  }
-`;
-
-interface CellProps {
-  align?: string;
-  link?: string;
-  children: React.ReactElement[] | string | number;
-}
 
 interface TdProps {
   highlightColumn?: boolean;
@@ -63,7 +47,33 @@ export const TD = styled.td<TdProps>`
   `}
 `;
 
+export const Row = styled.tr`
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  &:last-of-type ${TD} {
+    border-bottom: none;
+  }
+`;
+
+interface CellProps
+  extends React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLTableDataCellElement>,
+    HTMLTableDataCellElement
+  > {
+  align?: string;
+  link?: string;
+  children: React.ReactElement[] | string | number;
+}
+
 export const CellTD = styled(TD)`
+  ${({ onClick }): string =>
+    onClick &&
+    `
+    cursor: pointer;
+  `}
+
   &:first-of-type {
     width: 30px;
   }

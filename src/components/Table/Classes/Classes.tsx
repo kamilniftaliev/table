@@ -5,12 +5,10 @@ import graph from '../../../graph';
 import { translation } from '../../../utils';
 
 import EditModal from './EditModal';
-import { TableRow } from '../Subjects/Subjects';
 import { Table, Button, Modal } from '../../ui';
 import { Class, Table as TableType } from '../../../models';
 
 import TrashCan from '../../../images/icons/trash.svg';
-import EditIcon from '../../../images/icons/edit.svg';
 
 interface Props {
   classes: Class[];
@@ -21,8 +19,6 @@ interface Props {
 function Classes({ classes, slug, tableId }: Props): React.ReactElement {
   const [modalClassIndex, setModalClassIndex] = useState<number>(null);
   const [deletingClass, setDeletingClass] = useState<Class>(null);
-
-  console.log('modalClassIndex :', modalClassIndex);
 
   useEffect(() => {
     document.title = translation('classes');
@@ -92,7 +88,7 @@ function Classes({ classes, slug, tableId }: Props): React.ReactElement {
               const updateFn = (): void => setModalClassIndex(index);
 
               return (
-                <TableRow key={id}>
+                <Table.Row key={id}>
                   <Table.Cell onClick={updateFn}>{index + 1}</Table.Cell>
                   <Table.Cell align="left" onClick={updateFn}>
                     {number}
@@ -114,13 +110,12 @@ function Classes({ classes, slug, tableId }: Props): React.ReactElement {
                     {translation(`shift${shift}`)}
                   </Table.Cell>
                   <Table.Cell>
-                    <Button.Icon onClick={updateFn} src={EditIcon} />
                     <Button.Icon
                       onClick={(): void => setDeletingClass(theClass)}
                       src={TrashCan}
                     />
                   </Table.Cell>
-                </TableRow>
+                </Table.Row>
               );
             })}
           </Table.Body>

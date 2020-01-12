@@ -5,16 +5,19 @@ import { useMutation, useQuery } from 'react-apollo';
 import { Table, Selector, Button, Modal } from '../../ui';
 
 import {
-  Table as TableProps,
+  Table as TableType,
   Teacher,
   Workload as WorkloadModel,
-  Class,
 } from '../../../models';
 
-import { translation } from '../../../utils';
+import { translation, setTableStats } from '../../../utils';
 import graph from '../../../graph';
 
 const Container = styled.div``;
+
+const TableContainer = styled(Table.default)`
+  width: auto;
+`;
 
 const TableCell = styled(Table.TD)`
   padding: 5px;
@@ -40,33 +43,42 @@ const AddWorkloadModal = styled(Modal.default)`
   padding: 50px 70px;
 `;
 
-const SectionTitle = styled.p`
-  text-align: center;
+const AddWorkloadButton = styled(Button.Add)`
+  margin: 20px auto;
 `;
 
-interface Props extends TableProps {
-  tableId: string;
-  teacher: Teacher;
-  classes: Class[];
+export const SectionTitle = styled.p`
+  text-align: center;
+  font-size: 22px;
+  font-weight: 400;
+`;
+
+export interface Props {
+  tableSlug: TableType['slug'];
+  teacherId: Teacher['id'];
+  shifts: number;
 }
 
-function Workload({
-  teacher,
-  tableSlug,
-  tableId,
-  classes,
-}: Props): React.ReactElement {
+function Workload({ tableSlug, teacherId }: Props): React.ReactElement {
+  const { data: tableData, loading: loadingTable } = useQuery(graph.GetTable, {
+    variables: { slug: tableSlug },
+  });
+  const teacher = tableData.table.teachers.find(t => t.id === teacherId);
+
   const [newWorkload, setNewWorkload] = useState<WorkloadModel>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const { data, loading: loadingSubjects } = useQuery(graph.GetSubjects);
+  const { data: subjectsData, loading: loadingSubjects } = useQuery(
+    graph.GetSubjects,
+  );
   const [workload, updateWorkload] = useWorkload(
     teacher.workload,
     tableSlug,
     teacher.id,
   );
+
   const teacherClasses = useMemo(
     () =>
-      classes.filter(c =>
+      tableData.table.classes.filter(c =>
         teacher.workload.find(w => c.id === w.classId && w.hours),
       ),
     [],
@@ -74,63 +86,70 @@ function Workload({
 
   const teacherSubjects = useMemo(
     () =>
-      data?.subjects.filter(s =>
+      subjectsData.subjects.filter(s =>
         teacher.workload.find(w => s.id === w.subjectId && w.hours),
       ),
-    [loadingSubjects],
+    [],
   );
 
-  if (loadingSubjects) return null;
+  if (loadingTable || loadingSubjects) return null;
 
   return (
     <Container>
-      <SectionTitle>{translation('workloadTitle')}</SectionTitle>
-      <Table.default>
-        <Table.Header>
-          <Table.Row>
-            <Table.Head>{translation('classes')}</Table.Head>
-            {teacherClasses.map(({ id, number, letter }) => (
-              <Table.Head key={id}>
-                {number}
-                {letter}
-              </Table.Head>
-            ))}
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {teacherSubjects.map(({ id: subjectId, title }) => (
-            <Table.Row key={subjectId}>
-              <SubjectTitleCell align="left">{title.ru}</SubjectTitleCell>
-              {teacherClasses.map(({ id: classId }) => {
-                const defaultHours = workload[subjectId]
-                  ? workload[subjectId][classId]
-                  : 0;
-                return (
-                  <TableCell key={classId}>
-                    <HoursSelector
-                      onChange={(hours: number): void =>
-                        updateWorkload({
-                          variables: {
-                            tableId,
-                            teacherId: teacher.id,
-                            subjectId,
-                            classId,
-                            hours,
-                          },
-                        })
-                      }
-                      value={defaultHours || ''}
-                    />
-                  </TableCell>
-                );
-              })}
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.default>
-      <Button.Add onClick={(): void => setShowModal(true)}>
+      {!!teacherClasses.length && (
+        <>
+          <SectionTitle>{translation('workloadTitle')}</SectionTitle>
+          <TableContainer>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>{translation('classes')}</Table.Head>
+                {teacherClasses.map(({ id, number, letter }) => (
+                  <Table.Head key={id}>
+                    {number}
+                    {letter}
+                  </Table.Head>
+                ))}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {teacherSubjects.map(({ id: subjectId, title }) => (
+                <Table.Row key={subjectId}>
+                  <SubjectTitleCell align="left">{title.ru}</SubjectTitleCell>
+                  {teacherClasses.map(({ id: classId }) => {
+                    const defaultHours = workload[subjectId]
+                      ? workload[subjectId][classId]
+                      : 0;
+                    return (
+                      <TableCell key={classId}>
+                        <Selector
+                          styles={hourSelectorStyles}
+                          options={hoursOptions}
+                          placeholder=""
+                          onChange={(hours: number): void =>
+                            updateWorkload({
+                              variables: {
+                                tableId: tableData.table.id,
+                                teacherId: teacher.id,
+                                subjectId,
+                                classId,
+                                hours,
+                              },
+                            })
+                          }
+                          value={defaultHours || ''}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </TableContainer>
+        </>
+      )}
+      <AddWorkloadButton onClick={(): void => setShowModal(true)}>
         {translation('addNewWorkload')}
-      </Button.Add>
+      </AddWorkloadButton>
       {showModal && (
         <AddWorkloadModal
           onClose={(): void => setShowModal(false)}
@@ -141,11 +160,11 @@ function Workload({
                 <Selector
                   key="0"
                   placeholder={translation('selectSubject')}
-                  options={data.subjects.map(s => ({
+                  options={subjectsData.subjects.map(s => ({
                     value: s.id,
                     label: s.title.ru,
                   }))}
-                  onChange={({ value: subjectId }): void => {
+                  onChange={(subjectId): void => {
                     setNewWorkload({
                       ...newWorkload,
                       subjectId,
@@ -161,11 +180,11 @@ function Workload({
                 <Selector
                   key="1"
                   placeholder={translation('selectClass')}
-                  options={classes.map(c => ({
+                  options={tableData.table.classes.map(c => ({
                     value: c.id,
                     label: `${c.number}${c.letter}`,
                   }))}
-                  onChange={({ value: classId }): void => {
+                  onChange={(classId): void => {
                     setNewWorkload({
                       ...newWorkload,
                       classId,
@@ -181,13 +200,13 @@ function Workload({
                 <Selector
                   key="2"
                   placeholder={translation('selectHours')}
-                  options={hoursOptions}
-                  onChange={({ value: hours }): void => {
+                  options={hoursOptions.slice(1)}
+                  onChange={(hours): void => {
                     setNewWorkload(null);
                     updateWorkload({
                       variables: {
                         ...newWorkload,
-                        tableId,
+                        tableId: tableData.table.id,
                         teacherId: teacher.id,
                         hours,
                       },
@@ -209,95 +228,69 @@ const hoursOptions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(num => ({
   label: num,
 }));
 
-interface HourSelectorProp {
-  value: number;
-  onChange: (hours: number) => void;
-}
-
-function HoursSelector({
-  value,
-  onChange,
-  ...props
-}: HourSelectorProp): React.ReactElement {
-  return (
-    <Selector
-      value={{
-        value,
-        label: value,
-      }}
-      styles={{
-        dropdownIndicator: (): object => ({ display: 'none' }),
-        clearIndicator: (): object => ({ display: 'none' }),
-        indicatorSeparator: (): object => ({ display: 'none' }),
-        input: (): object => ({
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          color: 'transparent',
-        }),
-        valueContainer: (): object => ({ width: 50 }),
-        container: (provided: object): object => ({
-          ...provided,
-          width: 50,
-          margin: 'auto',
-        }),
-        control: (provided: object): object => ({
-          ...provided,
-          cursor: 'pointer',
-          minHeight: '30px',
-          width: 50,
-          borderColor: '#f9f7f7',
-        }),
-        option: (provided: object): object => ({
-          ...provided,
-          cursor: 'pointer',
-        }),
-        singleValue: (provided: object): object => ({
-          ...provided,
-          width: '100%',
-        }),
-      }}
-      onChange={({ value: hours }): void => onChange(hours)}
-      options={hoursOptions}
-      {...props}
-    />
-  );
-}
+const hourSelectorStyles = {
+  dropdownIndicator: (): object => ({ display: 'none' }),
+  clearIndicator: (): object => ({ display: 'none' }),
+  indicatorSeparator: (): object => ({ display: 'none' }),
+  input: (): object => ({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    color: 'transparent',
+  }),
+  valueContainer: (): object => ({ width: 50 }),
+  container: (provided: object): object => ({
+    ...provided,
+    width: 50,
+    margin: 'auto',
+  }),
+  control: (provided: object): object => ({
+    ...provided,
+    cursor: 'pointer',
+    minHeight: '30px',
+    width: 50,
+    borderColor: '#f9f7f7',
+  }),
+  option: (provided: object): object => ({
+    ...provided,
+    cursor: 'pointer',
+  }),
+  singleValue: (provided: object): object => ({
+    ...provided,
+    width: '100%',
+  }),
+};
 
 function useWorkload(
   initialWorkload: WorkloadModel[],
   tableSlug: string,
   teacherId: string,
-): [[WorkloadModel], any] {
+): [any, any] {
+  const { data: subjectsData } = useQuery(graph.GetSubjects);
   const [updateWorkload] = useMutation(graph.UpdateWorkload, {
     update(cache, { data: { updateWorkload: response } }) {
-      if (cache.readQuery) {
-        const { table } = cache.readQuery({
-          query: graph.GetTable,
-          variables: { slug: tableSlug },
-        });
+      const { table } = cache.readQuery({
+        query: graph.GetTable,
+        variables: { slug: tableSlug },
+      });
 
-        const teacherIndex = table.teachers.findIndex(
-          (t: Teacher) => t.id === teacherId,
-        );
+      const teacher = table.teachers.find((t: Teacher) => t.id === teacherId);
 
-        const workIndex = table.teachers[teacherIndex].workload.findIndex(
-          (w: WorkloadModel) =>
-            w.subjectId === response.subjectId &&
-            w.classId === response.classId,
-        );
+      const workIndex = teacher.workload.findIndex(
+        (w: WorkloadModel) =>
+          w.subjectId === response.subjectId && w.classId === response.classId,
+      );
 
-        if (workIndex !== -1) {
-          table.teachers[teacherIndex].workload[workIndex] = response;
-        } else {
-          table.teachers[teacherIndex].workload.push(response);
-        }
-
-        cache.writeQuery({
-          query: graph.GetTable,
-          data: { table },
-        });
+      if (workIndex !== -1) {
+        teacher.workload[workIndex] = response;
+      } else {
+        teacher.workload.push(response);
       }
+
+      cache.writeQuery({
+        query: graph.GetTable,
+        data: { table: setTableStats(table, subjectsData.subjects) },
+      });
     },
   });
 

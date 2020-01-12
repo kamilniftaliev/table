@@ -5,12 +5,10 @@ import graph from '../../../graph';
 import { translation } from '../../../utils';
 
 import NewTeacherModal from './NewTeacherModal';
-import { TableRow } from '../Subjects/Subjects';
 import { Table, Button, Modal } from '../../ui';
 import { Table as TableType, Teacher } from '../../../models';
 
 import TrashCan from '../../../images/icons/trash.svg';
-
 interface Props {
   id: TableType['id'];
   teachers: Teacher[];
@@ -91,7 +89,7 @@ function Teachers({ id: tableId, teachers, slug }: Props): React.ReactElement {
               ) => {
                 const link = `muellimler/${id}`;
                 return (
-                  <TableRow key={id}>
+                  <Table.Row key={id}>
                     <Table.Cell link={link}>{index + 1}</Table.Cell>
                     <Table.Cell align="left" link={link}>
                       {name}
@@ -114,7 +112,7 @@ function Teachers({ id: tableId, teachers, slug }: Props): React.ReactElement {
                         src={TrashCan}
                       />
                     </Table.Cell>
-                  </TableRow>
+                  </Table.Row>
                 );
               },
             )}

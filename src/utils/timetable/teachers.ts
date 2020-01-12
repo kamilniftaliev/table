@@ -152,7 +152,7 @@ export default class Teachers {
         // If didn't find any workload
         if (!foundWorkloads.length) return null;
 
-        // if (teachers[teacherIndex].name.includes('Rəna')) {
+        // if (teachers[teacherIndex].name.includes('Rəhilə')) {
         //   debugger
         // }
 
@@ -455,7 +455,10 @@ export default class Teachers {
 
   doesTeacherHaveMoreHours = (teacher, customTeachers?) => {
     const { teacherIndex, workloadIndex, subjectIndex } = teacher;
+    if (workloadIndex === -1) return false;
+
     const leftDays = this.getTeacherLeftDays(teacherIndex);
+    
     const { hours: leftSubjectHours } = this.table.teachers[teacherIndex].workload[workloadIndex];
     let hasMoreLessons = leftSubjectHours >= leftDays;
 

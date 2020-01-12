@@ -47,8 +47,10 @@ mutation UpdateWorkload(
 mutation UpdateWorkhour(
   $tableId: ID!
   $teacherId: ID!
-  $day: String!
-  $hour: String!
+  $day: Int!
+  $hour: Int!
+  $everyHour: Boolean! = false
+  $everyDay: Boolean! = false
   $value: Boolean!
 ) {
   updateWorkhour(
@@ -56,11 +58,15 @@ mutation UpdateWorkhour(
     teacherId: $teacherId
     day: $day
     hour: $hour
+    everyHour: $everyHour
+    everyDay: $everyDay
     value: $value
   ) {
     day
     hour
     value
+    everyHour
+    everyDay
   }
 }
 
