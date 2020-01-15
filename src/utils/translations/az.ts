@@ -68,7 +68,12 @@ export default {
 
   workloadTitle: 'Dərs yükü',
   hour: (count: number): string => {
-    if (count === 0) return 'Dərs yoxdur';
+    if (count === 0) return 'dərs yoxdur';
+
+    return `${count} saat`;
+  },
+  workhour: (count: number): string => {
+    if (count === 0) return 'işləmir';
 
     return `${count} saat`;
   },

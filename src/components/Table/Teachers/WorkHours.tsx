@@ -130,101 +130,111 @@ function Workhours({
   return (
     <Container shifts={shifts}>
       <SectionTitle>{translation('workhoursTitle')}</SectionTitle>
-      {constants.shifts.slice(0, shifts).map(({ value: shift, label }, si) => (
-        <WorkhoursTableContainer key={label} area={`workhours-shift-${shift}`}>
-          {shifts > 1 && <ShiftTitle>{label}</ShiftTitle>}
-          <Table.default>
-            <Table.Header>
-              <Table.Row>
-                <Table.Head>{translation('days')}</Table.Head>
-                {daysOfWeek.map((day, dayIndex) => {
-                  // Find 1 disabled hour
-                  // @TODO
-                  const isDayChecked =
-                    workhours[dayIndex].slice(0, 8).findIndex(hour => !hour) ===
-                    -1;
+      {constants.shifts.slice(0, shifts).map(({ value: shift, label }, si) => {
+        const firstHourIndex = si * 8;
+        return (
+          <WorkhoursTableContainer
+            key={label}
+            area={`workhours-shift-${shift}`}
+          >
+            {shifts > 1 && <ShiftTitle>{label}</ShiftTitle>}
+            <Table.default>
+              <Table.Header>
+                <Table.Row>
+                  <Table.Head>{translation('days')}</Table.Head>
+                  {daysOfWeek.map((day, dayIndex) => {
+                    // Find 1 disabled hour
+                    // @TODO
+                    const isDayChecked =
+                      workhours[dayIndex]
+                        .slice(firstHourIndex, firstHourIndex + 8)
+                        .findIndex(hour => !hour) === -1;
 
-                  return (
-                    <TableHead
-                      key={day}
-                      onClick={(): void =>
-                        updateWorkhour({
-                          variables: {
-                            tableId,
-                            teacherId,
-                            day: dayIndex,
-                            hour: 0,
-                            everyHour: true,
-                            value: !isDayChecked,
-                          },
-                        })
-                      }
-                    >
-                      <HourCellTitle>
-                        {translation('weekDay', day, true)}
-                      </HourCellTitle>
-                      <Checkbox checked={isDayChecked} />
-                    </TableHead>
-                  );
-                })}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {lessonHours.slice(si * 8, si * 8 + 8).map((hour, hourIndex) => {
-                // Find 1 disabled day
-                const isHourChecked = !workhours.find(day => !day[hourIndex]);
+                    return (
+                      <TableHead
+                        key={day}
+                        onClick={(): void =>
+                          updateWorkhour({
+                            variables: {
+                              tableId,
+                              teacherId,
+                              day: dayIndex,
+                              hour: firstHourIndex,
+                              everyHour: true,
+                              value: !isDayChecked,
+                            },
+                          })
+                        }
+                      >
+                        <HourCellTitle>
+                          {translation('weekDay', day, true)}
+                        </HourCellTitle>
+                        <Checkbox checked={isDayChecked} />
+                      </TableHead>
+                    );
+                  })}
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {lessonHours
+                  .slice(firstHourIndex, firstHourIndex + 8)
+                  .map(h => {
+                    const hour = h - 1;
+                    // Find 1 disabled day
+                    const isHourChecked = !workhours.find(day => !day[hour]);
 
-                return (
-                  <Table.Row key={hour}>
-                    <TableCell
-                      align="left"
-                      onClick={(): void =>
-                        updateWorkhour({
-                          variables: {
-                            tableId,
-                            teacherId,
-                            day: 0,
-                            hour: hourIndex,
-                            everyDay: true,
-                            value: !isHourChecked,
-                          },
-                        })
-                      }
-                    >
-                      <HourCellTitle>
-                        {`${translation('lesson')} ${hour}`}
-                      </HourCellTitle>
-                      <Checkbox checked={isHourChecked} />
-                    </TableCell>
-                    {daysOfWeek.map((key, day) => {
-                      const value = !!workhours[day][hour - 1];
-
-                      return (
+                    return (
+                      <Table.Row key={hour}>
                         <TableCell
-                          key={key}
+                          align="left"
                           onClick={(): void =>
                             updateWorkhour({
                               variables: {
                                 tableId,
                                 teacherId,
-                                day,
-                                hour: hourIndex,
-                                value: !value,
+                                day: 0,
+                                hour,
+                                everyDay: true,
+                                value: !isHourChecked,
                               },
                             })
                           }
                         >
-                          <Checkbox checked={value} />
+                          <HourCellTitle>
+                            {`${translation('lesson')} ${h}`}
+                          </HourCellTitle>
+                          <Checkbox checked={isHourChecked} />
                         </TableCell>
-                      );
-                    })}
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table.default>
-        </WorkhoursTableContainer>
-      ))}
+                        {daysOfWeek.map((key, day) => {
+                          const value = !!workhours[day][hour];
+
+                          return (
+                            <TableCell
+                              key={key}
+                              onClick={(): void =>
+                                updateWorkhour({
+                                  variables: {
+                                    tableId,
+                                    teacherId,
+                                    day,
+                                    hour,
+                                    value: !value,
+                                  },
+                                })
+                              }
+                            >
+                              <Checkbox checked={value} />
+                            </TableCell>
+                          );
+                        })}
+                      </Table.Row>
+                    );
+                  })}
+              </Table.Body>
+            </Table.default>
+          </WorkhoursTableContainer>
+        );
+      })}
     </Container>
   );
 }
@@ -254,25 +264,26 @@ function useWorkhours(
       const teacher = table.teachers.find(t => t.id === teacherId);
       let updatedHoursCount = 0;
 
-      // If given day of every hour is updated
+      // If given hour of every day is updated
       if (everyDay) {
         teacher.workhours.forEach((dayHours, dayIndex) => {
           if (dayHours[hour] !== value) {
-            // @TODO
             if (dayIndex < 7) updatedHoursCount += 1;
 
             // eslint-disable-next-line no-param-reassign
             dayHours[hour] = value;
           }
-          return day;
         });
       } else if (everyHour) {
-        // If given hour of every day is updated
-        // @TODO TABLE SETTINGS  WITH SHIFT
-        updatedHoursCount = teacher.workhours[day]
-          .slice(0, 8)
-          .filter(dayHour => dayHour !== value).length;
-        teacher.workhours[day].fill(value);
+        // If given day of every hour is updated
+        let shiftWorkhours = teacher.workhours[day].slice(0, 9);
+
+        // If not first hour - meaning not first shift
+        if (hour) shiftWorkhours = teacher.workhours[day].slice(8, 16);
+
+        updatedHoursCount = shiftWorkhours.filter(dayHour => dayHour !== value)
+          .length;
+        teacher.workhours[day].fill(value, hour ? 8 : 0, hour ? 16 : 8);
       } else {
         teacher.workhours[day][hour] = value;
         updatedHoursCount = 1;

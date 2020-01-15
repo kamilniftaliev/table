@@ -77,6 +77,11 @@ export default {
 
     return `${count} часов`;
   },
+  workhour: (count: number): string => {
+    if (count === 0) return 'не работает';
+
+    return `${count} часов`;
+  },
 
   workhoursTitle: 'Рабочие часы',
   lesson: 'Урок',

@@ -2,12 +2,14 @@ import Helpers from './helpers';
 
 import { Workload, TableTeacher } from '../../models';
 
-export default class Loggger {
+export default class Logger {
   table = null;
 
   logWarnings = false;
 
   helpers = null;
+
+  history = [];
 
   constructor(table) {
     this.table = table;
@@ -74,7 +76,8 @@ export default class Loggger {
 
     const curDay = this.table.dayIndex + 1;
     const curHour = this.table.hourIndex + 1;
-    const { title: curClassTitle } = this.table.classes[classIndex];
+    const { number, letter } = this.table.classes[classIndex];
+    const curClassTitle = `${number}${letter}`;
     const timeText = `${curClassTitle}, day: ${curDay}, hour: ${curHour}`;
     const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number';
     const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number';
@@ -97,7 +100,7 @@ export default class Loggger {
     const leftWorkingHours = this.howManyWorkhoursFromNow(lesson);
     const overallWorkload = this.getTeacherOverallWorkload(lesson);
     
-    return `${subject}, ${lessonTeacher}, ${leftLessonsInClass}/${overallWorkload} lessons, ${leftWorkingHours} hours`;
+    return `${subject.ru}, ${lessonTeacher}, ${leftLessonsInClass}/${overallWorkload} lessons, ${leftWorkingHours} hours`;
   }
 
   lesson = (
@@ -121,12 +124,16 @@ export default class Loggger {
       else teachers = [teachersList];
     }
 
-    const timeText = this.match({ day, hour, classTitle }, teachers[0]);
+    const timeText = teachers[0] && this.match({ day, hour, classTitle }, teachers[0]);
+
+    // console.log('day, hour, classTitle', day, hour, classTitle)
 
     if (!timeText || !teachers) return;
+
+    console.log('teachers.length', teachers.length)
     
     const teachersLog = teachers.reduce((acc, lesson) => {
-      const log = this.parseLesson(lesson);
+      const log = typeof lesson.workloadIndex === 'number' ? this.parseLesson(lesson) : '';
   
       const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined';
   
@@ -153,7 +160,8 @@ export default class Loggger {
 
   warning = (...text): void => {
     if (!this.logWarnings) return;
-    const { title: classTitle } = this.table.classes[this.table.classIndex];
+    const { number, letter } = this.table.classes[this.table.classIndex];
+    const classTitle = `${number}${letter}`;
     console.info(text.join(','), classTitle, this.table.dayIndex + 1, this.table.hourIndex + 1);
   }
 

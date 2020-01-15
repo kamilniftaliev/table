@@ -104,7 +104,7 @@ function Teachers({ id: tableId, teachers, slug }: Props): React.ReactElement {
                       {translation('hour', workloadAmount)}
                     </Table.Cell>
                     <Table.Cell link={link}>
-                      {translation('hour', workhoursAmount)}
+                      {translation('workhour', workhoursAmount)}
                     </Table.Cell>
                     <Table.Cell>
                       <Button.Icon

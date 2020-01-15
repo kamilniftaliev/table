@@ -58,7 +58,7 @@ export default class Helpers {
   }
 
   public getMaxHoursForClass(schoolDaysCount: number): ClassHours {
-    return this.table.classes.reduce((acc: ClassHours, { id }, classIndex: number) => {
+    return this.table.classes.reduce((acc: ClassHours, { id, number }, classIndex: number) => {
       const totalHoursOfClass = this.table.teachers
         .reduce((totalHours, { workload }) => {
           const teacherTotalClassHours = workload
@@ -87,7 +87,7 @@ export default class Helpers {
         const intTotalDailyHours = Math.floor(totalDailyHours);
         const moreHoursCount = totalHoursOfClass - (intTotalDailyHours * schoolDaysCount);
 
-        hours[intTotalDailyHours] = Math.round(totalDailyHours - moreHoursCount);
+        hours[intTotalDailyHours] = Math.round(schoolDaysCount - moreHoursCount);
         hours[intTotalDailyHours + 1] = moreHoursCount;
       }
 
@@ -103,17 +103,20 @@ export default class Helpers {
     curHour: number
   ): boolean => {
     const classHours = maxClassHours[classId];
-    const maxHoursProp = Math.max(...Object.keys(classHours).map(Number));
-    const classHourLimit = classHours[maxHoursProp];
+    const { number } = this.table.classes.find(c => c.id === classId);
+    const initMaxHour = Math.max(...Object.keys(classHours).map(Number));
+    const classHourLimit = classHours[initMaxHour];
+
+    const maxHour = number === 1 ? initMaxHour + 1 : initMaxHour;
 
     // If current hour exceeds max hour limit of the class,
     // don't decrease and return falsy value to indicate about that
-    if (maxHoursProp < curHour) return;
+    if (maxHour < curHour || (number === 1 && curHour === 1)) return;
 
-    if (maxHoursProp === curHour) {
+    if (maxHour === curHour) {
       // Decrease total hours count
-      if (classHourLimit === 1) delete classHours[maxHoursProp];
-      else classHours[maxHoursProp] -= 1;
+      if (classHourLimit === 1) delete classHours[initMaxHour];
+      else classHours[initMaxHour] -= 1;
     }
 
     // Return true to indicate about decreasement

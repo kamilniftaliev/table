@@ -28,24 +28,28 @@ const notFoundLesson = {
 };
 
 function getLesson(): Lesson {
-  // log.lesson(Teachers
-  //   .sortByWorkload()
-  //   .getWithLessonsInClass()
-  //   .getWorkingNow()
-  //   .getHasntBeenYet()
-  //   .getFree()
-  //   .filterWithCoWorkerIfNeeded()
-  //   .noNeedToSkipForThisClass()
-  //   .filterWithCoWorkerIfNeeded()
-  //   .getTodayMustBe()
-  //   .sortByWorkIfNeeded()
-  //   // .getLessonTeachers()
-  // , {
-  //   day: 1,
-  //   hour: 7,
-  //   classTitle: 6,
-  //   logEmpty: true,
-  // });
+  const ts = Teachers
+    .sortByWorkload()
+    .getWithLessonsInClass()
+    .getWorkingNow()
+    .getHasntBeenYet()
+    .getFree()
+    .filterWithCoWorkerIfNeeded()
+    .noNeedToSkipForThisClass()
+    // .filterWithCoWorkerIfNeeded()
+    // .getTodayMustBe()
+    // .sortByWorkIfNeeded()
+    // .getLessonTeachers()
+
+  log.lesson(ts, {
+    day: 1,
+    hour: 5,
+    classTitle: '1a',
+    logEmpty: true,
+    // justReturn: true,
+  }, ts.suitableTeachers);
+  // log.history.push(logs);
+  // if (logs) console.log('object', JSON.stringify(logs))
 
   const { suitableTeachers: teachers } = Teachers.sortByWorkload()
     .getWithLessonsInClass()
@@ -63,12 +67,17 @@ function getLesson(): Lesson {
 
   Teachers.decreaseWorkload(teachers);
 
-  const lesson = {
-    subjectTitle: table.subjects[teachers[0].subjectIndex].title?.ru,  
-    teachersName: teachers.map(({ teacherIndex }) => table.teachers[teacherIndex].name).join(' və '),
-  };
+  const subject = table.subjects[teachers[0].subjectIndex];
 
-  return lesson;
+  return {
+    subjectTitle: subject.title?.ru,  
+    teachersName: teachers.map(({ teacherIndex }) => table.teachers[teacherIndex].name).join(' və '),
+    // teachers: table.teachers.filter((teacher, index) => {
+    //   return teachers.find(t => t.teacherIndex === index)
+    // }).map(({ id, name }) => ({ id, name }))
+    teachers: teachers.map(({ teacherIndex }) => table.teachers[teacherIndex]),
+    subjectId: subject.id,
+  };
 }
 
 function getShiftFromTable(
@@ -91,7 +100,9 @@ function getShiftFromTable(
 }
 
 export default function(defaultTable: Table, subjects: Subject[]): object {
-  return Array(defaultTable.shifts).fill(null).map((s, shiftIndex) => {
+  if (!subjects || !subjects.length) return {};
+
+  const generatedTimetable = Array(defaultTable.shifts).fill(null).map((s, shiftIndex) => {
     const shift = shiftIndex + 1;
 
     // The very init
@@ -103,14 +114,14 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
     // console.log('SHIFT table :', table);
 
     log = new Logger(table);
-    // if (!window.log) window.log = log;
+    if (!window.log) window.log = log;
     helpers = new Helpers(table);
     Teachers = new TeachersClass(table);
     // if (!window.T) window.T = Teachers;
     maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
     table.maxClassHours = maxClassHours;
 
-    // console.log('maxClassHours :', JSON.parse(JSON.stringify(maxClassHours)));
+    // console.log('maxClassHours :', JSON.stringify(maxClassHours));
 
     timetable = [];
     Teachers.timetable = timetable;
@@ -136,7 +147,7 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
 
             // Loop through all classes and get a lesson for the hour
             table.classes.forEach(
-              ({ id: classId }, curClassIndex: number): void => {
+              ({ id: classId, number }, curClassIndex: number): void => {
                 // Init the hour of the class
                 classIndex = curClassIndex;
                 table.classIndex = classIndex;
@@ -167,4 +178,11 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
 
     return timetable;
   });
+
+
+  return {
+    timetable: generatedTimetable,
+    logs: log.history,
+    logAAA: Logger.history,
+  };
 }

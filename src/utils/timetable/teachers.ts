@@ -113,8 +113,6 @@ export default class Teachers {
     this.suitableTeachers = this.table.teachers
       .sort((first, second) => first.workloadAmount - second.workloadAmount);
 
-    // console.log('this.suitableTeachers :', this.suitableTeachers);
-
     return this;
   }
 
@@ -142,7 +140,6 @@ export default class Teachers {
   ) {
     const teachers = customTeachers || this.suitableTeachers;
     const { id: classId } = this.table.classes[classIndex];
-    // const todaysSubjectsId = this.getTodaySubjectsIdOfClass()
   
     const teachersWithLessonsInClass = teachers
       .map(({ workload, workhours }, teacherIndex) => {
@@ -165,8 +162,6 @@ export default class Teachers {
       })
       .filter(Boolean)
       .flat();
-
-    // console.log('teachersWithLessonsInClass :', teachersWithLessonsInClass);
 
     if (customTeachers) return teachersWithLessonsInClass;
 
@@ -197,14 +192,11 @@ export default class Teachers {
       return this;
     }
 
-    if (!this.table.teachers[teachers[0].teacherIndex].workload[teachers[0].workloadIndex]) {
-      console.log('teachers :', teachers);
-    }
     const { classId } = this.table.teachers[teachers[0].teacherIndex].workload[teachers[0].workloadIndex];
     const timetableHour = this.timetable[this.table.dayIndex][this.table.hourIndex];
   
     // Filter only the teachers that aren't in any class
-    const freeTeachers = teachers.filter(({ teacherIndex }) => {
+    const freeTeachers = teachers.filter(({ teacherIndex }, index, arr) => {
       const { id: teacherId, name } = this.table.teachers[teacherIndex];
       // Loop through classes at current hour and check if
       // this teacher is in one of the classes
@@ -212,16 +204,22 @@ export default class Teachers {
 
       // if (
       //   this.log.match({
-      //     day: 4,
-      //     hour: 2,
-      //     classTitle: 8,
-      //   })
-      //   // && name.includes('ülnarə Nəzirova')
-      //   && this.helpers.getClassTitleById(classId).includes('5e')
-      //   && customTeachers
+      //     day: 1,
+      //     hour: 1,
+      //     classTitle: '11c',
+      //   }, arr[index])
+      //   && name.includes('Ellada')
+      //   // && this.helpers.getClassTitleById(classId).includes('5e')
+      //   && !customTeachers
       // ) {
       //   debugger;
       // }
+
+      // this.log.lesson(freeTeachers, {
+      //   classTitle: '11c',
+      //   day: 1,
+      //   hour: 1,
+      // }, freeTeachers);
 
       return !timetableHour.some(({ teachers: lessonTeachers }) => {
         // Find if the teacher has a lesson in any class right now
@@ -568,14 +566,20 @@ export default class Teachers {
     // Filter only those who wasn't teaching today
     // Or got more hours than left days
     const hasntBeenYetTeachers = teachers.filter((teacher) => {
-      const { teacherIndex, subjectIndex } = teacher;
+      const { teacherIndex, subjectIndex, workloadIndex } = teacher;
       const { id: subjectId } = this.table.subjects[subjectIndex];
       const todayHasBeenTimes = this.getTodaySubjectsIdOfClass(classIndex)
         .filter(id => id === subjectId).length;
+
+      const howManyWorkDaysFromNow = this.howManyWorkDaysFromNow(teacher);
+
+      const workload = this.table.teachers[teacherIndex].workload[workloadIndex];
+
+      const limit = workload.hours / Math.min(howManyWorkDaysFromNow, this.table.schoolDaysCount);
   
       const hasMoreLessons = this.hasMoreLessonsThanLeftDays(teacherIndex, subjectIndex);
   
-      return todayHasBeenTimes === 0 || (hasMoreLessons && todayHasBeenTimes < 2);
+      return todayHasBeenTimes === 0 || (hasMoreLessons && todayHasBeenTimes <= limit);
     });
 
     if (customTeachers) return hasntBeenYetTeachers;
