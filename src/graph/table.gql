@@ -19,14 +19,16 @@ mutation UpdateTable($title: String!, $slug: String!, $id: ID!) {
 }
 
 mutation DeleteTable($id: ID!) {
-  deleteTable(id: $id) {
-    id
-  }
+  deleteTable(id: $id)
 }
 
 mutation DuplicateTable($id: ID!) {
   duplicateTable(id: $id) {
     id
+    title
+    slug
+    created
+    lastModified
   }
 }
 
@@ -35,12 +37,6 @@ query GetTable($slug: String!) {
     id
     title
     created
-    # subjects {
-    #   id
-    #   title {
-    #     ru
-    #   }
-    # }
     classes {
       id
       number

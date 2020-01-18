@@ -56,7 +56,6 @@ export const SectionTitle = styled.p`
 export interface Props {
   tableSlug: TableType['slug'];
   teacherId: Teacher['id'];
-  shifts: number;
 }
 
 function Workload({ tableSlug, teacherId }: Props): React.ReactElement {

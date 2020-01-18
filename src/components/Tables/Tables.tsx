@@ -38,7 +38,21 @@ function Tables(): React.ReactElement {
       variables: {
         id: deletingTable.id,
       },
-      // refetchQueries,
+      update(cache, { data: { deleteTable: tableId } }) {
+        const { user: userData } = cache.readQuery({ query: graph.GetUser });
+
+        console.log('userData :', userData, tableId);
+
+        cache.writeQuery({
+          query: graph.GetUser,
+          data: {
+            user: {
+              ...userData,
+              tables: userData.tables.filter(t => t.id !== tableId),
+            },
+          },
+        });
+      },
     });
 
     setDeletingTable(null);
@@ -47,7 +61,27 @@ function Tables(): React.ReactElement {
   function duplicateTable(id): void {
     duplicateTableRequest({
       variables: { id },
-      // refetchQueries,
+      update(cache, { data: { duplicateTable: newTable } }) {
+        const { user: userData } = cache.readQuery({ query: graph.GetUser });
+
+        console.log('userData :', userData, newTable);
+
+        cache.writeQuery({
+          query: graph.GetUser,
+          data: {
+            user: {
+              ...userData,
+              tables: [
+                ...userData.tables,
+                {
+                  ...userData.tables.find(t => t.id === id),
+                  ...newTable,
+                },
+              ],
+            },
+          },
+        });
+      },
     });
   }
 

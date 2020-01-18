@@ -62,16 +62,23 @@ export default class Logger {
       day,
       hour,
       classTitle,
+      teacherName,
     },
-    teacher: TableTeacher,
+    teacher = {},
   ): string | boolean {
     const { teacherIndex, workloadIndex } = teacher;
     let { classIndex } = this.table;
 
-    // If need to read class title from given teacher
-    if (typeof teacherIndex === 'number' && typeof workloadIndex === 'number') {
-      const { classId } = this.table.teachers[teacherIndex].workload[workloadIndex];
-      classIndex = this.table.classes.findIndex(({ id }) => id === classId);
+    let teacherInfo = {};
+
+    if (teacher) {
+      teacherInfo = this.table.teachers[teacherIndex];
+
+      // If need to read class title from given teacher
+      if (typeof teacherIndex === 'number' && typeof workloadIndex === 'number') {
+        const { classId } = this.table.teachers[teacherIndex].workload[workloadIndex];
+        classIndex = this.table.classes.findIndex(({ id }) => id === classId);
+      }
     }
 
     const curDay = this.table.dayIndex + 1;
@@ -82,8 +89,9 @@ export default class Logger {
     const fitsDay = (typeof day === 'number' && curDay === day) || typeof day !== 'number';
     const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number';
     const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined';
+    const fitsTeacher = (teacher && teacherName && teacherInfo.name.includes(teacherName)) || typeof teacherName === 'undefined';
 
-    const match = fitsDay && fitsHour && fitsClass;
+    const match = fitsDay && fitsHour && fitsClass && fitsTeacher;
     
     // Time fits
     return match ? timeText : false;

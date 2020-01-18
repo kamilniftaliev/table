@@ -16,7 +16,7 @@ export default class Helpers {
   }
 
   public getSubjectTitleById(id: Subject['id']): Subject['title'] {
-    return this.table.subjects.find((s: Subject) => s.id === id)?.title || '';
+    return this.table.subjects.find((s: Subject) => s.id === id)?.title.ru || '';
   }
 
   public getClassTitleById(id: Class['id']): Class['title'] {
@@ -55,6 +55,40 @@ export default class Helpers {
     }
 
     return sameClassSameSubjectTeachers.length === 2;
+  }
+
+  public getTeacherLessonsLimit(shift) {
+    return this.table.teachers.reduce((acc, teacher, teacherIndex) => {
+      const { workload, workhours, name, id } = teacher;
+
+      const workDays = workhours.slice(0, this.table.schoolDaysCount).filter(day => day.find(Boolean)).length;
+
+      const totalHours = workload
+        .filter(w => w.hours)
+        .reduce((acc, workload) => {
+          const theClass = this.table.classes.find(c => c.id === workload.classId);
+
+          return {
+            ...acc,
+            [theClass.id]: (acc[theClass.id] || 0) + workload.hours,
+
+          };
+        }, {});
+
+      const limits = Object.entries(totalHours).reduce((limitsAcc, [classId, hours]) => {
+        const limit = Math.ceil(hours / Math.min(workDays, this.table.schoolDaysCount));
+
+        return {
+          ...limitsAcc,
+          [classId]: limit,
+        };
+      }, {});
+
+      return {
+        ...acc,
+        [id]: limits,
+      };
+    }, {});
   }
 
   public getMaxHoursForClass(schoolDaysCount: number): ClassHours {

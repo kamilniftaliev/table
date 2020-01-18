@@ -77,7 +77,11 @@ function Teacher({ tableSlug, id }: Props): React.ReactElement {
         <NameInput value={name} onChange={e => setName(e.target.value)} />
       </InfoContainer>
       <Workload tableSlug={tableSlug} teacherId={id} />
-      <Workhours tableSlug={tableSlug} teacherId={id} />
+      <Workhours
+        shifts={data.table.shifts}
+        tableSlug={tableSlug}
+        teacherId={id}
+      />
     </Container>
   );
 }

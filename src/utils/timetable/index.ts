@@ -8,6 +8,7 @@ const schoolDaysCount = 5;
 const schoolHoursCount = 7;
 
 let maxClassHours: ClassHours = {};
+let teacherLessonsLimit = {};
 let log = null;
 let helpers = null;
 let Teachers = null;
@@ -36,19 +37,19 @@ function getLesson(): Lesson {
     .getFree()
     .filterWithCoWorkerIfNeeded()
     .noNeedToSkipForThisClass()
-    // .filterWithCoWorkerIfNeeded()
-    // .getTodayMustBe()
-    // .sortByWorkIfNeeded()
+    .filterWithCoWorkerIfNeeded()
+    .getTodayMustBe()
+    .sortByWorkIfNeeded()
     // .getLessonTeachers()
 
   log.lesson(ts, {
     day: 1,
     hour: 5,
-    classTitle: '1a',
+    classTitle: '3a',
     logEmpty: true,
     // justReturn: true,
   }, ts.suitableTeachers);
-  // log.history.push(logs);
+  // // log.history.push(logs);
   // if (logs) console.log('object', JSON.stringify(logs))
 
   const { suitableTeachers: teachers } = Teachers.sortByWorkload()
@@ -64,6 +65,16 @@ function getLesson(): Lesson {
     .getLessonTeachers();
 
   if (!teachers.filter(Boolean).length) return null;
+
+  // if (
+  //   log.match({
+  //     day: 1,
+  //     hour: 1,
+  //     classTitle: '8e',
+  //   })
+  // ) {
+  //   debugger;
+  // }
 
   Teachers.decreaseWorkload(teachers);
 
@@ -119,7 +130,9 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
     Teachers = new TeachersClass(table);
     // if (!window.T) window.T = Teachers;
     maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
+    teacherLessonsLimit = helpers.getTeacherLessonsLimit(shift);
     table.maxClassHours = maxClassHours;
+    table.teacherLessonsLimit = teacherLessonsLimit;
 
     // console.log('maxClassHours :', JSON.stringify(maxClassHours));
 
