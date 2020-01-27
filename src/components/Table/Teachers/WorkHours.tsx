@@ -178,7 +178,7 @@ function Workhours({
               <Table.Body>
                 {lessonHours
                   .slice(firstHourIndex, firstHourIndex + 8)
-                  .map(h => {
+                  .map((h, hourIndex) => {
                     const hour = h - 1;
                     // Find 1 disabled day
                     const isHourChecked = !workhours.find(day => !day[hour]);
@@ -201,7 +201,7 @@ function Workhours({
                           }
                         >
                           <HourCellTitle>
-                            {`${translation('lesson')} ${h}`}
+                            {`${translation('lesson')} ${hourIndex + 1}`}
                           </HourCellTitle>
                           <Checkbox checked={isHourChecked} />
                         </TableCell>

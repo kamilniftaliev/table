@@ -57,6 +57,27 @@ export default class Logger {
     return workload.reduce((acc: number, w: Workload) => acc + w.hours, 0);
   }
 
+  lessonLimits = () => {
+    const { teacherLessonsLimit, teachers } = this.table;
+    const logText = Object.entries(teacherLessonsLimit).reduce((acc, [teacherId, lessons]) => {
+      const teacher = teachers.find(t => t.id === teacherId);
+      const lessonsText = Object.entries(lessons).reduce((acc, [classId, workload]) => {
+        const classTitle = this.helpers.getClassTitleById(classId);
+
+        const subjectsText = Object.entries(workload).reduce((acc, [subjectId, hours]) => {
+          const subjectTitle = this.helpers.getSubjectTitleById(subjectId);
+          return `${acc}${subjectTitle}: ${hours}\n`;
+        }, '');
+
+        return `${acc}\t\t\t${classTitle}\n${subjectsText}`;
+      }, '');
+
+      return `${acc}\t\t${teacher.name}\n${lessonsText}`;
+    }, '');
+
+    console.log(logText);
+  }
+
   match(
     {
       day,
@@ -117,8 +138,8 @@ export default class Logger {
       day,
       hour,
       classTitle,
-      teacher,
-      logEmpty = false,
+      teacherName,
+      noEmpty = false,
       title = '',
       logFunc = console.log,
       justReturn = false,
@@ -143,7 +164,7 @@ export default class Logger {
     const teachersLog = teachers.reduce((acc, lesson) => {
       const log = typeof lesson.workloadIndex === 'number' ? this.parseLesson(lesson) : '';
   
-      const fitsTeacher = (typeof teacher !== 'undefined' && log.includes(teacher)) || typeof teacher === 'undefined';
+      const fitsTeacher = (typeof teacherName !== 'undefined' && log.includes(teacherName)) || typeof teacherName === 'undefined';
   
       const fits = fitsTeacher;
   
@@ -155,7 +176,7 @@ export default class Logger {
 
     if (teachersLog) {
       logArr = `${extendedTitle}\t\t\t\t${timeText}\n${teachersLog}`;
-    } else if (logEmpty) {
+    } else if (!noEmpty) {
       logArr = `NOTHING ${extendedTitle}`;
     }
 

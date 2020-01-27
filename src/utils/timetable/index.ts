@@ -39,16 +39,16 @@ function getLesson(): Lesson {
     .noNeedToSkipForThisClass()
     .filterWithCoWorkerIfNeeded()
     .getTodayMustBe()
-    .sortByWorkIfNeeded()
+    // .sortByWorkIfNeeded()
     // .getLessonTeachers()
 
-  log.lesson(ts, {
-    day: 1,
-    hour: 5,
-    classTitle: '3a',
-    logEmpty: true,
-    // justReturn: true,
-  }, ts.suitableTeachers);
+  // log.lesson(ts, {
+  //   day: 2,
+  //   hour: 4,
+  //   teacherName: 'Rəhilə Xasməmmədo',
+  //   classTitle: '1a',
+  //   // justReturn: true,
+  // }, ts.suitableTeachers);
   // // log.history.push(logs);
   // if (logs) console.log('object', JSON.stringify(logs))
 
@@ -128,13 +128,14 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
     if (!window.log) window.log = log;
     helpers = new Helpers(table);
     Teachers = new TeachersClass(table);
-    // if (!window.T) window.T = Teachers;
+    if (!window.T) window.T = Teachers;
     maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
     teacherLessonsLimit = helpers.getTeacherLessonsLimit(shift);
     table.maxClassHours = maxClassHours;
     table.teacherLessonsLimit = teacherLessonsLimit;
 
     // console.log('maxClassHours :', JSON.stringify(maxClassHours));
+    // if (shift === 1) log.lessonLimits();
 
     timetable = [];
     Teachers.timetable = timetable;

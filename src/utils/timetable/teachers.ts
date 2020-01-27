@@ -392,6 +392,15 @@ export default class Teachers {
   sortByWorkIfNeeded(customTeachers) {
     let teachers = customTeachers || this.suitableTeachers;
 
+    // this.log.lesson(teachers, {
+    //   day: 1,
+    //   hour: 1,
+    //   teacherName: 'Rəhilə Xasməmmədo',
+    //   classTitle: '1a',
+    //   logEmpty: true,
+    //   // justReturn: true,
+    // });
+
     if (teachers.length <= 1) {
       if (customTeachers) return teachers;
       return this;
@@ -415,19 +424,31 @@ export default class Teachers {
     } else {
       const uniqueWorkloads = new Set(teachers.map(this.getTeacherOverallWorkload));
 
-      if (this.log.match({
-        classTitle: '3a',
-        day: 1,
-        hour: 5,
-        teacherName: 'Lalə Rəhmət',
-      }, teachers[0])) {
-        debugger
-      }
+      // if (this.log.match({
+      //   classTitle: '3a',
+      //   day: 1,
+      //   hour: 5,
+      //   teacherName: 'Lalə Rəhmət',
+      // }, teachers[0])) {
+      //   debugger
+      // }
 
       if (uniqueWorkloads.size === 1) {
         teachers = this.sortByLeftWorkload(teachers);
       } else {
         teachers = this.sortByOverallWorkload(teachers);
+        
+        // Sort workload on same teachers
+        teachers = teachers.sort((first, second) => {
+          if (first.teacherIndex !== second.teacherIndex) {
+            return 0;
+          }
+
+          const { hours: firstHours } = this.table.teachers[first.teacherIndex].workload[first.workloadIndex]
+          const { hours: secondHours } = this.table.teachers[second.teacherIndex].workload[second.workloadIndex]
+
+          return secondHours - firstHours;
+        });
       }
 
       // const uniqueClasses = new Set(teachers.map(t => this.table.teachers[t.teacherIndex].workload[t.workloadIndex].classId));
@@ -553,14 +574,33 @@ export default class Teachers {
     });
 
     if (haveMoreWorkloadThanHours.length) {
-      teachers = this.sortByLessWorkhours(haveMoreWorkloadThanHours);
+      const todayMustBeTeachers = haveMoreWorkloadThanHours.filter(this.hasMoreLessonsThanLeftDays);
+
+      if (todayMustBeTeachers.length) {
+        teachers = todayMustBeTeachers;
+      } else {
+        teachers = this.sortByLessWorkhours(haveMoreWorkloadThanHours);
+      }
     } else {
       let filtered = [];
       const sortedByWorkload = this.sortByWorkIfNeeded(teachers);
+
       const bestTeacher = sortedByWorkload[0];
 
       const bestTeacherWorkhours = this.howManyWorkhoursFromNow(bestTeacher);
       const bestTeacherWorkload = this.getTeacherOverallWorkload(bestTeacher);
+
+      // if (!customTeachers) {
+      //   this.log.lesson(sortedByWorkload, {
+      //     day: 2,
+      //     hour: 4,
+      //     teacherName: 'Rəhilə Xasməmmədo',
+      //     classTitle: '1a',
+      //     logEmpty: true,
+      //     // justReturn: true,
+      //   }, bestTeacherWorkhours, bestTeacherWorkload);
+      // }
+
       if (bestTeacherWorkhours - bestTeacherWorkload < 2) {
         filtered = teachers.filter(t => t.subjectIndex === bestTeacher.subjectIndex);
       } else {
@@ -577,7 +617,7 @@ export default class Teachers {
     return this;
   }
 
-  hasMoreLessonsThanLeftDays(teacherIndex, subjectIndex) {
+  hasMoreLessonsThanLeftDays = ({ teacherIndex, subjectIndex }) => {
     const { workload } = this.table.teachers[teacherIndex];
     const { id: theSubjectId } = this.table.subjects[subjectIndex];
     const { id: theClassId } = this.table.classes[this.table.classIndex];
@@ -611,13 +651,27 @@ export default class Teachers {
       const theClass = this.table.classes[curClassIndex];
       const teacherInfo = this.table.teachers[teacherIndex];
 
-      const limit = this.table.teacherLessonsLimit[teacherInfo.id][theClass.id];
+      const limit = this.table.teacherLessonsLimit[teacherInfo.id][theClass.id][subjectId];
   
-      const hasMoreLessons = this.hasMoreLessonsThanLeftDays(teacherIndex, subjectIndex);
+      const hasMoreLessons = this.hasMoreLessonsThanLeftDays(teacher);
+      // if (
+      //   this.log.match({
+      //     day: 5,
+      //     hour: 5,
+      //     teacherName: 'Şəhla Rəsulov',
+      //     classTitle: '1a',
+      //   }, teacher)
+      //   && this.helpers.getSubjectTitleById(subjectId).includes('дной язы')
+      // ) {
+      //   console.log('customTeachers', customTeachers)
+      //   console.log('curClassIndex', curClassIndex)
+      //   console.log('this.getTodaySubjectsIdOfClass(classIndex)', this.getTodaySubjectsIdOfClass(classIndex))
+      //   debugger
+      // }
 
       return (
         todayHasBeenTimes === 0
-        || hasMoreLessons && todayHasBeenTimes <= limit
+        || hasMoreLessons && todayHasBeenTimes < limit
       );
     });
 
@@ -733,11 +787,33 @@ export default class Teachers {
           ignoreTeachers.push(teacherIndex);
         }
 
+        if (theClass.number === 4 && theClass.letter === 'c') {
+          this.log.lesson(teacher, {
+            day: 4,
+            hour: 5,
+            teacherName: 'Elvina',
+            classTitle: '1ç',
+            noEmpty: true,
+            // justReturn: true,
+          }, !!willBeInOtherClass, otherClassTeachersWithoutThis);
+        }
+
         return willBeInOtherClass && (
           workloadByClass[theClassId] > workloadByClass[classId]
           || otherClassIsCriticalForCoWorker
         );
       });
+
+      // if (!customTeachers) {
+        // this.log.lesson(teacher, {
+        //   day: 4,
+        //   hour: 5,
+        //   // teacherName: 'Elnarə Nem',
+        //   classTitle: '1ç',
+        //   noEmpty: true,
+        //   // justReturn: true,
+        // }, foundMoreSuitableClass);
+      // }
 
       if (foundMoreSuitableClass) {
         return hasMoreHours && !otherClassIsCriticalForCoWorker;

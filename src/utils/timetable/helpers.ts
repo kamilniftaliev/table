@@ -68,25 +68,33 @@ export default class Helpers {
         .reduce((acc, workload) => {
           const theClass = this.table.classes.find(c => c.id === workload.classId);
 
+          const limit = Math.ceil(workload.hours / Math.min(workDays, this.table.schoolDaysCount));
+
           return {
             ...acc,
-            [theClass.id]: (acc[theClass.id] || 0) + workload.hours,
-
+            [workload.classId]: {
+              ...(acc[workload.classId] || {}),
+              [workload.subjectId]: limit,
+            },
           };
         }, {});
 
-      const limits = Object.entries(totalHours).reduce((limitsAcc, [classId, hours]) => {
-        const limit = Math.ceil(hours / Math.min(workDays, this.table.schoolDaysCount));
+      // const limits = Object.entries(totalHours).reduce((limitsAcc, [classId, hours]) => {
+      //   const limit = Math.ceil(hours / Math.min(workDays, this.table.schoolDaysCount));
 
-        return {
-          ...limitsAcc,
-          [classId]: limit,
-        };
-      }, {});
+      //   if (name.includes('Simnarə Sul') && classId === "5e0233b7f908f9a51350bc24") {
+      //     debugger
+      //   }
+
+      //   return {
+      //     ...limitsAcc,
+      //     [classId]: limit,
+      //   };
+      // }, {});
 
       return {
         ...acc,
-        [id]: limits,
+        [id]: totalHours,
       };
     }, {});
   }
