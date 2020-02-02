@@ -29,28 +29,18 @@ const notFoundLesson = {
 };
 
 function getLesson(): Lesson {
-  const ts = Teachers
-    .sortByWorkload()
-    .getWithLessonsInClass()
-    .getWorkingNow()
-    .getHasntBeenYet()
-    .getFree()
-    .filterWithCoWorkerIfNeeded()
-    .noNeedToSkipForThisClass()
-    .filterWithCoWorkerIfNeeded()
-    .getTodayMustBe()
-    // .sortByWorkIfNeeded()
-    // .getLessonTeachers()
-
-  // log.lesson(ts, {
-  //   day: 2,
-  //   hour: 4,
-  //   teacherName: 'Rəhilə Xasməmmədo',
-  //   classTitle: '1a',
-  //   // justReturn: true,
-  // }, ts.suitableTeachers);
-  // // log.history.push(logs);
-  // if (logs) console.log('object', JSON.stringify(logs))
+  // const ts = Teachers
+  //   .sortByWorkload()
+  //   .getWithLessonsInClass()
+  //   .getWorkingNow()
+  //   .getHasntBeenYet()
+  //   .getFree()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .noNeedToSkipForThisClass()
+  //   .filterWithCoWorkerIfNeeded()
+  //   .getTodayMustBe()
+  //   .sortByWorkIfNeeded()
+  //   .getLessonTeachers()
 
   const { suitableTeachers: teachers } = Teachers.sortByWorkload()
     .getWithLessonsInClass()
@@ -65,16 +55,6 @@ function getLesson(): Lesson {
     .getLessonTeachers();
 
   if (!teachers.filter(Boolean).length) return null;
-
-  // if (
-  //   log.match({
-  //     day: 1,
-  //     hour: 1,
-  //     classTitle: '8e',
-  //   })
-  // ) {
-  //   debugger;
-  // }
 
   Teachers.decreaseWorkload(teachers);
 
@@ -125,10 +105,10 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
     // console.log('SHIFT table :', table);
 
     log = new Logger(table);
-    if (!window.log) window.log = log;
+    // if (!window.log) window.log = log;
     helpers = new Helpers(table);
     Teachers = new TeachersClass(table);
-    if (!window.T) window.T = Teachers;
+    // if (!window.T) window.T = Teachers;
     maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
     teacherLessonsLimit = helpers.getTeacherLessonsLimit(shift);
     table.maxClassHours = maxClassHours;
@@ -183,6 +163,7 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
                 timetable[dayIndex][hourIndex][classIndex] = {
                   ...lesson,
                   id: lessonId,
+                  classId,
                   classTitle: helpers.getClassTitleById(classId),
                 };
               },

@@ -83,6 +83,7 @@ function Selector(props: SelectorProps): JSX.Element {
     onChange,
     placeholder,
     passOption,
+    className,
   } = props;
 
   const changeCallback = passOption
@@ -91,7 +92,7 @@ function Selector(props: SelectorProps): JSX.Element {
 
   if (options.length <= useSwitcherForOptionsCount) {
     return (
-      <SwitchContainer>
+      <SwitchContainer className={className}>
         <SwitchTitle>{placeholder}</SwitchTitle>
         <SwitchButtons>
           {options.map(option => (

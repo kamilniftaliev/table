@@ -86,7 +86,13 @@ export default {
 
   generateTimeTable: 'Cədvəli yenilə',
 
-  shift: 'Növbə',
+  shift: (shift: number): string => {
+    if (shift === 1 || shift === 2) {
+      return `${shift}-ci növbə`;
+    }
+
+    return 'Növbə';
+  },
 
   addNewWorkload: 'Dərs yükü əlavə et',
   selectSubject: 'Fənni seçin',
@@ -103,9 +109,6 @@ export default {
 
   classInfo: 'Sinfin məlumatları',
 
-  shift1: '1-ci növbə',
-  shift2: '2-ci növbə',
-
   weekDay: (day = 1, short?: false): string => {
     const days = [
       ['B.e.', 'Bazar ertəsi'],
@@ -118,5 +121,14 @@ export default {
     ];
 
     return days[day - 1][short ? 0 : 1];
-  }
+  },
+
+  educationLevel: 'Təhsil pilləsi',
+  educationLevelBeginner: 'İbtidai',
+  educationLevelMiddle: 'Ümumi orta',
+  educationLevelHigh: 'Tam orta',
+
+  all: 'Bütün',
+
+  emptyTableMessage: 'Sorğunuza görə nəticə tapılmadı',
 };

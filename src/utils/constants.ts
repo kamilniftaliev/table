@@ -3,11 +3,11 @@ import translation from './translations';
 export const shifts = [
   {
     value: 1,
-    label: translation('shift1'),
+    label: translation('shift', 1),
   },
   {
     value: 2,
-    label: translation('shift2'),
+    label: translation('shift', 2),
   },
 ];
 
@@ -69,5 +69,28 @@ export const sectors = [
   {
     value: 'ru',
     label: translation('ru'),
+  },
+];
+
+export const educationLevels = [
+  {
+    value: 'all',
+    match: ({ number }): boolean => number,
+    label: translation('all'),
+  },
+  {
+    value: 'beginner',
+    match: ({ number }): boolean => number > 0 && number < 5,
+    label: translation('educationLevelBeginner'),
+  },
+  {
+    value: 'middle',
+    match: ({ number }): boolean => number >= 5 && number <= 9,
+    label: translation('educationLevelMiddle'),
+  },
+  {
+    value: 'high',
+    match: ({ number }): boolean => number > 9,
+    label: translation('educationLevelHigh'),
   },
 ];

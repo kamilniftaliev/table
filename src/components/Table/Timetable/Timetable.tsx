@@ -68,7 +68,7 @@ function Timetable({ timetable }: Props): React.ReactElement {
         <TableWrapper>
           <Table.Header>
             <Row>
-              {timetable[0][0][0].map(({ id, classTitle }, i: number) => (
+              {timetable[0][0].map(({ id, classTitle }, i: number) => (
                 <Cell as="th" isStartOfDay colSpan={i === 0 ? 2 : 1} key={id}>
                   {classTitle}
                 </Cell>
@@ -76,7 +76,7 @@ function Timetable({ timetable }: Props): React.ReactElement {
             </Row>
           </Table.Header>
           <Table.Body>
-            {timetable[0].map(day =>
+            {timetable.map(day =>
               day.map((hourClasses: Lesson[], hourIndex: number) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <Row isStartOfDay={hourIndex === 0} key={hourIndex}>

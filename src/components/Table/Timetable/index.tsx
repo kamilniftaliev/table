@@ -3,17 +3,19 @@ import styled from 'styled-components';
 import { useQuery } from 'react-apollo';
 
 import graph from '../../../graph';
-import { translation } from '../../../utils';
+import { translation, constants } from '../../../utils';
 import generateTimetable from '../../../utils/timetable';
-import { Table, Preloader } from '../../ui';
+import { Table, Preloader, Selector } from '../../ui';
 import Timetable, { Cell } from './Timetable';
-// import TimetableWorker from '../../../utils/timetable/timetable.worker';
+import TimetableWorker from '../../../utils/timetable/timetable.worker';
 
 interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
   highlightTeachersName: string;
 }
 
 const Container = styled.div<ContainerProps>`
+  width: 100%;
+
   ${({ highlightTeachersName }): string =>
     highlightTeachersName &&
     `
@@ -24,43 +26,138 @@ const Container = styled.div<ContainerProps>`
   `}
 `;
 
-const TimetableContainer = styled.div``;
+const FiltersContainer = styled.header`
+  display: flex;
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-top: 20px;
+`;
 
-// const timetableGenerator = new TimetableWorker();
+const SectorSelector = styled(Selector)`
+  max-width: 450px;
+  margin-right: 30px;
+`;
+
+const TimetableContainer = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const EmptyTableMessage = styled.p`
+  font-size: 26px;
+  text-align: center;
+  margin-top: 120px;
+`;
+
+const timetableGenerator = new TimetableWorker();
 
 let highlightTimeout = null;
 
 interface TimetableFilters {
   shift: number;
+  sector?: string;
+  educationLevel?: string;
 }
 
 const initialFilters: TimetableFilters = {
   shift: 1,
 };
 
-function applyFilters(timetables, { shift }: TimetableFilters) {
-  const shiftTimetable = timetables[shift - 1];
+function applyFilters({
+  timetables,
+  filter: { shift, sector, educationLevel },
+  table,
+}) {
+  // Apply shift
+  let timetable = timetables[shift - 1];
 
-  return shiftTimetable;
+  // Apply sector
+  if (sector !== null) {
+    timetable = timetable.map(day =>
+      day.map(hours =>
+        hours.filter(
+          ({ classId }) =>
+            table.classes.find(c => c.id === classId)?.sector === sector,
+        ),
+      ),
+    );
+  }
+
+  // Apply education level
+  if (educationLevel !== null) {
+    const { match: educationLevelMatch } = constants.educationLevels.find(
+      el => el.value === educationLevel,
+    );
+    timetable = timetable.map(day =>
+      day.map(hours =>
+        hours.filter(({ classId }) =>
+          educationLevelMatch(table.classes.find(c => c.id === classId)),
+        ),
+      ),
+    );
+  }
+
+  return timetable;
 }
+
+const allFilter = {
+  value: null,
+  label: translation('all'),
+};
 
 function TableContainer({ table }): React.ReactElement {
   const { data, loading: loadingSubjects } = useQuery(graph.GetSubjects);
   // const [highlightTeachers, setHighlightTeachers] = useState<string>('');
   const [timetables, setTimetables] = useState([]);
-  const [filter, setFilter] = useState(initialFilters);
+  const sectors = useMemo(
+    () => [
+      allFilter,
+      ...constants.sectors.filter(({ value }) =>
+        table.classes.find(c => c.sector === value),
+      ),
+    ],
+    [table.classes],
+  );
+
+  const shifts = useMemo(
+    () =>
+      constants.shifts.filter(({ value }) =>
+        table.classes.find(c => c.shift === value),
+      ),
+    [table.classes],
+  );
+
+  const educationLevels = useMemo(
+    () =>
+      constants.educationLevels.filter(({ match }) =>
+        table.classes.find(match),
+      ),
+    [table.classes],
+  );
+
+  console.log('sectors :', sectors);
+
+  const [filter, setFilter] = useState({
+    ...initialFilters,
+    sector: sectors[0].value,
+    educationLevel: educationLevels[0].value,
+  });
 
   // const timetableData = useMemo(() => {
   //   return loadingSubjects && generateTimetable(table, data.subjects);
   // }, [loadingSubjects]);
 
   // if (!timetableData?.timetable) return null;
-  const timetable = useMemo(
-    () => generateTimetable(table, data.subjects)?.timetable,
-    [loadingSubjects],
-  );
 
-  if (loadingSubjects || !timetable) return null;
+  // Working start
+  // const timetables = useMemo(
+  //   () => generateTimetable(table, data.subjects)?.timetable,
+  //   [loadingSubjects],
+  // );
+  // Working end
+
+  // if (loadingSubjects || !timetable) return null;
 
   // const highlightCells = useCallback(teachersName => {
   //   clearTimeout(highlightTimeout);
@@ -75,30 +172,71 @@ function TableContainer({ table }): React.ReactElement {
   //   }
   // }, []);
 
-  // timetableGenerator.onmessage = (e): void => {
-  //   console.log('e :', e);
-  //   setTimetables(e.data.timetable);
-  //   e.data.logs.map(log => console.log(log));
-  // };
+  console.log('filter :', filter);
 
-  // if (!timetables.length || loadingSubjects) {
-  //   if (!loadingSubjects)
-  //     timetableGenerator.postMessage([table, data.subjects]);
-  //   return <Preloader isCentered />;
-  // }
+  timetableGenerator.onmessage = (e): void => {
+    setTimetables(e.data.timetable);
+  };
 
-  // const timetable = applyFilters([timetableData?.timetable], filter);
-  // console.log('timetable :', timetableData?.timetable);
+  if (!timetables.length || loadingSubjects) {
+    if (!loadingSubjects)
+      timetableGenerator.postMessage([table, data.subjects]);
+    return <Preloader isCentered />;
+  }
+
+  const timetable = applyFilters({ timetables, filter, table });
   console.log('timetable :', timetable);
+
+  const isTableEmpty =
+    timetable.filter(d => d.filter(h => h.length).length).length === 0;
 
   return (
     <Container
     // highlightTeachersName={highlightTeachers}
     // onMouseMove={(e): void => highlightCells(e.target?.dataset?.teachersName)}
     >
-      <TimetableContainer>
-        <Timetable timetable={timetable} />
-      </TimetableContainer>
+      <FiltersContainer>
+        {sectors.length > 1 && (
+          <SectorSelector
+            options={sectors}
+            placeholder={translation('sector')}
+            value={filter.sector}
+            onChange={(sector: string): void =>
+              setFilter({ ...filter, sector })
+            }
+            useSwitcherForOptionsCount={3}
+          />
+        )}
+        {shifts.length > 1 && (
+          <SectorSelector
+            options={shifts}
+            placeholder={translation('shift')}
+            value={filter.shift}
+            onChange={(shift: number): void => setFilter({ ...filter, shift })}
+            useSwitcherForOptionsCount={3}
+          />
+        )}
+        {educationLevels.length > 1 && (
+          <SectorSelector
+            options={educationLevels}
+            placeholder={translation('educationLevel')}
+            value={filter.educationLevel}
+            onChange={(educationLevel: string): void =>
+              setFilter({ ...filter, educationLevel })
+            }
+            useSwitcherForOptionsCount={4}
+          />
+        )}
+      </FiltersContainer>
+      {isTableEmpty ? (
+        <EmptyTableMessage>
+          {translation('emptyTableMessage')}
+        </EmptyTableMessage>
+      ) : (
+        <TimetableContainer>
+          <Timetable timetable={timetable} />
+        </TimetableContainer>
+      )}
     </Container>
   );
 }

@@ -107,7 +107,7 @@ function Classes({ classes, slug, tableId }: Props): React.ReactElement {
                     {translation(sector)}
                   </Table.Cell>
                   <Table.Cell onClick={updateFn}>
-                    {translation(`shift${shift}`)}
+                    {translation('shift', shift)}
                   </Table.Cell>
                   <Table.Cell>
                     <Button.Icon

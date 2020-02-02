@@ -126,10 +126,10 @@ function EditModal({
           placeholder={translation('class')}
           options={constants.classes}
           value={modalClass.number}
-          onChange={(option): void => {
+          onChange={(number): void => {
             setModalClass({
               ...modalClass,
-              number: option?.value,
+              number,
             });
           }}
         />
@@ -137,10 +137,10 @@ function EditModal({
           placeholder={translation('letter')}
           options={letters}
           value={modalClass.letter}
-          onChange={(option): void => {
+          onChange={(letter): void => {
             setModalClass({
               ...modalClass,
-              letter: option?.value,
+              letter,
             });
           }}
         />
@@ -150,10 +150,10 @@ function EditModal({
         options={constants.shifts}
         value={modalClass.shift}
         useSwitcherForOptionsCount={3}
-        onChange={(option): void => {
+        onChange={(shift): void => {
           setModalClass({
             ...modalClass,
-            shift: option?.value,
+            shift,
           });
         }}
       />
@@ -162,10 +162,10 @@ function EditModal({
         options={constants.sectors}
         value={modalClass.sector}
         useSwitcherForOptionsCount={3}
-        onChange={(option): void => {
+        onChange={(sector): void => {
           setModalClass({
             ...modalClass,
-            sector: option?.value,
+            sector,
           });
         }}
       />

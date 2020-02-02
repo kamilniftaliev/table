@@ -743,9 +743,11 @@ export default class Teachers {
         ));
         teachersOfOtherClass = this.getTodayMustBe(teachersOfOtherClass);
         otherClassTeachersWithoutThis = this.getTodayMustBe(otherClassTeachersWithoutThis);
+
         if (teachersOfOtherClass.length > 1) {
           teachersOfOtherClass = this.filterWithCoWorkerIfNeeded(teachersOfOtherClass);
         }
+
         if (otherClassTeachersWithoutThis.length > 1) {
           otherClassTeachersWithoutThis = this.filterWithCoWorkerIfNeeded(otherClassTeachersWithoutThis);
         }
@@ -771,10 +773,10 @@ export default class Teachers {
 
         otherClassCanBeEmptyIfTake = (
           !otherClassTeachersWithoutThis.length
-          && otherClassTeachersWithoutThis.filter(t => (
-            t.teacherIndex !== teacherIndex
-            && t.teacherIndex !== coWorkerForTheClass?.teacherIndex
-          )).length === 0
+          || (
+            teachersOfOtherClass.length === 1
+            && this.filterWithCoWorkerIfNeeded(teachersOfOtherClass).length === 0
+          )
         );
 
         otherClassIsCriticalForCoWorker = (
@@ -787,16 +789,29 @@ export default class Teachers {
           ignoreTeachers.push(teacherIndex);
         }
 
-        if (theClass.number === 4 && theClass.letter === 'c') {
-          this.log.lesson(teacher, {
-            day: 4,
-            hour: 5,
-            teacherName: 'Elvina',
-            classTitle: '1ç',
-            noEmpty: true,
-            // justReturn: true,
-          }, !!willBeInOtherClass, otherClassTeachersWithoutThis);
-        }
+        // if (theClass.number === 4 && theClass.letter === 'c' && willBeInOtherClass) {
+        //   this.log.lesson(
+        //     willBeInOtherClass, {
+        //       day: 4,
+        //       hour: 5,
+        //       teacherName: 'Zərifə Vəl',
+        //       // classTitle: '4b',
+        //       // noEmpty: true,
+        //       // justReturn: true,
+        //     },
+        //     {
+        //       willBeInOtherClass: !!willBeInOtherClass,
+        //       otherClassTeachersWithoutThis: this.log.lesson(otherClassTeachersWithoutThis, { justReturn: true }),
+        //       workloadByClasstheClassId: workloadByClass[theClassId],
+        //       workloadByClassclassId: workloadByClass[classId],
+        //       otherClassIsCriticalForCoWorker,
+        //       coWorkerOverallWorkload,
+        //       coWorkerLeftWorkingHours,
+        //       hasMoreHoursInOtherClass,
+        //       otherClassCanBeEmptyIfTake,
+        //     },
+        //   );
+        // }
 
         return willBeInOtherClass && (
           workloadByClass[theClassId] > workloadByClass[classId]

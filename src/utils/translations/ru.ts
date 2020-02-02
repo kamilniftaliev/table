@@ -91,7 +91,13 @@ export default {
 
   generateTimeTable: 'Обновить таблицу',
 
-  shift: 'Смена',
+  shift: (shift: number): string => {
+    if (shift === 1 || shift === 2) {
+      return `${shift}-ая смена`;
+    }
+
+    return 'Смена';
+  },
 
   addNewWorkload: 'Добавить рабочие часы',
   selectSubject: 'Выберите предмет',
@@ -108,9 +114,6 @@ export default {
 
   classInfo: 'Данные класса',
 
-  shift1: '1-ая смена',
-  shift2: '2-ая смена',
-
   weekDay: (day = 1, short?: false): string => {
     const days = [
       ['Пн.', 'Понедельник'],
@@ -123,5 +126,14 @@ export default {
     ];
 
     return days[day - 1][short ? 0 : 1];
-  }
+  },
+
+  educationLevel: 'Уровень образования',
+  educationLevelBeginner: 'Начальное',
+  educationLevelMiddle: 'Основное общее',
+  educationLevelHigh: 'Среднее общее',
+
+  all: 'Все',
+
+  emptyTableMessage: 'По вашему запросу нет результатов',
 };
