@@ -34,18 +34,18 @@ export default class Logger {
       .map((day: [boolean], di: number) => {
         const dayIndex = di + curDayIndex;
 
-        let maxHourForClass = Math.max(...classHoursLimit);
+        // let maxHourForClass = Math.max(...classHoursLimit);
 
         // Find max available hour for the class
-        if (this.table.maxClassHours[classId][maxHourForClass] - di <= 0) {
-          maxHourForClass = Math.min(...classHoursLimit);
-        }
+        // if (this.table.maxClassHours[classId][maxHourForClass] - di <= 0) {
+        //   maxHourForClass = Math.min(...classHoursLimit);
+        // }
 
         // Start counting from the hour of each day
         // If it's today then count from current hour
         // Or else count from start of the day
         const hourStartIndex = dayIndex === curDayIndex ? this.table.hourIndex : 0;
-        return day.slice(hourStartIndex, maxHourForClass);
+        return day.slice(hourStartIndex, this.table.schoolHoursCount);
       });
 
     return workhours.flat().filter(Boolean).length;
@@ -82,6 +82,7 @@ export default class Logger {
     {
       day,
       hour,
+      shift = 1,
       classTitle,
       teacherName,
     },
@@ -111,8 +112,9 @@ export default class Logger {
     const fitsHour = (typeof hour === 'number' && curHour === hour) || typeof hour !== 'number';
     const fitsClass = (typeof classTitle !== 'undefined' && curClassTitle.includes(classTitle)) || typeof classTitle === 'undefined';
     const fitsTeacher = (teacher && teacherName && teacherInfo.name.includes(teacherName)) || typeof teacherName === 'undefined';
+    const fitsShift = !shift || this.table.shift === shift;
 
-    const match = fitsDay && fitsHour && fitsClass && fitsTeacher;
+    const match = fitsDay && fitsHour && fitsClass && fitsTeacher && fitsShift;
     
     // Time fits
     return match ? timeText : false;
@@ -143,9 +145,11 @@ export default class Logger {
       title = '',
       logFunc = console.log,
       justReturn = false,
+      shift,
     } = {},
     ...rest
   ): string => {
+    if (!teachersList) return '';
     const teachersIsObject = (!!teachersList) && !Array.isArray(teachersList);
     let teachers = teachersList;
     if (teachersIsObject) {
@@ -153,13 +157,9 @@ export default class Logger {
       else teachers = [teachersList];
     }
 
-    const timeText = teachers[0] && this.match({ day, hour, classTitle }, teachers[0]);
-
-    // console.log('day, hour, classTitle', day, hour, classTitle)
+    const timeText = teachers[0] && this.match({ day, hour, classTitle, shift }, teachers[0]);
 
     if (!timeText || !teachers) return;
-
-    console.log('teachers.length', teachers.length)
     
     const teachersLog = teachers.reduce((acc, lesson) => {
       const log = typeof lesson.workloadIndex === 'number' ? this.parseLesson(lesson) : '';
@@ -181,8 +181,12 @@ export default class Logger {
     }
 
     if (logArr && !justReturn) {
-      logFunc(`${logArr}\n`, ...rest);
+      console.groupCollapsed(logArr);
+      logFunc(...rest);
+      console.groupEnd();
     }
+
+    this.history.push(logArr);
 
     return logArr;
   }
@@ -203,6 +207,9 @@ export default class Logger {
     console.log('--------- LEFT TEACHERS -------');
     const resultTable = JSON.parse(JSON.stringify(this.table));
     let totalLeftHours = 0;
+
+    const resultsToLog = [];
+
     resultTable.teachers.forEach(({ workload, name }) => {
       const leftHours = workload.filter(({ hours }) => hours);
   
@@ -211,11 +218,51 @@ export default class Logger {
         const classTitle = this.helpers.getClassTitleById(classId);
   
         if (subjectTitle) {
-          totalLeftHours += hours;
-          console.log(name, subjectTitle, classTitle, hours);
+          resultsToLog.push({
+            name,
+            subjectTitle,
+            classTitle,
+            hours,
+          });
         }
       });
     });
+
+    resultsToLog
+      .reduce((acc, data) => {
+        const coWorker = resultsToLog.find(d => (
+          d.name !== data.name
+          && d.subjectTitle === data.subjectTitle
+          && d.classTitle === data.classTitle
+          && d.hours === data.hours
+        ));
+
+        const alreadyAdded = acc.find(d => (
+          d.subjectTitle === data.subjectTitle
+          && d.classTitle === data.classTitle
+          && d.hours === data.hours
+        ));
+
+        if (!alreadyAdded) {
+          if (coWorker) {
+            return [
+              ...acc,
+              {
+                ...data,
+                name: `${data.name} və ${coWorker.name}`,
+              }
+            ];
+          }
+          
+          return [...acc, data];
+        }
+
+        return acc;
+      }, [])
+      .forEach(({ name, subjectTitle, classTitle, hours }) => {
+        console.log(name, subjectTitle, classTitle, hours);
+        totalLeftHours += hours;
+      });
 
     console.log('TOTAL LEFT HOURS :', totalLeftHours);
     console.log('------- END LEFT TEACHERS END ------- ');

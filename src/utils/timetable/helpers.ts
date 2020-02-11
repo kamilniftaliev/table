@@ -61,20 +61,47 @@ export default class Helpers {
     return this.table.teachers.reduce((acc, teacher, teacherIndex) => {
       const { workload, workhours, name, id } = teacher;
 
-      const workDays = workhours.slice(0, this.table.schoolDaysCount).filter(day => day.find(Boolean)).length;
+      const teacherWorkDays = workhours.slice(0, this.table.schoolDaysCount).filter(day => day.find(Boolean)).length;
 
       const totalHours = workload
         .filter(w => w.hours)
         .reduce((acc, workload) => {
           const theClass = this.table.classes.find(c => c.id === workload.classId);
+          const workDays = Math.min(teacherWorkDays, this.table.schoolDaysCount);
 
-          const limit = Math.ceil(workload.hours / Math.min(workDays, this.table.schoolDaysCount));
+          const limit = workload.hours / workDays;
+          const minDailyLessons = Math.floor(limit);
+          let limits = {};
+
+          if (minDailyLessons === 0) {
+            limits = { 1: workload.hours };
+          } else {
+            let minLessonDaysCount = Math.min(minDailyLessons * workDays, workDays);
+            let maxLessonsDaysCount = 0;
+
+            limits = {
+              [minDailyLessons]: minLessonDaysCount,
+            };
+
+            if (limit > minDailyLessons) {
+              maxLessonsDaysCount = workload.hours - minDailyLessons * workDays;
+              minLessonDaysCount -= maxLessonsDaysCount;
+              limits[minDailyLessons] = minLessonDaysCount;
+              limits[minDailyLessons + 1] = maxLessonsDaysCount;
+            }
+          }
+
+          limits.limit = Math.max.apply(null, Object.keys(limits).map(Number));
+          
+          // if (theClass.number === 2 && theClass.letter === 'b' && teacher.name.includes('Umg')) {
+          //   console.log('limits', limits, workload.hours, minDailyLessons, limit, hours, Object.keys(limits), this.table.subjects.find(s => s.id === workload.subjectId)?.title?.ru);
+          // }
 
           return {
             ...acc,
             [workload.classId]: {
               ...(acc[workload.classId] || {}),
-              [workload.subjectId]: limit,
+              [workload.subjectId]: limits,
             },
           };
         }, {});

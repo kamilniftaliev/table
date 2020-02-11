@@ -35,7 +35,7 @@ export const TD = styled.td<TdProps>`
     position: relative;
 
     :hover::after {
-      background-color: rgba(0, 0, 0, 0.05);
+      background-color: rgba(0, 0, 0, 0.06);
       content: '';
       height: 500vh;
       left: 0;
@@ -49,7 +49,7 @@ export const TD = styled.td<TdProps>`
 
 export const Row = styled.tr`
   &:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(0, 0, 0, 0.07);
   }
 
   &:last-of-type ${TD} {

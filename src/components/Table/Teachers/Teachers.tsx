@@ -42,8 +42,6 @@ function Teachers({ id: tableId, teachers, slug }: Props): React.ReactElement {
           variables: { slug },
         });
 
-        console.log('teacherId :', teacherId);
-
         cache.writeQuery({
           query: graph.GetTable,
           data: {
@@ -124,7 +122,7 @@ function Teachers({ id: tableId, teachers, slug }: Props): React.ReactElement {
         {translation('addNewTeacher')}
       </Button.Add>
 
-      {deletingTeacherIndex && (
+      {deletingTeacherIndex !== null && (
         <Modal.Confirm
           text={translation(
             'pleaseConfirmTeacherDelete',

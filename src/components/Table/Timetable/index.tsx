@@ -136,8 +136,6 @@ function TableContainer({ table }): React.ReactElement {
     [table.classes],
   );
 
-  console.log('sectors :', sectors);
-
   const [filter, setFilter] = useState({
     ...initialFilters,
     sector: sectors[0].value,
@@ -150,12 +148,12 @@ function TableContainer({ table }): React.ReactElement {
 
   // if (!timetableData?.timetable) return null;
 
-  // Working start
+  // DEV MODE start
   // const timetables = useMemo(
   //   () => generateTimetable(table, data.subjects)?.timetable,
   //   [loadingSubjects],
   // );
-  // Working end
+  // DEV MODE end
 
   // if (loadingSubjects || !timetable) return null;
 
@@ -172,9 +170,11 @@ function TableContainer({ table }): React.ReactElement {
   //   }
   // }, []);
 
-  console.log('filter :', filter);
-
   timetableGenerator.onmessage = (e): void => {
+    e.data.logs.map(l => console.log(l));
+    // Object.keys(e.data.win).forEach(key => {
+    //   globalThis[key] = e.data.win[key];
+    // });
     setTimetables(e.data.timetable);
   };
 

@@ -16,8 +16,6 @@ export const Input = styled(DefaultInput)`
   width: 400px;
 `;
 
-const refetchQueries = [{ query: graph.GetUser }];
-
 export interface TableProps {
   id: string;
   title?: string;
@@ -48,7 +46,7 @@ export default function EditModal({
     setTitle(newTitle);
   }
 
-  function updateTable(e): undefined {
+  function updateTable(e): void {
     e.preventDefault();
 
     const saveTitle = title.trim();
@@ -60,7 +58,6 @@ export default function EditModal({
     if (isNewTable) {
       createTableRequest({
         variables: { title: saveTitle, slug },
-        // refetchQueries,
       });
     } else {
       updateTableRequest({

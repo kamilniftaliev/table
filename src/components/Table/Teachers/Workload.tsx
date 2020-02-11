@@ -17,6 +17,7 @@ const Container = styled.div``;
 
 const TableContainer = styled(Table.default)`
   width: auto;
+  z-index: 1;
 `;
 
 const TableCell = styled(Table.TD)`
@@ -51,6 +52,12 @@ export const SectionTitle = styled.p`
   text-align: center;
   font-size: 22px;
   font-weight: 400;
+`;
+
+const AddSubjectWorkloadButton = styled(Button.Add)`
+  margin: 0;
+  font-size: 22px;
+  padding: 0px 10px;
 `;
 
 export interface Props {
@@ -140,6 +147,14 @@ function Workload({ tableSlug, teacherId }: Props): React.ReactElement {
                       </TableCell>
                     );
                   })}
+                  <TableCell
+                    onClick={() => {
+                      setShowModal(true);
+                      setNewWorkload({ subjectId });
+                    }}
+                  >
+                    <AddSubjectWorkloadButton>+</AddSubjectWorkloadButton>
+                  </TableCell>
                 </Table.Row>
               ))}
             </Table.Body>
@@ -151,28 +166,38 @@ function Workload({ tableSlug, teacherId }: Props): React.ReactElement {
       </AddWorkloadButton>
       {showModal && (
         <AddWorkloadModal
-          onClose={(): void => setShowModal(false)}
+          onClose={(): void => {
+            setShowModal(false);
+            setNewWorkload(null);
+          }}
           steps={[
-            (nextStep): React.ReactElement => (
-              <>
-                <Title>{translation('selectSubject')}</Title>
-                <Selector
-                  key="0"
-                  placeholder={translation('selectSubject')}
-                  options={subjectsData.subjects.map(s => ({
-                    value: s.id,
-                    label: s.title.ru,
-                  }))}
-                  onChange={(subjectId): void => {
-                    setNewWorkload({
-                      ...newWorkload,
-                      subjectId,
-                    });
-                    nextStep();
-                  }}
-                />
-              </>
-            ),
+            (nextStep): React.ReactElement => {
+              if (newWorkload?.subjectId) {
+                nextStep();
+                return null;
+              }
+
+              return (
+                <>
+                  <Title>{translation('selectSubject')}</Title>
+                  <Selector
+                    key="0"
+                    placeholder={translation('selectSubject')}
+                    options={subjectsData.subjects.map(s => ({
+                      value: s.id,
+                      label: s.title.ru,
+                    }))}
+                    onChange={(subjectId): void => {
+                      setNewWorkload({
+                        ...newWorkload,
+                        subjectId,
+                      });
+                      nextStep();
+                    }}
+                  />
+                </>
+              );
+            },
             (nextStep): React.ReactElement => (
               <>
                 <Title>{translation('selectClass')}</Title>
@@ -199,7 +224,9 @@ function Workload({ tableSlug, teacherId }: Props): React.ReactElement {
                 <Selector
                   key="2"
                   placeholder={translation('selectHours')}
-                  options={hoursOptions.slice(1)}
+                  options={hoursOptions
+                    .slice(1)
+                    .map(h => ({ ...h, label: translation('hour', h.value) }))}
                   onChange={(hours): void => {
                     setNewWorkload(null);
                     updateWorkload({
@@ -237,17 +264,19 @@ const hourSelectorStyles = {
     left: 0,
     color: 'transparent',
   }),
-  valueContainer: (): object => ({ width: 50 }),
+  valueContainer: (): object => ({ width: 50, zIndex: 999999999999 }),
   container: (provided: object): object => ({
     ...provided,
     width: 50,
     margin: 'auto',
+    zIndex: 999999999999,
   }),
   control: (provided: object): object => ({
     ...provided,
     cursor: 'pointer',
     minHeight: '30px',
     width: 50,
+    zIndex: 999999999999,
     borderColor: '#f9f7f7',
   }),
   option: (provided: object): object => ({

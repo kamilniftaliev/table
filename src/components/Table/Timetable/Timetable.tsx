@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
-import { translation } from '../../../utils';
 import { Table as TableType, Lesson } from '../../../models';
 import { Table } from '../../ui';
 

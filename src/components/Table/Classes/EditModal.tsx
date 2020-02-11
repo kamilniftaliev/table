@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { Button, Modal, Selector as DefaultSelector } from '../../ui';
 import { Class } from '../../../models';
 
-import { translation, constants } from '../../../utils';
+import { translation, constants, classesSortFn } from '../../../utils';
 import graph from '../../../graph';
 
 const EditClassModal = styled(Modal.default)`
@@ -55,6 +55,7 @@ interface Props {
   classIndex: number;
   onClose: () => void;
   onDeleteClick: React.Dispatch<React.SetStateAction<Class>>;
+  classes: Class[];
 }
 
 function EditModal({
@@ -62,13 +63,14 @@ function EditModal({
   slug,
   onClose,
   onDeleteClick,
+  classes,
 }: Props): React.ReactElement {
   const { data, loading: loadingTable } = useQuery(graph.GetTable, {
     variables: { slug },
   });
 
   const isNewClass = classIndex === -1;
-  const theClass = isNewClass ? {} : data?.table.classes[classIndex];
+  const theClass = isNewClass ? { shift: 1 } : data?.table.classes[classIndex];
 
   const [modalClass, setModalClass] = useState<Class>(theClass);
 
@@ -85,10 +87,21 @@ function EditModal({
         data: {
           table: {
             ...table,
-            classes: [...table.classes, newClass],
+            classes: [
+              ...table.classes.sort(classesSortFn),
+              {
+                ...newClass,
+                teachers: 0,
+                subjects: 0,
+                lessons: 0,
+              },
+            ],
           },
         },
       });
+
+      // Scroll down
+      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 300);
     },
   });
 
@@ -130,6 +143,31 @@ function EditModal({
             setModalClass({
               ...modalClass,
               number,
+            });
+            const classNumberExists = classes.find(c => c.number === number);
+            let letterChoiceIndex = 0;
+
+            if (classNumberExists) {
+              const foundClassLetterIndex = constants.letters.indexOf(
+                classNumberExists.letter,
+              );
+              if (foundClassLetterIndex !== 0) {
+                letterChoiceIndex = 0;
+              } else {
+                const lastFoundClass = classes
+                  .reverse()
+                  .find(c => c.number === number);
+                const lastFoundClassLetterIndex = constants.letters.indexOf(
+                  lastFoundClass.letter,
+                );
+                letterChoiceIndex = lastFoundClassLetterIndex + 1;
+              }
+            }
+
+            setModalClass({
+              ...modalClass,
+              number,
+              letter: constants.letters[letterChoiceIndex],
             });
           }}
         />

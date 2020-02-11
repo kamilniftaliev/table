@@ -29,18 +29,24 @@ const notFoundLesson = {
 };
 
 function getLesson(): Lesson {
-  // const ts = Teachers
-  //   .sortByWorkload()
-  //   .getWithLessonsInClass()
-  //   .getWorkingNow()
-  //   .getHasntBeenYet()
-  //   .getFree()
-  //   .filterWithCoWorkerIfNeeded()
-  //   .noNeedToSkipForThisClass()
-  //   .filterWithCoWorkerIfNeeded()
-  //   .getTodayMustBe()
-  //   .sortByWorkIfNeeded()
-  //   .getLessonTeachers()
+  const ts = Teachers
+    .sortByWorkload()
+    .getWithLessonsInClass()
+    .getWorkingNow()
+    .getHasntBeenYet()
+    .getFree()
+    // .filterWithCoWorkerIfNeeded()
+    // .noNeedToSkipForThisClass()
+    // .filterWithCoWorkerIfNeeded()
+    // .getTodayMustBe()
+    // .sortByWorkIfNeeded()
+    // .getLessonTeachers();
+
+  log.lesson(ts.suitableTeachers, {
+    day: 1,
+    hour: 3,
+    classTitle: '11c',
+  });
 
   const { suitableTeachers: teachers } = Teachers.sortByWorkload()
     .getWithLessonsInClass()
@@ -77,6 +83,7 @@ function getShiftFromTable(
 ): Table {
   return JSON.parse(JSON.stringify({
     ...rest,
+    shift,
     classes: classes.filter(c => c.shift === shift),
     teachers: teachers.map(teacher => ({
       ...teacher,
@@ -113,6 +120,9 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
     teacherLessonsLimit = helpers.getTeacherLessonsLimit(shift);
     table.maxClassHours = maxClassHours;
     table.teacherLessonsLimit = teacherLessonsLimit;
+    // if (shift === 1 ) {
+    //   console.log('teacherLessonsLimit', teacherLessonsLimit["5e0397eccc9f9fbac2db6f06"]["5defd7542ee1e2b53929fed6"]['5da63a00fca6d418fdb1527e'])
+    // }
 
     // console.log('maxClassHours :', JSON.stringify(maxClassHours));
     // if (shift === 1) log.lessonLimits();
@@ -171,13 +181,13 @@ export default function(defaultTable: Table, subjects: Subject[]): object {
           });
       });
 
+    log.results();
+
     return timetable;
   });
-
 
   return {
     timetable: generatedTimetable,
     logs: log.history,
-    logAAA: Logger.history,
   };
 }

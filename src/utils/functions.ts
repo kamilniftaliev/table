@@ -111,13 +111,7 @@ export function setTableStats(initTable: Table, subjects: Subject[]): Table {
         ),
       };
     })
-    .sort((first, second) => {
-      const numbers = first.number - second.number;
-
-      if (numbers !== 0) return numbers;
-
-      return letters.indexOf(first.letter) - letters.indexOf(second.letter);
-    });
+    .sort(classesSortFn);
 
   return {
     ...otherFields,
@@ -125,3 +119,11 @@ export function setTableStats(initTable: Table, subjects: Subject[]): Table {
     classes,
   };
 };
+
+export function classesSortFn(first, second): number {
+  const numbers = first.number - second.number;
+
+  if (numbers !== 0) return numbers;
+
+  return letters.indexOf(first.letter) - letters.indexOf(second.letter);
+}

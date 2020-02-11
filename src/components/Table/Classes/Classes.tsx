@@ -138,6 +138,7 @@ function Classes({ classes, slug, tableId }: Props): React.ReactElement {
       {modalClassIndex !== null && (
         <EditModal
           slug={slug}
+          classes={classes}
           classIndex={modalClassIndex}
           onClose={(): void => setModalClassIndex(null)}
           onDeleteClick={setDeletingClass}

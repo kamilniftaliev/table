@@ -18,6 +18,7 @@ const Overlay = styled.div`
   justify-content: center;
 
   background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1;
 `;
 
 const Window = styled.form`
@@ -114,13 +115,15 @@ export default function Modal({
   children,
   onClose,
   buttons,
-  steps,
+  steps: defaultSteps,
   className,
 }: ModalProps): ReactElement {
   const [step, setStep] = useState<number>(0);
   function onOverlayClick(e): void {
     if (e.target === e.currentTarget) onClose();
   }
+
+  const steps = defaultSteps?.filter(Boolean);
 
   const prevStep = (): void => setStep(step - 1);
   const nextStep = (): void => {

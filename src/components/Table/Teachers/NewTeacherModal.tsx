@@ -67,8 +67,13 @@ function NewTeacherModal({
                   ...table.teachers,
                   {
                     ...newTeacher,
+                    // @TODO fix workhours fill true (after creation immedi. open error)
                     workload: [],
                     workhours: [],
+                    classes: 0,
+                    workhoursAmount: 0,
+                    workloadAmount: 0,
+                    subjects: 0,
                   },
                 ],
               },

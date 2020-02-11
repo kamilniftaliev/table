@@ -1,3 +1,9 @@
 import TimetableGenerator from './index';
 
-onmessage = e => postMessage(TimetableGenerator(...e.data));
+onmessage = (e): void => {
+  const data = TimetableGenerator(...e.data);
+
+  data.logs.map(l => console.log(l));
+
+  postMessage(data);
+};

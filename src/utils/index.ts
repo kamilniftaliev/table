@@ -5,7 +5,7 @@ import * as Auth from './auth';
 import * as text from './text';
 import * as dom from './dom';
 import * as constants from './constants';
-import { setTableStats } from './functions';
+import { setTableStats, classesSortFn } from './functions';
 
 export {
   Cookies,
@@ -19,4 +19,5 @@ export {
   
   // Functions
   setTableStats,
+  classesSortFn,
 };
