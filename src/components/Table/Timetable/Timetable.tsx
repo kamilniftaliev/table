@@ -8,6 +8,11 @@ const TableContainer = styled.section`
   padding: 10px;
   overflow-x: auto;
   max-width: 95vw;
+
+  @media print {
+    overflow-x: visible;
+    padding: 0;
+  }
 `;
 
 const TableWrapper = styled(Table.default)`
@@ -24,6 +29,13 @@ export const Cell = styled<CellProps>(Table.CellTD)`
   padding: 5px;
   min-width: 120px;
   white-space: nowrap;
+
+  @media print {
+    padding: 0;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    min-width: 50px;
+  }
 
   &:first-child {
     min-width: 20px;

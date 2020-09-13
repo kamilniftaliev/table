@@ -23,7 +23,7 @@ module.exports = {
   devServer: {
     port: 4444,
     hot: true,
-    noInfo: true,
+    // noInfo: true,
     // open: true,
     historyApiFallback: true,
     overlay: true,

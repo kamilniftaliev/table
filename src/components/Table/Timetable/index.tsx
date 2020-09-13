@@ -16,6 +16,10 @@ interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
 const Container = styled.div<ContainerProps>`
   width: 100%;
 
+  @media print {
+    width: auto;
+  }
+
   ${({ highlightTeachersName }): string =>
     highlightTeachersName &&
     `
@@ -32,6 +36,10 @@ const FiltersContainer = styled.header`
   padding-left: 20px;
   padding-right: 20px;
   margin-top: 20px;
+
+  @media print {
+    display: none;
+  }
 `;
 
 const SectorSelector = styled(Selector)`
@@ -42,6 +50,10 @@ const SectorSelector = styled(Selector)`
 const TimetableContainer = styled.div`
   display: flex;
   justify-content: center;
+
+  @media print {
+    justify-content: flex-start;
+  }
 `;
 
 const EmptyTableMessage = styled.p`
@@ -52,7 +64,7 @@ const EmptyTableMessage = styled.p`
 
 const timetableGenerator = new TimetableWorker();
 
-let highlightTimeout = null;
+const highlightTimeout = null;
 
 interface TimetableFilters {
   shift: number;
@@ -191,10 +203,7 @@ function TableContainer({ table }): React.ReactElement {
     timetable.filter(d => d.filter(h => h.length).length).length === 0;
 
   return (
-    <Container
-    // highlightTeachersName={highlightTeachers}
-    // onMouseMove={(e): void => highlightCells(e.target?.dataset?.teachersName)}
-    >
+    <Container>
       <FiltersContainer>
         {sectors.length > 1 && (
           <SectorSelector

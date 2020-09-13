@@ -33,6 +33,10 @@ const Tabs = styled.nav`
   display: flex;
   justify-content: center;
   border-bottom: 1px solid #e5e5e5;
+
+  @media print {
+    display: none;
+  }
 `;
 
 const tabHeight = 2;
@@ -66,6 +70,11 @@ const Container = styled.section`
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
+  @media print {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
 `;
 
 function Table({

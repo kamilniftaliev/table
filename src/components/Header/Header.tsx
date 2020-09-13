@@ -18,6 +18,10 @@ const Container = styled.header`
   border-bottom: 1px solid #e3e5e9;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
   z-index: 1;
+
+  @media print {
+    display: none;
+  }
 `;
 
 const UserInfo = styled.div`

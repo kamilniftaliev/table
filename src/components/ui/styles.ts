@@ -52,6 +52,10 @@ export const global = createGlobalStyle`
   a {
     text-decoration: none;
   }
+
+  @page {
+    size: landscape;
+  }
 `;
 
 export default global;

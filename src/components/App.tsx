@@ -23,6 +23,11 @@ export const ContentContainer = styled.div`
   min-height: 100vh;
   padding: 20px;
   background-color: #f5f9fa;
+
+  @media print {
+    padding: 0;
+    background-color: #fff;
+  }
 `;
 
 const isAuth = !!localStorage.getItem('token');
