@@ -87,7 +87,7 @@ function Workload({ tableSlug, teacherId }: Props): React.ReactElement {
       tableData.table.classes.filter(c =>
         teacher.workload.find(w => c.id === w.classId && w.hours),
       ),
-    [],
+    [tableData.table.classes, teacher.workload],
   );
 
   const teacherSubjects = useMemo(
@@ -95,7 +95,7 @@ function Workload({ tableSlug, teacherId }: Props): React.ReactElement {
       subjectsData.subjects.filter(s =>
         teacher.workload.find(w => s.id === w.subjectId && w.hours),
       ),
-    [],
+    [subjectsData.subjects, teacher.workload],
   );
 
   if (loadingTable || loadingSubjects) return null;

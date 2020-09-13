@@ -4,8 +4,8 @@ import TeachersClass from './teachers';
 
 import { Table, Lesson, ClassHours, Workload, Subject } from '../../models';
 
-const schoolDaysCount = 5;
-const schoolHoursCount = 7;
+const schoolDaysCount = 6;
+const schoolHoursCount = 6;
 
 let maxClassHours: ClassHours = {};
 let teacherLessonsLimit = {};
@@ -34,7 +34,7 @@ function getLesson(): Lesson {
     .getWithLessonsInClass()
     .getWorkingNow()
     .getHasntBeenYet()
-    .getFree()
+    .getFree();
     // .filterWithCoWorkerIfNeeded()
     // .noNeedToSkipForThisClass()
     // .filterWithCoWorkerIfNeeded()
