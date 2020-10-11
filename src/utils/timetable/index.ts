@@ -100,94 +100,99 @@ function getShiftFromTable(
 export default function(defaultTable: Table, subjects: Subject[]): object {
   if (!subjects || !subjects.length) return {};
 
-  const generatedTimetable = Array(defaultTable.shifts).fill(null).map((s, shiftIndex) => {
-    const shift = shiftIndex + 1;
+  const lostLessons = [];
 
-    // The very init
-    table = getShiftFromTable(defaultTable, shift);
-    table.schoolDaysCount = schoolDaysCount;
-    table.schoolHoursCount = schoolHoursCount;
-    table.subjects = subjects;
+  const generatedTimetable = Array(defaultTable.shifts)
+    .fill(null)
+    .map((s, shiftIndex) => {
+      const shift = shiftIndex + 1;
 
-    // console.log('SHIFT table :', table);
+      // The very init
+      table = getShiftFromTable(defaultTable, shift);
+      table.schoolDaysCount = schoolDaysCount;
+      table.schoolHoursCount = schoolHoursCount;
+      table.subjects = subjects;
 
-    log = new Logger(table);
-    // if (!window.log) window.log = log;
-    helpers = new Helpers(table);
-    Teachers = new TeachersClass(table);
-    // if (!window.T) window.T = Teachers;
-    maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
-    teacherLessonsLimit = helpers.getTeacherLessonsLimit(shift);
-    table.maxClassHours = maxClassHours;
-    table.teacherLessonsLimit = teacherLessonsLimit;
-    // if (shift === 1 ) {
-    //   console.log('teacherLessonsLimit', teacherLessonsLimit["5e0397eccc9f9fbac2db6f06"]["5defd7542ee1e2b53929fed6"]['5da63a00fca6d418fdb1527e'])
-    // }
+      // console.log('SHIFT table :', table);
 
-    // console.log('maxClassHours :', JSON.stringify(maxClassHours));
-    // if (shift === 1) log.lessonLimits();
+      log = new Logger(table);
+      // if (!window.log) window.log = log;
+      helpers = new Helpers(table);
+      Teachers = new TeachersClass(table);
+      // if (!window.T) window.T = Teachers;
+      maxClassHours = helpers.getMaxHoursForClass(schoolDaysCount);
+      teacherLessonsLimit = helpers.getTeacherLessonsLimit(shift);
+      table.maxClassHours = maxClassHours;
+      table.teacherLessonsLimit = teacherLessonsLimit;
+      // if (shift === 1 ) {
+      //   console.log('teacherLessonsLimit', teacherLessonsLimit["5e0397eccc9f9fbac2db6f06"]["5defd7542ee1e2b53929fed6"]['5da63a00fca6d418fdb1527e'])
+      // }
 
-    timetable = [];
-    Teachers.timetable = timetable;
+      // console.log('maxClassHours :', JSON.stringify(maxClassHours));
+      // if (shift === 1) log.lessonLimits();
 
-    // Loop through school days
-    Array(schoolDaysCount)
-      .fill(null)
-      .forEach((d, curDayIndex) => {
-        // Init the day
-        dayIndex = curDayIndex;
-        table.dayIndex = dayIndex;
-        timetable[dayIndex] = [];
+      timetable = [];
+      Teachers.timetable = timetable;
 
-        // Loop through school hours
-        Array(schoolHoursCount)
-          .fill(null)
-          .forEach((h, curHourIndex) => {
-            // Init the hour
-            hourIndex = curHourIndex;
-            const hour = hourIndex + 1;
-            table.hourIndex = hourIndex;
-            timetable[dayIndex][hourIndex] = [];
+      // Loop through school days
+      Array(schoolDaysCount)
+        .fill(null)
+        .forEach((d, curDayIndex) => {
+          // Init the day
+          dayIndex = curDayIndex;
+          table.dayIndex = dayIndex;
+          timetable[dayIndex] = [];
 
-            // Loop through all classes and get a lesson for the hour
-            table.classes.forEach(
-              ({ id: classId, number }, curClassIndex: number): void => {
-                // Init the hour of the class
-                classIndex = curClassIndex;
-                table.classIndex = classIndex;
-                let lesson = emptyLesson;
+          // Loop through school hours
+          Array(schoolHoursCount)
+            .fill(null)
+            .forEach((h, curHourIndex) => {
+              // Init the hour
+              hourIndex = curHourIndex;
+              const hour = hourIndex + 1;
+              table.hourIndex = hourIndex;
+              timetable[dayIndex][hourIndex] = [];
 
-                if (helpers.decreaseClassHour(maxClassHours, classId, hour)) {
-                  lesson = getLesson();
+              // Loop through all classes and get a lesson for the hour
+              table.classes.forEach(
+                ({ id: classId, number }, curClassIndex: number): void => {
+                  // Init the hour of the class
+                  classIndex = curClassIndex;
+                  table.classIndex = classIndex;
+                  let lesson = emptyLesson;
 
-                  // If no teachers found, put a placeholder for now
-                  if (!lesson) {
-                    const stillLeftLessons = Teachers.classHasLeftLessons();
-                    if (stillLeftLessons) lesson = notFoundLesson;
+                  if (helpers.decreaseClassHour(maxClassHours, classId, hour)) {
+                    lesson = getLesson();
+
+                    // If no teachers found, put a placeholder for now
+                    if (!lesson) {
+                      const stillLeftLessons = Teachers.classHasLeftLessons();
+                      if (stillLeftLessons) lesson = notFoundLesson;
+                    }
                   }
-                }
 
-                const lessonId = `${dayIndex}-${hourIndex}-${classIndex}`;
+                  const lessonId = `${dayIndex}-${hourIndex}-${classIndex}`;
 
-                // Building a lesson's actual data
-                timetable[dayIndex][hourIndex][classIndex] = {
-                  ...lesson,
-                  id: lessonId,
-                  classId,
-                  classTitle: helpers.getClassTitleById(classId),
-                };
-              },
-            );
-          });
-      });
+                  // Building a lesson's actual data
+                  timetable[dayIndex][hourIndex][classIndex] = {
+                    ...lesson,
+                    id: lessonId,
+                    classId,
+                    classTitle: helpers.getClassTitleById(classId),
+                  };
+                },
+              );
+            });
+        });
 
-    log.results();
+      lostLessons.push(log.results());
 
-    return timetable;
-  });
+      return timetable;
+    });
 
   return {
-    timetable: generatedTimetable,
+    timetables: generatedTimetable,
     logs: log.history,
+    lostLessons,
   };
 }

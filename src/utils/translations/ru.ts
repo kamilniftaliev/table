@@ -136,4 +136,25 @@ export default {
   all: 'Все',
 
   emptyTableMessage: 'По вашему запросу нет результатов',
+
+  lostLessonsTitle(lessonCount: number): string {
+    return `Утерянных уроки (${this.hourByNumber(lessonCount)})`;
+  },
+
+  hourByNumber(number: number): string {
+    switch (number) {
+      case 1:
+        return `1 час`;
+      case 2:
+      case 3:
+      case 4:
+        return `${number} часа`;
+      default:
+        return `${number} часов`;
+    }
+  },
+
+  lostLesson({ name, subjectTitle, classTitle, hours }): string {
+    return `В ${classTitle} классе ${name} ${this.hourByNumber(hours)} ${subjectTitle}`;
+  }
 };

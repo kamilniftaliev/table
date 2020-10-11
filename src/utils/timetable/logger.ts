@@ -203,7 +203,7 @@ export default class Logger {
     if (!teachers?.length) this.warning(`Couldn"t find ${title}`, ...text);
   }
   
-  results = (): void => {
+  results = (): object[] => {
     console.log('--------- LEFT TEACHERS -------');
     const resultTable = JSON.parse(JSON.stringify(this.table));
     let totalLeftHours = 0;
@@ -266,5 +266,7 @@ export default class Logger {
 
     console.log('TOTAL LEFT HOURS :', totalLeftHours);
     console.log('------- END LEFT TEACHERS END ------- ');
+
+    return resultsToLog;
   }
 }

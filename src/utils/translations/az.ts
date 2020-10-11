@@ -131,4 +131,10 @@ export default {
   all: 'Bütün',
 
   emptyTableMessage: 'Sorğunuza görə nəticə tapılmadı',
+
+  lostLessonsTitle: (lessonCount: number): string => `İtən dərslər (${lessonCount} saat)`,
+
+  lostLesson: ({ name, subjectTitle, classTitle, hours }): string => {
+    return `${classTitle} sinfində ${name} ${hours} saat ${subjectTitle}`;
+  }
 };

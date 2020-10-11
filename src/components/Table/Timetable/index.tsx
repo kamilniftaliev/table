@@ -7,6 +7,7 @@ import { translation, constants } from '../../../utils';
 import generateTimetable from '../../../utils/timetable';
 import { Table, Preloader, Selector } from '../../ui';
 import Timetable, { Cell } from './Timetable';
+import LostLessons from './LostLessons';
 import TimetableWorker from '../../../utils/timetable/timetable.worker';
 
 interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
@@ -49,6 +50,8 @@ const SectorSelector = styled(Selector)`
 
 const TimetableContainer = styled.div`
   display: flex;
+  flex-direction: column;
+
   justify-content: center;
 
   @media print {
@@ -122,6 +125,7 @@ function TableContainer({ table }): React.ReactElement {
   const { data, loading: loadingSubjects } = useQuery(graph.GetSubjects);
   // const [highlightTeachers, setHighlightTeachers] = useState<string>('');
   const [timetables, setTimetables] = useState([]);
+  const [lostLessons, setLostLessons] = useState([]);
   const sectors = useMemo(
     () => [
       allFilter,
@@ -187,7 +191,8 @@ function TableContainer({ table }): React.ReactElement {
     // Object.keys(e.data.win).forEach(key => {
     //   globalThis[key] = e.data.win[key];
     // });
-    setTimetables(e.data.timetable);
+    setTimetables(e.data.timetables);
+    setLostLessons(e.data.lostLessons[filter.shift - 1]);
   };
 
   if (!timetables.length || loadingSubjects) {
@@ -244,6 +249,7 @@ function TableContainer({ table }): React.ReactElement {
       ) : (
         <TimetableContainer>
           <Timetable timetable={timetable} />
+          <LostLessons lessons={lostLessons} />
         </TimetableContainer>
       )}
     </Container>
